@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gumroad Revenue Copilot Demo</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Demo navigation">
+        <div class="brand-lockup">
+          <div class="brand-mark">g</div>
+          <div>
+            <p class="brand-name">Gumroad</p>
+            <p class="brand-subtitle">creator dashboard</p>
+          </div>
+        </div>
+
+        <nav class="nav-list">
+          <a href="#" class="nav-item active" aria-current="page">Analytics</a>
+          <a href="#" class="nav-item">Products</a>
+          <a href="#" class="nav-item">Customers</a>
+          <a href="#" class="nav-item">Emails</a>
+          <a href="#" class="nav-item">Settings</a>
+        </nav>
+
+        <div class="demo-note">
+          <span class="demo-dot"></span>
+          Seeded local demo data
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Revenue Copilot prototype</p>
+            <h1>Product analytics</h1>
+          </div>
+          <div class="topbar-status" aria-label="Demo status">
+            <span>Review-only</span>
+            <strong>6 signals</strong>
+          </div>
+          <div class="topbar-actions">
+            <a class="ghost-link" href="./architecture.html">Architecture</a>
+            <a class="ghost-link" href="./brief.html">Brief</a>
+          </div>
+        </header>
+
+        <section class="control-strip" aria-label="Product controls">
+          <label class="field-group" for="product-select">
+            <span>Product</span>
+            <select id="product-select"></select>
+          </label>
+
+          <div class="period-pill" aria-label="Selected period">
+            Last 30 days vs prior period
+          </div>
+
+          <button id="generate-button" class="primary-button" type="button">
+            Generate insights
+          </button>
+        </section>
+
+        <section class="product-summary" aria-label="Selected product summary">
+          <div>
+            <p class="eyebrow">Selected product</p>
+            <h2 id="product-name">Loading product</h2>
+            <p id="product-description" class="muted-copy"></p>
+          </div>
+          <div class="tag-row" id="product-tags"></div>
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="analytics-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Performance</p>
+                <h2>Recent signal</h2>
+              </div>
+              <span id="confidence-summary" class="status-badge">Waiting</span>
+            </div>
+
+            <div class="metric-grid" id="metric-grid"></div>
+
+            <div class="chart-panel" aria-label="Conversion trend chart">
+              <div class="chart-header">
+                <span>Views to sales</span>
+                <span id="chart-caption">Current period</span>
+              </div>
+              <div class="bar-chart" id="bar-chart"></div>
+            </div>
+
+            <div class="source-table-wrap">
+              <div class="table-header">
+                <span>Top sources</span>
+                <span>Conversion</span>
+              </div>
+              <div id="source-table" class="source-table"></div>
+            </div>
+          </article>
+
+          <aside class="copilot-panel" aria-label="Revenue Copilot suggestions">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Next moves</p>
+                <h2>Revenue Copilot</h2>
+              </div>
+              <span class="status-badge live">Demo</span>
+            </div>
+
+            <p class="muted-copy compact">
+              Evidence-backed suggestions based on seeded product performance.
+            </p>
+
+            <div id="suggestions" class="suggestion-list">
+              <div class="empty-state">
+                Choose a product and generate insights.
+              </div>
+            </div>
+
+            <section
+              id="action-review"
+              class="action-review"
+              aria-label="Selected suggestion action review"
+              hidden
+            >
+              <div class="action-review-header">
+                <div>
+                  <p class="eyebrow">Review action</p>
+                  <h3 id="action-review-title">Action</h3>
+                  <p id="action-review-meta" class="action-review-meta"></p>
+                </div>
+                <button
+                  id="action-review-close"
+                  class="quiet-button"
+                  type="button"
+                  aria-label="Close action review"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div class="copy-box" id="action-review-copy"></div>
+              <ol id="action-review-steps" class="action-steps"></ol>
+
+              <div class="action-review-footer">
+                <button id="action-review-copy-button" class="secondary-button" type="button">
+                  Copy action
+                </button>
+                <span id="action-review-copy-status" class="copy-status" aria-live="polite"></span>
+              </div>
+            </section>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

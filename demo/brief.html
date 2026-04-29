@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Revenue Copilot Brief</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .brief-page {
+        min-height: 100vh;
+        padding: 32px;
+      }
+
+      .brief-container {
+        width: min(920px, 100%);
+        margin: 0 auto;
+      }
+
+      .brief-card {
+        margin-top: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        padding: 22px;
+      }
+
+      .brief-card h2 {
+        margin-top: 24px;
+      }
+
+      .brief-card h2:first-child {
+        margin-top: 0;
+      }
+
+      .brief-card ul,
+      .brief-card ol {
+        margin: 10px 0 0;
+        padding-left: 22px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .brief-card li + li {
+        margin-top: 6px;
+      }
+
+      .brief-actions {
+        margin-top: 18px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 640px) {
+        .brief-page {
+          padding: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="brief-page">
+      <div class="brief-container">
+        <p class="eyebrow">Prototype brief</p>
+        <h1>Creator Revenue Copilot</h1>
+        <p class="muted-copy">
+          Gumroad already shows creators what happened. Revenue Copilot tells
+          them what to do next by turning product analytics into
+          evidence-backed revenue actions.
+        </p>
+
+        <div class="brief-actions">
+          <a class="ghost-link" href="./index.html">Demo</a>
+          <a class="ghost-link" href="./architecture.html">Architecture</a>
+        </div>
+
+        <section class="brief-card">
+          <h2>What This Demo Proves</h2>
+          <ul>
+            <li>Products are loaded from seeded local demo data.</li>
+            <li>Metrics are computed deterministically before any recommendation text.</li>
+            <li>Signals are selected from views, sales, conversion, refunds, referrers, and metadata.</li>
+            <li>Every Copilot card cites the evidence used to support it.</li>
+          </ul>
+
+          <h2>Real Product Path</h2>
+          <ol>
+            <li>Gumroad Rails models/database provide the facts.</li>
+            <li>A metrics builder computes product performance.</li>
+            <li>A signal detector finds actionable revenue patterns.</li>
+            <li>An AI service packages approved signals into creator-facing JSON.</li>
+            <li>The analytics UI renders reviewable next moves.</li>
+          </ol>
+
+          <h2>Data Boundary</h2>
+          <p class="muted-copy">
+            This standalone version uses synthetic demo rows only. It does not
+            scrape Gumroad, call Gumroad production services, read creator
+            records, or make autonomous product changes.
+          </p>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
