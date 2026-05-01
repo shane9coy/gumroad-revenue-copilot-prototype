@@ -1,0 +1,41 @@
+{
+  "generated_at": "20260430T210417Z",
+  "api_base": "http://127.0.0.1:8001",
+  "results": [
+    {
+      "label": "10-pass-format",
+      "session_id": "gm-5e1cbca8efec4c8cae06ab8615ac3019",
+      "turn_count": 10,
+      "elapsed_seconds": 328.88,
+      "failed_formatting_turns": [
+        1,
+        3,
+        4,
+        6,
+        7,
+        9
+      ]
+    },
+    {
+      "label": "20-pass-format",
+      "session_id": "gm-0a856302cf3f4ec0ae7ac77744a50c22",
+      "turn_count": 20,
+      "elapsed_seconds": 539.89,
+      "failed_formatting_turns": [
+        1,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        12,
+        13,
+        14,
+        16,
+        17,
+        20
+      ]
+    }
+  ]
+}

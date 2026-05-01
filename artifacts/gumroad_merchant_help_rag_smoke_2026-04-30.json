@@ -1,0 +1,480 @@
+{
+  "started_at": "2026-04-30T22:10:53.919444+00:00",
+  "mode": "deterministic-sql-fallback",
+  "openai_key_present": true,
+  "context": {
+    "product_id": "all",
+    "date_range": "30"
+  },
+  "snapshot": {
+    "refreshed": true,
+    "source": "seeded local demo fixtures",
+    "source_hash": "96a5c1fa75954086a267534935d8cac6f4cfece7c016ccb36438e9211ab856b2",
+    "product_count": 4,
+    "traffic_source_rows": 30,
+    "customer_sale_rows": 15,
+    "refreshed_at": "2026-04-30T22:10:53.904215+00:00"
+  },
+  "help_doc_inventory": {
+    "corpus_version": "gumroad-help-money-ops-2026-04-30",
+    "doc_count": 5,
+    "chunk_count": 17,
+    "categories": [
+      {
+        "category": "money_ops",
+        "chunks": 17
+      }
+    ],
+    "docs": [
+      {
+        "doc_id": "account-suspension-and-processor-review",
+        "title": "Account suspension FAQ",
+        "url": "https://gumroad.com/help/article/160-suspension.html",
+        "category": "money_ops",
+        "source_type": "official_help_article",
+        "seeded_at": "2026-04-30T22:10:53.903622+00:00"
+      },
+      {
+        "doc_id": "chargebacks",
+        "title": "Chargebacks on Gumroad",
+        "url": "https://gumroad.com/help/article/134-how-does-gumroad-handle-chargebacks.html",
+        "category": "money_ops",
+        "source_type": "official_help_article",
+        "seeded_at": "2026-04-30T22:10:53.903622+00:00"
+      },
+      {
+        "doc_id": "help-center-section-map",
+        "title": "Gumroad Help Center section map",
+        "url": "https://gumroad.com/help/article/226-report-a-creator.html",
+        "category": "money_ops",
+        "source_type": "official_help_center_index",
+        "seeded_at": "2026-04-30T22:10:53.903622+00:00"
+      },
+      {
+        "doc_id": "payouts-dashboard",
+        "title": "The payouts dashboard",
+        "url": "https://gumroad.com/help/article/269-balance-page.html",
+        "category": "money_ops",
+        "source_type": "official_help_article",
+        "seeded_at": "2026-04-30T22:10:53.903622+00:00"
+      },
+      {
+        "doc_id": "pricing-fees-and-taxes",
+        "title": "Gumroad pricing, fees, and Merchant of Record taxes",
+        "url": "https://gumroad.com/pricing",
+        "category": "money_ops",
+        "source_type": "official_pricing_page",
+        "seeded_at": "2026-04-30T22:10:53.903622+00:00"
+      }
+    ],
+    "access": "seeded official Gumroad help/pricing corpus in local SQLite FTS; read-only"
+  },
+  "checks": {
+    "mode": "deterministic-sql-fallback",
+    "turn_count": 10,
+    "analytics_prompt_count": 5,
+    "help_doc_prompt_count": 5,
+    "history_message_count": 20,
+    "all_turns_have_citations": true,
+    "help_doc_answers_include_source_links": true,
+    "help_doc_turns_have_help_doc_citations": true,
+    "mixed_turn_has_product_and_help_doc_citations": true,
+    "mixed_turn_combines_metrics_and_source_links": true,
+    "unknown_policy_says_not_loaded": true,
+    "direct_docs_search_returns_sources": true,
+    "help_doc_inventory_loaded": true,
+    "passed": true
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "id": "analytics_monthly_overview",
+      "kind": "analytics",
+      "product_id": "all",
+      "date_range": "30",
+      "sent_at": "2026-04-30T22:10:53.907686+00:00",
+      "user": "Give me a source-of-truth monthly overview for all products. Keep it concise.",
+      "assistant": "For All products, current-period revenue is $3,881.00 from 129 sales and 3,354 views. Conversion is 3.9%, refund rate is 7.8%, and churn is 3.6%. The metric I would watch first is refund pressure at 7.8%. The top revenue source is Gumroad Discover with 31 sales at 2.2% conversion.",
+      "citations": [
+        {
+          "type": "product",
+          "id": "all",
+          "label": "All products",
+          "excerpt": "129 sales, $3,881.00, 3.9% conversion."
+        },
+        {
+          "type": "source",
+          "id": "Gumroad Discover",
+          "label": "Gumroad Discover",
+          "excerpt": "31 sales, 2.2% conversion"
+        },
+        {
+          "type": "signal",
+          "id": "tighten-positioning",
+          "label": "Tighten the first-screen positioning",
+          "excerpt": "Conversion - high confidence"
+        },
+        {
+          "type": "signal",
+          "id": "double-down-on-source",
+          "label": "Lean into BeatStars",
+          "excerpt": "Traffic source - medium confidence"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": true,
+      "error": null
+    },
+    {
+      "turn": 2,
+      "id": "analytics_top_source",
+      "kind": "analytics",
+      "product_id": "all",
+      "date_range": "30",
+      "sent_at": "2026-04-30T22:10:53.908644+00:00",
+      "user": "Which traffic source is strongest right now and what should I do with it?",
+      "assistant": "For All products, the strongest current traffic reads are: Gumroad Discover has 31 sales at 2.2% conversion; YouTube has 17 sales at 4.2% conversion; Newsletter has 12 sales at 3.9% conversion.",
+      "citations": [
+        {
+          "type": "product",
+          "id": "all",
+          "label": "All products",
+          "excerpt": "129 sales, $3,881.00, 3.9% conversion."
+        },
+        {
+          "type": "source",
+          "id": "Gumroad Discover",
+          "label": "Gumroad Discover",
+          "excerpt": "31 sales, 2.2% conversion"
+        },
+        {
+          "type": "source",
+          "id": "YouTube",
+          "label": "YouTube",
+          "excerpt": "17 sales, 4.2% conversion"
+        },
+        {
+          "type": "source",
+          "id": "Newsletter",
+          "label": "Newsletter",
+          "excerpt": "12 sales, 3.9% conversion"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": true,
+      "error": null
+    },
+    {
+      "turn": 3,
+      "id": "analytics_refund_risk",
+      "kind": "analytics",
+      "product_id": "prod-audio-pack",
+      "date_range": "30",
+      "sent_at": "2026-04-30T22:10:53.911895+00:00",
+      "user": "Which product has the biggest refund or expectation risk?",
+      "assistant": "Cinematic Lo-Fi Sample Pack has 7 refunds at 13% refund rate, 3 Refund Ops cases needing review, $19.00 in chargeback dispute exposure, and $55.86 in estimated preventable refunds. First prevention move: High refund rate from Gumroad Discover - Add format, compatibility, and included-file details above the buy button for Discover visitors. The top case is chargeback dispute refund-prod-audio-pack-2 with $19.00 under review; recommended action: Compile purchase, delivery, product-page, and support evidence for Cinematic Lo-Fi Sample Pack. Do not submit automatically; this is a review-only evidence packet.",
+      "citations": [
+        {
+          "type": "product",
+          "id": "prod-audio-pack",
+          "label": "Cinematic Lo-Fi Sample Pack",
+          "excerpt": "54 sales, $1,026.00, 5.9% conversion."
+        },
+        {
+          "type": "summary",
+          "id": "refund-ops",
+          "label": "Refund Ops summary",
+          "excerpt": "3 cases needing review; $19.00 disputed."
+        },
+        {
+          "type": "refund_case",
+          "id": "refund-prod-audio-pack-2",
+          "label": "Chargeback dispute - evidence due",
+          "excerpt": "$19.00 under review, risk 96/100"
+        },
+        {
+          "type": "refund_case",
+          "id": "refund-prod-audio-pack-1",
+          "label": "Refund request - needs review",
+          "excerpt": "$9.50 under review, risk 96/100"
+        },
+        {
+          "type": "refund_case",
+          "id": "refund-prod-audio-pack-3",
+          "label": "Refund review - reply drafted",
+          "excerpt": "$9.50 under review, risk 96/100"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": true,
+      "error": null
+    },
+    {
+      "turn": 4,
+      "id": "analytics_three_month_goal",
+      "kind": "analytics",
+      "product_id": "all",
+      "date_range": "30",
+      "sent_at": "2026-04-30T22:10:53.913771+00:00",
+      "user": "Set a realistic three-month sales goal and tell me how we get there.",
+      "assistant": "For All products, I would set the 3-month goal at $4,888.94/month, up from $3,881.00/month now. That means about 162 monthly sales, 3,730 visits, and 4.3% conversion. My plan: Conversion and positioning: Move the buyer outcome into the first sentence and align the preview copy with the strongest traffic source.; Channel focus: Use BeatStars as the next controlled acquisition test; it is currently producing 20 sales at 11.1% conversion.; Retention and expectation fit: Watch 3.6% churn and 7.8% refund rate before changing price.",
+      "citations": [
+        {
+          "type": "summary",
+          "id": "strategy-plan",
+          "label": "3-month strategy plan",
+          "excerpt": "Reach about $4,888.94/month by month 3, requiring about 162 sales and 3,730 visits at 4.3% conversion."
+        },
+        {
+          "type": "summary",
+          "id": "baseline",
+          "label": "Current monthly baseline",
+          "excerpt": "129 sales, 3.9% conversion"
+        },
+        {
+          "type": "signal",
+          "id": "tighten-positioning",
+          "label": "Tighten the first-screen positioning",
+          "excerpt": "Conversion - high confidence"
+        },
+        {
+          "type": "signal",
+          "id": "double-down-on-source",
+          "label": "Lean into BeatStars",
+          "excerpt": "Traffic source - medium confidence"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": true,
+      "error": null
+    },
+    {
+      "turn": 5,
+      "id": "analytics_mixed_refunds_payouts",
+      "kind": "analytics_mixed",
+      "product_id": "all",
+      "date_range": "30",
+      "sent_at": "2026-04-30T22:10:53.915319+00:00",
+      "user": "Our refunds are up in the analytics; how can that affect payout balance according to Gumroad docs?",
+      "assistant": "For All products, the seeded analytics show 10 refunds, $260.00 refunded, and a 7.8% refund rate for the selected period. The loaded Gumroad docs say refunds or chargebacks can affect payout balance, and negative Gumroad balances may be recovered through the payment processor. Operationally, I would clarify expectations before checkout and review the payout dashboard/export if refunds keep rising.\n\nSources:\nGumroad Help Center section map - Start selling docs: https://gumroad.com/help/article/226-report-a-creator.html\nThe payouts dashboard - Credits, refunds, chargebacks, and negative balance: https://gumroad.com/help/article/269-balance-page.html\nGumroad Help Center section map - Get paid docs: https://gumroad.com/help/article/226-report-a-creator.html",
+      "citations": [
+        {
+          "type": "product",
+          "id": "all",
+          "label": "All products",
+          "excerpt": "129 sales, $3,881.00, 3.9% conversion."
+        },
+        {
+          "type": "help_doc",
+          "id": "help-center-section-map::start-selling-section",
+          "label": "Gumroad Help Center section map - Start selling docs",
+          "excerpt": "https://gumroad.com/help/article/226-report-a-creator.html"
+        },
+        {
+          "type": "help_doc",
+          "id": "payouts-dashboard::credits-refunds-chargebacks",
+          "label": "The payouts dashboard - Credits, refunds, chargebacks, and negative balance",
+          "excerpt": "https://gumroad.com/help/article/269-balance-page.html"
+        },
+        {
+          "type": "help_doc",
+          "id": "help-center-section-map::get-paid-section",
+          "label": "Gumroad Help Center section map - Get paid docs",
+          "excerpt": "https://gumroad.com/help/article/226-report-a-creator.html"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": true,
+      "error": null
+    },
+    {
+      "turn": 6,
+      "id": "docs_fees",
+      "kind": "help_doc",
+      "product_id": "all",
+      "date_range": "30",
+      "sent_at": "2026-04-30T22:10:53.915943+00:00",
+      "user": "What are Gumroad's fees for direct sales and Discover?",
+      "assistant": "From the loaded Gumroad docs:\n- Profile and direct-link transaction fees: Gumroad's pricing page says profile sales and direct-link sales use a 10% plus $0.50 per-transaction fee. The page also says Gumroad does not charge a monthly fee; fees are deducted from each sale.\n- Discover marketplace transaction fees: Gumroad's pricing page lists a 30% per-transaction fee when a new customer finds and buys through the Gumroad Discover marketplace.\n- Merchant of Record and tax handling: The pricing page says Gumroad became the Merchant of Record on January 1, 2025, and handles sales tax collection and remittance where Gumroad has merchant-of-record tax obligations. It also notes that old creator tax settings are automatically disabled because Gumroad handles tax collection.\n\nSources:\nGumroad pricing, fees, and Merchant of Record taxes - Profile and direct-link transaction fees: https://gumroad.com/pricing\nGumroad pricing, fees, and Merchant of Record taxes - Discover marketplace transaction fees: https://gumroad.com/pricing\nGumroad pricing, fees, and Merchant of Record taxes - Merchant of Record and tax handling: https://gumroad.com/pricing",
+      "citations": [
+        {
+          "type": "help_doc",
+          "id": "pricing-fees-and-taxes::direct-sales-fees",
+          "label": "Gumroad pricing, fees, and Merchant of Record taxes - Profile and direct-link transaction fees",
+          "excerpt": "https://gumroad.com/pricing"
+        },
+        {
+          "type": "help_doc",
+          "id": "pricing-fees-and-taxes::discover-marketplace-fees",
+          "label": "Gumroad pricing, fees, and Merchant of Record taxes - Discover marketplace transaction fees",
+          "excerpt": "https://gumroad.com/pricing"
+        },
+        {
+          "type": "help_doc",
+          "id": "pricing-fees-and-taxes::merchant-of-record-taxes",
+          "label": "Gumroad pricing, fees, and Merchant of Record taxes - Merchant of Record and tax handling",
+          "excerpt": "https://gumroad.com/pricing"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": true,
+      "error": null
+    },
+    {
+      "turn": 7,
+      "id": "docs_payouts",
+      "kind": "help_doc",
+      "product_id": "all",
+      "date_range": "30",
+      "sent_at": "2026-04-30T22:10:53.916491+00:00",
+      "user": "When do I get paid and where is the payout dashboard?",
+      "assistant": "From the loaded Gumroad docs:\n- Get paid docs: The Help Center index lists money articles under Get paid, including Getting paid by Gumroad, forms 1099-K and 1099-MISC, currency, Gumroad's fees, sales tax, account suspension, fraud, payout methods, the payouts dashboard, PayPal checkout, payout delays, fraudulent purchases, indirect taxes on Discover, Stripe connection, and Singapore GST.\n- Navigating the payouts dashboard: The payouts dashboard shows payout periods with sale date range, total sales, deductions, and net payout amount. The article says paid payout reports can be exported as CSV from the payout row download button, and multiple payout reports can be downloaded from the top-right download button.\n- Understanding payout timing: The payouts dashboard article says each payout covers sales made up to the previous Friday, and net sale amounts sit in balance for at least seven days. If a payday is Friday the 14th, the payout covers sales up to midnight on Friday the 7th, UTC; later sales roll into the following payout.\n\nSources:\nGumroad Help Center section map - Get paid docs: https://gumroad.com/help/article/226-report-a-creator.html\nThe payouts dashboard - Navigating the payouts dashboard: https://gumroad.com/help/article/269-balance-page.html\nThe payouts dashboard - Understanding payout timing: https://gumroad.com/help/article/269-balance-page.html",
+      "citations": [
+        {
+          "type": "help_doc",
+          "id": "help-center-section-map::get-paid-section",
+          "label": "Gumroad Help Center section map - Get paid docs",
+          "excerpt": "https://gumroad.com/help/article/226-report-a-creator.html"
+        },
+        {
+          "type": "help_doc",
+          "id": "payouts-dashboard::payouts-dashboard-navigation",
+          "label": "The payouts dashboard - Navigating the payouts dashboard",
+          "excerpt": "https://gumroad.com/help/article/269-balance-page.html"
+        },
+        {
+          "type": "help_doc",
+          "id": "payouts-dashboard::payout-period",
+          "label": "The payouts dashboard - Understanding payout timing",
+          "excerpt": "https://gumroad.com/help/article/269-balance-page.html"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": true,
+      "error": null
+    },
+    {
+      "turn": 8,
+      "id": "docs_stripe_paypal",
+      "kind": "help_doc",
+      "product_id": "all",
+      "date_range": "30",
+      "sent_at": "2026-04-30T22:10:53.917047+00:00",
+      "user": "Do I need Stripe or PayPal, and where do those processor reviews matter?",
+      "assistant": "From the loaded Gumroad docs:\n- Stripe and PayPal processor approval: The FAQ says entering payout information sets up an account with Stripe and/or PayPal. Those processors also review account risk. If they will not allow the account to be paid, Gumroad says it has no way to send the money through that processor path.\n- Stripe Connect and PayPal Connect disputes: The chargeback article says Stripe Connect and PayPal Connect disputes are the creator's responsibility because the customer paid directly to the connected account. For those purchases, the creator must fight the dispute through the corresponding Stripe or PayPal account.\n- Get paid docs: The Help Center index lists money articles under Get paid, including Getting paid by Gumroad, forms 1099-K and 1099-MISC, currency, Gumroad's fees, sales tax, account suspension, fraud, payout methods, the payouts dashboard, PayPal checkout, payout delays, fraudulent purchases, indirect taxes on Discover, Stripe connection, and Singapore GST.\n\nSources:\nAccount suspension FAQ - Stripe and PayPal processor approval: https://gumroad.com/help/article/160-suspension.html\nChargebacks on Gumroad - Stripe Connect and PayPal Connect disputes: https://gumroad.com/help/article/134-how-does-gumroad-handle-chargebacks.html\nGumroad Help Center section map - Get paid docs: https://gumroad.com/help/article/226-report-a-creator.html",
+      "citations": [
+        {
+          "type": "help_doc",
+          "id": "account-suspension-and-processor-review::stripe-paypal-processor-review",
+          "label": "Account suspension FAQ - Stripe and PayPal processor approval",
+          "excerpt": "https://gumroad.com/help/article/160-suspension.html"
+        },
+        {
+          "type": "help_doc",
+          "id": "chargebacks::stripe-paypal-connect-disputes",
+          "label": "Chargebacks on Gumroad - Stripe Connect and PayPal Connect disputes",
+          "excerpt": "https://gumroad.com/help/article/134-how-does-gumroad-handle-chargebacks.html"
+        },
+        {
+          "type": "help_doc",
+          "id": "help-center-section-map::get-paid-section",
+          "label": "Gumroad Help Center section map - Get paid docs",
+          "excerpt": "https://gumroad.com/help/article/226-report-a-creator.html"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": true,
+      "error": null
+    },
+    {
+      "turn": 9,
+      "id": "docs_chargebacks",
+      "kind": "help_doc",
+      "product_id": "all",
+      "date_range": "30",
+      "sent_at": "2026-04-30T22:10:53.917597+00:00",
+      "user": "What happens with chargebacks, and how can I reduce them?",
+      "assistant": "From the loaded Gumroad docs:\n- How to lower chargeback rate: The article says payouts are automatically paused when chargeback rate exceeds 1%. It recommends clear product descriptions, transparent pricing and billing, reliable delivery, clear refund policies, responsive support, avoiding misleading marketing, and keeping proof of delivery and communications.\n- Dispute timeline and customer export: The article says Gumroad starts the dispute process, submits available evidence, and waits for the card provider's decision. Chargebacks appear like full refunds and show in customer exports under the Disputed column.\n- Stripe Connect and PayPal Connect disputes: The chargeback article says Stripe Connect and PayPal Connect disputes are the creator's responsibility because the customer paid directly to the connected account. For those purchases, the creator must fight the dispute through the corresponding Stripe or PayPal account.\n\nSources:\nChargebacks on Gumroad - How to lower chargeback rate: https://gumroad.com/help/article/134-how-does-gumroad-handle-chargebacks.html\nChargebacks on Gumroad - Dispute timeline and customer export: https://gumroad.com/help/article/134-how-does-gumroad-handle-chargebacks.html\nChargebacks on Gumroad - Stripe Connect and PayPal Connect disputes: https://gumroad.com/help/article/134-how-does-gumroad-handle-chargebacks.html",
+      "citations": [
+        {
+          "type": "help_doc",
+          "id": "chargebacks::lower-chargeback-rate",
+          "label": "Chargebacks on Gumroad - How to lower chargeback rate",
+          "excerpt": "https://gumroad.com/help/article/134-how-does-gumroad-handle-chargebacks.html"
+        },
+        {
+          "type": "help_doc",
+          "id": "chargebacks::chargeback-timeline-and-export",
+          "label": "Chargebacks on Gumroad - Dispute timeline and customer export",
+          "excerpt": "https://gumroad.com/help/article/134-how-does-gumroad-handle-chargebacks.html"
+        },
+        {
+          "type": "help_doc",
+          "id": "chargebacks::stripe-paypal-connect-disputes",
+          "label": "Chargebacks on Gumroad - Stripe Connect and PayPal Connect disputes",
+          "excerpt": "https://gumroad.com/help/article/134-how-does-gumroad-handle-chargebacks.html"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": true,
+      "error": null
+    },
+    {
+      "turn": 10,
+      "id": "docs_where_find",
+      "kind": "help_doc",
+      "product_id": "all",
+      "date_range": "30",
+      "sent_at": "2026-04-30T22:10:53.918205+00:00",
+      "user": "Where do I find payout exports, balance activity, and sales analytics docs?",
+      "assistant": "From the loaded Gumroad docs:\n- Start selling docs: The Help Center index lists creator-selling articles under Start selling, including Issuing a refund, Testing a purchase, The sales analytics dashboard, Gumroad Discover, Chargebacks on Gumroad, The sales dashboard, Purchasing Power Parity, Upsells, related products, custom refund policy, and tipping.\n- Navigating the payouts dashboard: The payouts dashboard shows payout periods with sale date range, total sales, deductions, and net payout amount. The article says paid payout reports can be exported as CSV from the payout row download button, and multiple payout reports can be downloaded from the top-right download button.\n- Credits, refunds, chargebacks, and negative balance: The payouts dashboard article says credits are one-off balance adjustments and can include winning a chargeback, VAT refund compensation for connected Stripe or PayPal sales, or backtax collection. It also says Gumroad's payment processor may debit the creator's bank account if the Gumroad balance goes negative because of refunds or chargebacks.\n\nSources:\nGumroad Help Center section map - Start selling docs: https://gumroad.com/help/article/226-report-a-creator.html\nThe payouts dashboard - Navigating the payouts dashboard: https://gumroad.com/help/article/269-balance-page.html\nThe payouts dashboard - Credits, refunds, chargebacks, and negative balance: https://gumroad.com/help/article/269-balance-page.html",
+      "citations": [
+        {
+          "type": "help_doc",
+          "id": "help-center-section-map::start-selling-section",
+          "label": "Gumroad Help Center section map - Start selling docs",
+          "excerpt": "https://gumroad.com/help/article/226-report-a-creator.html"
+        },
+        {
+          "type": "help_doc",
+          "id": "payouts-dashboard::payouts-dashboard-navigation",
+          "label": "The payouts dashboard - Navigating the payouts dashboard",
+          "excerpt": "https://gumroad.com/help/article/269-balance-page.html"
+        },
+        {
+          "type": "help_doc",
+          "id": "payouts-dashboard::credits-refunds-chargebacks",
+          "label": "The payouts dashboard - Credits, refunds, chargebacks, and negative balance",
+          "excerpt": "https://gumroad.com/help/article/269-balance-page.html"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": true,
+      "error": null
+    }
+  ],
+  "assertion_turns": [
+    {
+      "id": "unknown_policy",
+      "user": "Does Gumroad support crypto payouts or token-gated Bitcoin settlement?",
+      "assistant": "I do not know that from the loaded Gumroad docs. The local corpus only covers official Gumroad money-ops docs for fees, payouts, Stripe/PayPal processor references, chargebacks, refund/payout impact, taxes, Merchant of Record notes, and related Help Center navigation.\n\nClosest loaded sources:\nChargebacks on Gumroad - How to lower chargeback rate: https://gumroad.com/help/article/134-how-does-gumroad-handle-chargebacks.html\nThe payouts dashboard - PayPal payouts: https://gumroad.com/help/article/269-balance-page.html",
+      "citations": [
+        {
+          "type": "help_doc",
+          "id": "chargebacks::lower-chargeback-rate",
+          "label": "Chargebacks on Gumroad - How to lower chargeback rate",
+          "excerpt": "https://gumroad.com/help/article/134-how-does-gumroad-handle-chargebacks.html"
+        },
+        {
+          "type": "help_doc",
+          "id": "payouts-dashboard::paypal-payouts",
+          "label": "The payouts dashboard - PayPal payouts",
+          "excerpt": "https://gumroad.com/help/article/269-balance-page.html"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": true
+    }
+  ],
+  "completed_at": "2026-04-30T22:10:53.919472+00:00"
+}

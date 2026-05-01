@@ -1,0 +1,259 @@
+{
+  "session_id": "sql-continuity-smoke-20260430-clean",
+  "started_at": "2026-04-30T02:43:58.112384+00:00",
+  "api_base": "http://127.0.0.1:8001",
+  "context": {
+    "product_id": "all",
+    "date_range": "30"
+  },
+  "checks": {
+    "health_before": {
+      "ok": true,
+      "products": 4,
+      "openai_key_present": true,
+      "redis": {
+        "enabled": true,
+        "available": true,
+        "error": null
+      },
+      "voice": {
+        "enabled": false,
+        "configured": false,
+        "reason": "XAI_VOICE_ENABLED is false"
+      }
+    },
+    "refresh": {
+      "ok": true,
+      "refreshed": true,
+      "source": "seeded local demo fixtures",
+      "source_hash": "2717b25ebcb4cf47c98919588ab289398c27b9e1dc77665f825858d5a87ac8f6",
+      "product_count": 4,
+      "traffic_source_rows": 30,
+      "customer_sale_rows": 15,
+      "refreshed_at": "2026-04-30T02:43:58.155485+00:00"
+    },
+    "history_message_count": 10,
+    "history_roles": [
+      "user",
+      "assistant",
+      "user",
+      "assistant",
+      "user",
+      "assistant",
+      "user",
+      "assistant",
+      "user",
+      "assistant"
+    ],
+    "all_turns_have_citations": true,
+    "fallback_turns": [],
+    "models": [
+      "gpt-5-nano"
+    ],
+    "contains_expected_source_of_truth_total": true,
+    "contains_bad_cent_format_88200": false
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "sent_at": "2026-04-30T02:43:58.156730+00:00",
+      "user": "Give me a source-of-truth monthly overview for all products. Keep it concise.",
+      "assistant": "Source-of-truth monthly overview (All products, last 30 days):\n\n- Churn and revenue signal: Churn 3.62% (13 canceled; 318 active + 41 new), up from 2.8%. Revenue lost to cancellations: $447.00.\n- Top locations by revenue: California $882.00 (1st), New York $406.00 (2nd), Georgia $361.00 (3rd).\n- Top UTM-driven revenue and performance: Gumroad Discover $939.00 from 1,394 clicks (2.22% conversion); YouTube (launch-review) $735.00 from 320 clicks (4.69%); Newsletter $441.00 from 198 clicks (4.55%).\n- Correlations to watch: Gumroad Discover is a leading revenue source; California carries the largest location-contributed revenue among tracked areas; Direct traffic attribution is noisy (not all “Direct” revenue is truly direct).\n- Caution on data: These customer-export rows are synthetic samples and not source-of-truth revenue totals. Use product metrics for revenue, sales, conversion, refunds, and AOV.\n\nNext review-only actions to consider (not changes to products or pricing):\n- Clean attribution for Direct vs. other channels to sharpen channel ROI.\n- Consider reinforcing high-converting UTMs (e.g., BeatStars/YouTube) with consistent offers and framing.",
+      "citations": [
+        {
+          "type": "product",
+          "id": "all",
+          "label": "All products",
+          "excerpt": "129 sales, $3,881.00, 3.9% conversion."
+        },
+        {
+          "type": "source",
+          "id": "Gumroad Discover",
+          "label": "Gumroad Discover",
+          "excerpt": "31 sales, 2.2% conversion"
+        },
+        {
+          "type": "source",
+          "id": "YouTube",
+          "label": "YouTube",
+          "excerpt": "17 sales, 4.2% conversion"
+        },
+        {
+          "type": "source",
+          "id": "Newsletter",
+          "label": "Newsletter",
+          "excerpt": "12 sales, 3.9% conversion"
+        },
+        {
+          "type": "signal",
+          "id": "tighten-positioning",
+          "label": "Tighten the first-screen positioning",
+          "excerpt": "Conversion - high confidence"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": false
+    },
+    {
+      "turn": 2,
+      "sent_at": "2026-04-30T02:44:28.081594+00:00",
+      "user": "Which traffic source is working best and why? Use the same data window.",
+      "assistant": "Best performing traffic source (last 30 days, all products)\n- YouTube (launch-review): 410 views, 17 sales, $833.00 revenue, 4.15% conversion, about $2.03 revenue per view. This source has the highest conversion rate among the three and the strongest revenue-per-visit, indicating higher intent visitors are converting well.\n- Gumroad Discover: 1,394 views, 31 sales, $939.00 revenue, 2.22% conversion, about $0.67 revenue per view. Highest total revenue, but lower efficiency per view.\n- Newsletter: 308 views, 12 sales, $508.00 revenue, 3.90% conversion, about $1.65 revenue per view.\n\nReview-only actions to consider\n- Replicate YouTube success: review the YouTube creative and CTA that drove 4.15% conversion, and prepare a small, non-edits-based test to confirm the approach with similar content.\n- Attribution clarity: tighten attribution between Direct and other sources to reduce noise and ensure YouTube remains clearly attributed.\n- UTMs and framing: reinforce high-converting UTMs (YouTube, BeatStars/YouTube, etc.) with consistent offers and messaging across future videos.",
+      "citations": [
+        {
+          "type": "product",
+          "id": "all",
+          "label": "All products",
+          "excerpt": "129 sales, $3,881.00, 3.9% conversion."
+        },
+        {
+          "type": "source",
+          "id": "Gumroad Discover",
+          "label": "Gumroad Discover",
+          "excerpt": "31 sales, 2.2% conversion"
+        },
+        {
+          "type": "source",
+          "id": "YouTube",
+          "label": "YouTube",
+          "excerpt": "17 sales, 4.2% conversion"
+        },
+        {
+          "type": "source",
+          "id": "Newsletter",
+          "label": "Newsletter",
+          "excerpt": "12 sales, 3.9% conversion"
+        },
+        {
+          "type": "signal",
+          "id": "tighten-positioning",
+          "label": "Tighten the first-screen positioning",
+          "excerpt": "Conversion - high confidence"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": false
+    },
+    {
+      "turn": 3,
+      "sent_at": "2026-04-30T02:44:51.421778+00:00",
+      "user": "Are refunds or churn a problem? Compare them to the previous period.",
+      "assistant": "Here’s the 30-day view for all products (date range 30 days):\n\n- Churn: 3.62% this window (13 canceled; 318 active + 41 new) vs 2.8% in the previous period (9 canceled; 292 active + 29 new). Revenue lost to cancellations this period: $447.00.\n- Refunds: Current view notes 10 refunds (correlation data shows a refund rate around 7.8% alongside churn). No previous-period refund totals are provided in this view.\n- Context: These are synthetic sample export rows; for totals you should rely on product-metrics totals (revenue, sales, refunds, AOV) in the official dashboards.\n\nReview-only actions to consider (not changes to products or pricing):\n- Deep-dive into churn/refund overlap: investigate onboarding, promises, and post-purchase expectations where churn and refunds spike (churn 3.62% and 13 cancellations; refunds observed as 10 in this window).\n- Attribution clarity: tighten Direct vs. UTMs to reduce misattribution that can mask true churn/refund drivers.\n- Focus on high-intent channels: study why YouTube/launch-review and Gumroad Discover perform better on a per-visit basis and consider consistent, non-edits-based tests to validate approach.\n- Monitor geography signals: California remains a leading revenue region; correlate churn/refund events with location data to spot localized retention risks.",
+      "citations": [
+        {
+          "type": "product",
+          "id": "all",
+          "label": "All products",
+          "excerpt": "129 sales, $3,881.00, 3.9% conversion."
+        },
+        {
+          "type": "source",
+          "id": "Gumroad Discover",
+          "label": "Gumroad Discover",
+          "excerpt": "31 sales, 2.2% conversion"
+        },
+        {
+          "type": "source",
+          "id": "YouTube",
+          "label": "YouTube",
+          "excerpt": "17 sales, 4.2% conversion"
+        },
+        {
+          "type": "source",
+          "id": "Newsletter",
+          "label": "Newsletter",
+          "excerpt": "12 sales, 3.9% conversion"
+        },
+        {
+          "type": "signal",
+          "id": "tighten-positioning",
+          "label": "Tighten the first-screen positioning",
+          "excerpt": "Conversion - high confidence"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": false
+    },
+    {
+      "turn": 4,
+      "sent_at": "2026-04-30T02:45:32.107191+00:00",
+      "user": "Set a realistic three-month sales goal and show the monthly milestones.",
+      "assistant": "Here’s a realistic three-month sales goal anchored to the current run rate for All products and the strategy-plan milestones.\n\nBaseline (latest 30 days)\n- Revenue: $3,881.00\n- Sales: 129\n- Views: 3,354\n- Conversion: 3.85%\n- Average order: $30.09\n\nThree-month milestones (monthly targets)\n- Month 1: Revenue $4,191.48; Sales 139; Views 3,201; Target conversion 4.34%\n- Month 2: Revenue $4,526.80; Sales 150; Views 3,454; Target conversion 4.34%\n- Month 3: Revenue $4,888.94; Sales 162; Views 3,730; Target conversion 4.34%\n\nReview-only actions to consider (from the plan)\n- Conversion and positioning: aim to tighten the first-screen positioning to push toward the 4.34% target (current baseline 3.85%; evidence: baseline conversion and monthly targets in the plan).\n- Channel focus: lean into BeatStars as a high-conversion source (BeatStars delivered 11.1% conversion with 20 sales; review how to reflect that messaging on the product page and promotions).\n- Attribution cleanliness: keep strong UTM discipline to sharpen Direct vs. Discover attribution and prevent misattribution from masking true performance.\n- Retention signals: monitor churn around 3.6% and refunds around 7.8% before considering pricing changes.\n- Packaging/testing: consider a higher-value bundle test (still review-only) to see if it lifts average order and conversion without altering the base offer.\n\nIf you’d like, I can also summarize how these targets shift if you push one lever (e.g., increased BeatStars spend, tighter first-screen copy) or extend the horizon to six months.",
+      "citations": [
+        {
+          "type": "product",
+          "id": "all",
+          "label": "All products",
+          "excerpt": "129 sales, $3,881.00, 3.9% conversion."
+        },
+        {
+          "type": "source",
+          "id": "Gumroad Discover",
+          "label": "Gumroad Discover",
+          "excerpt": "31 sales, 2.2% conversion"
+        },
+        {
+          "type": "source",
+          "id": "YouTube",
+          "label": "YouTube",
+          "excerpt": "17 sales, 4.2% conversion"
+        },
+        {
+          "type": "source",
+          "id": "Newsletter",
+          "label": "Newsletter",
+          "excerpt": "12 sales, 3.9% conversion"
+        },
+        {
+          "type": "signal",
+          "id": "tighten-positioning",
+          "label": "Tighten the first-screen positioning",
+          "excerpt": "Conversion - high confidence"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": false
+    },
+    {
+      "turn": 5,
+      "sent_at": "2026-04-30T02:46:05.563356+00:00",
+      "user": "Continuing from that goal, what should I do first this week? Keep it review-only and cite the data.",
+      "assistant": "Here are review-only actions for this week, anchored to the 30-day seeded data. Note: these export rows are synthetic samples; rely on product-metrics totals for totals.\n\n- Prioritize first-screen positioning using current conversion trends: the current window shows conversion at 3.85% (3,354 views, 129 sales) vs a prior around 4.96%, with YouTube driving strong per-visit value but overall lower-than-peak conversion. Action to review (no edits yet): tighten the buyer-outcome in the first sentence and align the preview copy with the top-converting source (YouTube) messaging. Evidence: detected signal “Tighten the first-screen positioning” and current_conversion 0.0385 vs previous_conversion 0.0496.\n\n- Validate BeatStars messaging and its high conversion: BeatStars shows 11.11% conversion with 20 sales and $380 revenue, higher efficiency than the product average. Action to review: examine BeatStars’ value proposition and see if its framing can appear on the product page or in future promotions (without applying changes). Evidence: detected signal “Lean into BeatStars,” BeatStars conversion 11.1%.\n\n- Clean attribution between Direct and UTMs: Direct accounts for $376.00 revenue on 582 views (conversion 2.41%), while UTMs show stronger performers in other channels. Action to review: audit and document current Direct vs. UTM tagging to reduce misattribution and preserve channel ROI signals. Evidence: Direct vs. UTM gap cited in signals and dashboard correlations.\n\n- Track churn/refund dynamics this week: churn is 3.62% (13 canceled; 318 active + 41 new) versus 2.8% in the prior period; refunds current view show 10 refunds with a refund rate around 7.8%. Action: review onboarding promises and post-purchase expectations to surface churn/refund drivers before any pricing changes. Evidence: churn 3.62% vs 2.8%; revenue lost to cancellations $447.00; refunds rate 7.8%.\n\n- Keep a close eye on geography and top channels this week: California leads revenue at $882.00, with Gumroad Discover ($939) and YouTube ($833) driving notable share; YouTube also shows strong per-view value. Action: observe whether the California signal and top-channel performance hold, and note any shifts in attribution between Direct and UTMs. Evidence: California revenue $882.00; Gumroad Discover $939.00; YouTube $833.00; YouTube has 410 views, 17 sales, 4.15% conversion.\n\nIf you want, I can convert these into a one-page weekly review checklist with data links and a quick notes section for each item.",
+      "citations": [
+        {
+          "type": "product",
+          "id": "all",
+          "label": "All products",
+          "excerpt": "129 sales, $3,881.00, 3.9% conversion."
+        },
+        {
+          "type": "source",
+          "id": "Gumroad Discover",
+          "label": "Gumroad Discover",
+          "excerpt": "31 sales, 2.2% conversion"
+        },
+        {
+          "type": "source",
+          "id": "YouTube",
+          "label": "YouTube",
+          "excerpt": "17 sales, 4.2% conversion"
+        },
+        {
+          "type": "source",
+          "id": "Newsletter",
+          "label": "Newsletter",
+          "excerpt": "12 sales, 3.9% conversion"
+        },
+        {
+          "type": "signal",
+          "id": "tighten-positioning",
+          "label": "Tighten the first-screen positioning",
+          "excerpt": "Conversion - high confidence"
+        }
+      ],
+      "model": "gpt-5-nano",
+      "fallback": false
+    }
+  ],
+  "completed_at": "2026-04-30T02:46:46.942040+00:00"
+}

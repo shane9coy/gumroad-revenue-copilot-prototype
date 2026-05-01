@@ -1,0 +1,20 @@
+{
+  "generated_at": "20260430T213120Z",
+  "api_base": "http://127.0.0.1:8001",
+  "results": [
+    {
+      "label": "10-pass-format",
+      "session_id": "gm-98e120f0acbf47aeb92797b8fc7872e5",
+      "turn_count": 10,
+      "elapsed_seconds": 197.2,
+      "failed_formatting_turns": []
+    },
+    {
+      "label": "20-pass-format",
+      "session_id": "gm-3d6de09b5f314618a4ce7ff9d51c94c0",
+      "turn_count": 20,
+      "elapsed_seconds": 386.55,
+      "failed_formatting_turns": []
+    }
+  ]
+}
