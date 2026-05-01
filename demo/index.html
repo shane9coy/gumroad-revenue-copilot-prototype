@@ -4,75 +4,137 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gumroad Revenue Copilot Demo</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="icon" type="image/png" href="./assets/gumroad-merchant-icon.png" />
+    <link rel="stylesheet" href="./styles.css?v=merchant-subheader-20260501-1" />
   </head>
   <body>
     <div class="app-shell">
-      <aside class="sidebar" aria-label="Demo navigation">
-        <div class="brand-lockup">
-          <div class="brand-mark">g</div>
-          <div>
-            <p class="brand-name">Gumroad</p>
-            <p class="brand-subtitle">creator dashboard</p>
+      <header class="sidebar app-header" aria-label="Demo navigation">
+        <div class="sidebar-header">
+          <div class="sidebar-top-row">
+            <div class="brand-lockup">
+              <div class="brand-mark"><span>g</span></div>
+              <div>
+                <p class="brand-name">Gumroad</p>
+                <p class="brand-subtitle">creator dashboard</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-note">
+            <span class="demo-dot"></span>
+            <span class="demo-note-copy">
+              <strong>Seeded local demo</strong>
+              <span>Built by Shane Coy / Shane's World_</span>
+            </span>
           </div>
         </div>
 
         <nav class="nav-list">
-          <a href="#" class="nav-item active" aria-current="page">Analytics</a>
-          <a href="#" class="nav-item">Products</a>
-          <a href="#" class="nav-item">Customers</a>
-          <a href="#" class="nav-item">Emails</a>
-          <a href="#" class="nav-item">Settings</a>
+          <a href="#dashboard" class="nav-item active" data-dashboard-view="dashboard" aria-current="page">Analytics</a>
+          <a href="#mcp" class="nav-item nav-subitem" data-embedded-page="mcp">MCP Server</a>
+          <a href="#brief" class="nav-item nav-subitem" data-embedded-page="brief">Brief</a>
+          <a href="#architecture" class="nav-item nav-subitem" data-embedded-page="architecture">Architecture</a>
+          <a href="#chatflow" class="nav-item nav-subitem" data-embedded-page="chatflow">Chatflow</a>
         </nav>
 
-        <div class="demo-note">
-          <span class="demo-dot"></span>
-          Seeded local demo data
-        </div>
-      </aside>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+          <span class="theme-toggle-glyph" aria-hidden="true"></span>
+        </button>
+
+      </header>
 
       <main class="workspace">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">Revenue Copilot prototype</p>
-            <h1>Product analytics</h1>
+        <section id="embedded-page-panel" class="embedded-page-panel" aria-label="Dashboard subpage" hidden>
+          <div class="embedded-page-header">
+            <div>
+              <p id="embedded-page-kicker" class="eyebrow">Subpage</p>
+              <h2 id="embedded-page-title">Dashboard page</h2>
+              <p id="embedded-page-description" class="muted-copy compact"></p>
+            </div>
+            <button id="embedded-page-close" class="quiet-button" type="button">
+              Back to analytics
+            </button>
           </div>
-          <div class="topbar-status" aria-label="Demo status">
-            <span>Review-only</span>
-            <strong>6 signals</strong>
-          </div>
-          <div class="topbar-actions">
-            <a class="ghost-link" href="./architecture.html">Architecture</a>
-            <a class="ghost-link" href="./brief.html">Brief</a>
-          </div>
-        </header>
+          <iframe id="embedded-page-frame" class="embedded-page-frame" title="Dashboard subpage"></iframe>
+        </section>
 
-        <section class="control-strip" aria-label="Product controls">
+        <div id="dashboard-view" class="dashboard-view">
+          <header class="topbar">
+            <div>
+              <p class="eyebrow">Gumroad Merchant</p>
+              <h1>Click any signal.</h1>
+              <p class="hero-line">Every metric can become a conversation.</p>
+            </div>
+          </header>
+
+        <section id="analytics-controls" class="control-strip" aria-label="Product controls">
           <label class="field-group" for="product-select">
             <span>Product</span>
             <select id="product-select"></select>
           </label>
 
-          <div class="period-pill" aria-label="Selected period">
-            Last 30 days vs prior period
+          <label class="field-group compact-field date-range-field" for="date-range-select">
+            <span>Date range</span>
+            <select id="date-range-select">
+              <option value="30" selected>Last 30</option>
+              <option value="90">Last 90</option>
+              <option value="180">Last 180</option>
+              <option value="all">All time</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+
+          <div class="field-group custom-date-field" aria-label="Custom date range">
+            <div id="custom-date-range" class="custom-date-range">
+              <label>
+                <span>Start</span>
+                <input id="custom-start-date" type="date" />
+              </label>
+              <label>
+                <span>End</span>
+                <input id="custom-end-date" type="date" />
+              </label>
+            </div>
           </div>
 
-          <button id="generate-button" class="primary-button" type="button">
-            Generate insights
-          </button>
         </section>
 
-        <section class="product-summary" aria-label="Selected product summary">
+        <!--
+        <section id="product-summary-panel" class="product-summary" aria-label="Selected product summary">
           <div>
             <p class="eyebrow">Selected product</p>
             <h2 id="product-name">Loading product</h2>
             <p id="product-description" class="muted-copy"></p>
+            <p id="data-source-note" class="data-source-note">Static seed fallback</p>
           </div>
           <div class="tag-row" id="product-tags"></div>
         </section>
+        -->
 
         <section class="dashboard-grid">
-          <article class="analytics-panel">
+          <section id="revenue-command-group" class="dashboard-group panel-group" data-panel-group="revenue-command" data-panel-default="sales-panel" aria-label="Revenue command center">
+            <div class="dashboard-group-header">
+              <div>
+                <p class="eyebrow">Revenue command</p>
+                <h2>Performance Overview</h2>
+                <p class="group-description">Overview tracks the selected product scope, while Product portfolio compares the individual products in the current date range.</p>
+              </div>
+              <span class="group-status">Core analytics</span>
+            </div>
+            <div class="panel-group-shell">
+              <nav class="panel-tab-list" role="tablist" aria-label="Revenue command views">
+                <button class="panel-tab active" type="button" role="tab" data-panel-target="sales-panel" aria-selected="true">
+                  <span>Overview</span>
+                  <small>Revenue, views, conversion</small>
+                </button>
+                <button class="panel-tab" type="button" role="tab" data-panel-target="product-portfolio-panel" aria-selected="false">
+                  <span>Product portfolio</span>
+                  <small>Monthly product comparison</small>
+                </button>
+              </nav>
+              <div class="panel-stack">
+          <article id="sales-panel" class="analytics-panel performance-panel">
             <div class="panel-header">
               <div>
                 <p class="eyebrow">Performance</p>
@@ -85,33 +147,269 @@
 
             <div class="chart-panel" aria-label="Conversion trend chart">
               <div class="chart-header">
-                <span>Views to sales</span>
-                <span id="chart-caption">Current period</span>
+                <div class="chart-title">
+                  <span>Views to sales</span>
+                  <span id="chart-caption">Current period</span>
+                </div>
+                <div class="chart-actions">
+                  <label class="inline-control" for="chart-range-select">
+                    <span>Date</span>
+                    <select id="chart-range-select">
+                      <option value="30" selected>Last 30 days</option>
+                      <option value="90">Last 90 days</option>
+                      <option value="180">Last 180 days</option>
+                      <option value="all">All time</option>
+                      <option value="custom">Custom range</option>
+                    </select>
+                  </label>
+                  <button
+                    id="chart-expand-button"
+                    class="icon-button"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls="chart-detail-panel"
+                  >
+                    <span class="arrow-icon" aria-hidden="true"></span>
+                    <span>Expand</span>
+                  </button>
+                </div>
               </div>
               <div class="bar-chart" id="bar-chart"></div>
-            </div>
-
-            <div class="source-table-wrap">
-              <div class="table-header">
-                <span>Top sources</span>
-                <span>Conversion</span>
+              <div id="chart-detail-panel" class="chart-detail-panel" hidden>
+                <div class="detail-header">
+                  <div>
+                    <p class="eyebrow">Traffic sources</p>
+                    <h3>Views, sales, and conversion by source</h3>
+                  </div>
+                  <span class="detail-badge">Current range</span>
+                </div>
+                <div id="chart-source-breakdown" class="source-breakdown"></div>
               </div>
-              <div id="source-table" class="source-table"></div>
             </div>
-          </article>
 
-          <aside class="copilot-panel" aria-label="Revenue Copilot suggestions">
+          </article>
+          <section id="product-portfolio-panel" class="product-portfolio-panel" aria-label="Product portfolio comparison" hidden>
+            <div class="portfolio-shell">
+              <div class="portfolio-tabs" id="portfolio-tabs" role="tablist" aria-label="Product portfolio"></div>
+              <div id="portfolio-detail" class="portfolio-detail"></div>
+            </div>
+          </section>
+              </div>
+            </div>
+          </section>
+
+          <section id="merchant-lanes-group" class="dashboard-group panel-group merchant-lanes-group" data-panel-group="merchant-lanes" data-panel-default="merchant-panel" aria-label="Merchant agent lanes">
+            <div class="dashboard-group-header merchant-lanes-header">
+              <div class="merchant-heading">
+                <div class="merchant-avatar" aria-hidden="true">
+                  <img src="./assets/gumroad-merchant-icon.png" alt="" />
+                </div>
+                <div>
+                  <p class="eyebrow">Analytics agent</p>
+                  <h2>Gumroad Merchant</h2>
+                  <p class="merchant-tagline">
+                    Your personal well-traveled merchant of the crossroads. Click any signal and turn it into a conversation. Turn data into actionable guidance and automations.
+                  </p>
+                </div>
+              </div>
+              <div class="merchant-panel-actions">
+                <span id="merchant-status" class="status-badge live">Local</span>
+              </div>
+            </div>
+            <div class="panel-group-shell">
+              <nav class="panel-tab-list" role="tablist" aria-label="Merchant lane views">
+                <button class="panel-tab active" type="button" role="tab" data-panel-target="merchant-panel" aria-selected="true">
+                  <span>Ask Merchant</span>
+                  <small>Prompt and transcript</small>
+                </button>
+                <button class="panel-tab" type="button" role="tab" data-panel-target="suggested-next-moves-panel" aria-selected="false">
+                  <span>Next moves</span>
+                  <small>Reviewable actions</small>
+                </button>
+                <button class="panel-tab" type="button" role="tab" data-panel-target="refund-ops-panel" aria-selected="false">
+                  <span>Refund Ops</span>
+                  <small>Prevent, review, dispute</small>
+                </button>
+                <button class="panel-tab" type="button" role="tab" data-panel-target="content-radar-panel" aria-selected="false">
+                  <span>Content Radar</span>
+                  <small>Trends into campaigns</small>
+                </button>
+                <button class="panel-tab" type="button" role="tab" data-panel-target="retention-saver-panel" aria-selected="false">
+                  <span>Retention</span>
+                  <small>Pause before cancel</small>
+                </button>
+                <button class="panel-tab" type="button" role="tab" data-panel-target="shortest-qa-panel" aria-selected="false">
+                  <span>QA</span>
+                  <small>Natural-language tests</small>
+                </button>
+              </nav>
+              <div class="panel-stack">
+          <section id="refund-ops-panel" class="analytics-panel refund-ops-panel" aria-label="Refund Ops agent">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Refund Ops</p>
+                <h2>Review, prevent, dispute</h2>
+              </div>
+              <span id="refund-ops-status" class="status-badge">Review-only</span>
+            </div>
+
+            <div class="refund-mode-switch" aria-label="Refund Ops mode">
+              <button class="refund-mode-button active" type="button" data-refund-mode="prevent" aria-pressed="true">
+                Prevent
+              </button>
+              <button class="refund-mode-button" type="button" data-refund-mode="review" aria-pressed="false">
+                Review
+              </button>
+              <button class="refund-mode-button" type="button" data-refund-mode="dispute" aria-pressed="false">
+                Dispute
+              </button>
+            </div>
+
+            <div id="refund-ops-metrics" class="refund-ops-metrics"></div>
+
+            <div class="refund-ops-layout">
+              <div>
+                <div class="refund-section-heading">
+                  <p class="eyebrow">Case queue</p>
+                  <h3 id="refund-case-heading">Prevention actions</h3>
+                </div>
+                <div id="refund-case-list" class="refund-case-list"></div>
+              </div>
+
+              <article id="refund-case-detail" class="refund-case-detail" aria-label="Refund case detail"></article>
+            </div>
+
+            <div class="refund-prevention-wrap">
+              <div class="refund-section-heading">
+                <p class="eyebrow">Reduce refunds</p>
+                <h3>Prevention insights</h3>
+              </div>
+              <div id="refund-prevention-list" class="refund-prevention-list"></div>
+            </div>
+          </section>
+
+          <aside id="merchant-panel" class="copilot-panel merchant-panel" aria-label="Gumroad Merchant chat">
+            <p class="muted-copy compact">
+              Click any <span class="term-hint" data-tip="A signal is a metric, case, source, or risk worth talking through.">signal</span>. Gumroad Merchant stages a prompt in the input first, so you can edit before sending. Every response stays <span class="term-hint" data-tip="Review-only means the demo drafts, previews, and explains actions without applying account changes.">review-only</span>.
+            </p>
+
+            <div class="merchant-session-toolbar" aria-label="Conversation controls">
+              <button id="merchant-new-chat" class="quiet-button" type="button">New</button>
+              <button id="merchant-save-chat" class="quiet-button" type="button">Save</button>
+              <button id="merchant-rename-chat" class="quiet-button" type="button">Rename</button>
+              <button id="merchant-delete-chat" class="quiet-button danger" type="button">Delete</button>
+            </div>
+
+            <div class="merchant-chat-shell">
+              <nav class="merchant-session-sidebar" aria-label="Gumroad Merchant conversations">
+                <div class="merchant-session-tabs" role="tablist" aria-label="Conversation history">
+                  <button
+                    class="merchant-session-tab active"
+                    type="button"
+                    data-merchant-session-view="recent"
+                    aria-pressed="true"
+                  >
+                    <span>Recent</span>
+                    <small>10 max</small>
+                  </button>
+                  <button
+                    class="merchant-session-tab"
+                    type="button"
+                    data-merchant-session-view="saved"
+                    aria-pressed="false"
+                  >
+                    <span>Saved</span>
+                    <small>Manual</small>
+                  </button>
+                </div>
+                <div id="merchant-session-list" class="merchant-session-list" data-merchant-session-panel="recent"></div>
+                <div id="merchant-saved-session-list" class="merchant-session-list" data-merchant-session-panel="saved" hidden></div>
+              </nav>
+
+              <div class="merchant-conversation-pane">
+                <div class="merchant-active-session">
+                  <strong id="merchant-active-title">New conversation</strong>
+                  <span id="merchant-active-meta">Local demo</span>
+                </div>
+
+                <div class="merchant-message-frame">
+                  <div id="merchant-messages" class="merchant-messages" aria-live="polite"></div>
+                </div>
+
+                <div id="merchant-samples" class="merchant-samples" aria-label="Sample questions">
+                  <button type="button" class="merchant-sample-button" data-merchant-question="Build my next 30-day revenue plan from the current product signals.">
+                    30-day plan
+                  </button>
+                  <button type="button" class="merchant-sample-button" data-merchant-question="Set a realistic three-month sales goal and show how we get there.">
+                    3-month goal
+                  </button>
+                  <button type="button" class="merchant-sample-button" data-merchant-question="Build a six-month growth plan from the current analytics.">
+                    6-month plan
+                  </button>
+                  <button type="button" class="merchant-sample-button" data-merchant-question="Which traffic source is working best?">
+                    Best source
+                  </button>
+                  <button type="button" class="merchant-sample-button" data-merchant-question="Find trending content angles and build a marketing plan.">
+                    Content plan
+                  </button>
+                  <button type="button" class="merchant-sample-button" data-merchant-question="Create the tracked campaign row and tracking URL for the strongest Content Radar move.">
+                    Create campaign
+                  </button>
+                  <button type="button" class="merchant-sample-button" data-merchant-question="Estimate revenue saved from membership pause offers.">
+                    Retention saver
+                  </button>
+                  <button type="button" class="merchant-sample-button" data-merchant-question="Preview the safest review-only admin action for this refund case.">
+                    Admin preview
+                  </button>
+                  <button type="button" class="merchant-sample-button" data-merchant-question="Generate natural-language QA tests for these agent lanes.">
+                    QA tests
+                  </button>
+                </div>
+
+                <form id="merchant-chat-form" class="merchant-chat-form">
+                  <label class="sr-only" for="merchant-chat-input">Ask Gumroad Merchant</label>
+                  <textarea
+                    id="merchant-chat-input"
+                    rows="3"
+                    autocomplete="off"
+                    placeholder="Ask Gumroad Merchant"
+                  ></textarea>
+                  <button id="merchant-chat-submit" class="secondary-button" type="submit">
+                    Send
+                  </button>
+                </form>
+
+                <div class="merchant-voice-row" id="merchant-voice-row" hidden>
+                  <button id="merchant-voice-button" class="quiet-button" type="button">
+                    Voice
+                  </button>
+                  <span>xAI voice adapter is feature flagged.</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              id="merchant-resize-grip"
+              class="merchant-resize-grip"
+              type="button"
+              aria-label="Resize chat transcript"
+              title="Drag up or down to resize chat"
+            ></button>
+
+          </aside>
+
+          <section
+            id="suggested-next-moves-panel"
+            class="analytics-panel suggested-next-moves-panel"
+            aria-label="Suggested next moves"
+          >
             <div class="panel-header">
               <div>
                 <p class="eyebrow">Next moves</p>
-                <h2>Revenue Copilot</h2>
+                <h2>Suggested next moves</h2>
               </div>
-              <span class="status-badge live">Demo</span>
+              <span class="status-badge">Review-only</span>
             </div>
-
-            <p class="muted-copy compact">
-              Evidence-backed suggestions based on seeded product performance.
-            </p>
 
             <div id="suggestions" class="suggestion-list">
               <div class="empty-state">
@@ -151,11 +449,246 @@
                 <span id="action-review-copy-status" class="copy-status" aria-live="polite"></span>
               </div>
             </section>
-          </aside>
+          </section>
+
+          <section id="content-radar-panel" class="analytics-panel growth-panel" aria-label="Content Radar marketing plan">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Content Radar</p>
+                <h2>Trends into campaigns</h2>
+              </div>
+              <span id="content-radar-status" class="status-badge">Review-only</span>
+            </div>
+
+            <div id="content-radar-metrics" class="ops-metric-grid"></div>
+
+            <div class="ops-two-column">
+              <div>
+                <div class="refund-section-heading">
+                  <p class="eyebrow">Trend angles</p>
+                  <h3>Best-fit content plays</h3>
+                </div>
+                <div id="content-trend-list" class="ops-list"></div>
+              </div>
+              <article id="content-plan-detail" class="ops-detail" aria-label="Content campaign detail"></article>
+            </div>
+          </section>
+
+          <section id="retention-saver-panel" class="analytics-panel growth-panel" aria-label="Retention Saver for memberships">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Retention Saver</p>
+                <h2>Pause before cancel</h2>
+              </div>
+              <span id="retention-saver-status" class="status-badge">Git Issue #4884</span>
+            </div>
+
+            <div id="retention-metrics" class="ops-metric-grid"></div>
+
+            <div class="ops-two-column">
+              <div>
+                <div class="refund-section-heading">
+                  <p class="eyebrow">Pause offers</p>
+                  <h3>Review-only save plan</h3>
+                </div>
+                <div id="pause-offer-list" class="ops-card-grid"></div>
+              </div>
+              <article class="ops-detail">
+                <div class="ops-detail-header">
+                  <div>
+                    <p class="eyebrow">Risk model</p>
+                    <h3>What to check before shipping</h3>
+                  </div>
+                  <span id="retention-risk-badge" class="detail-badge">Calculated save assumption</span>
+                </div>
+                <div id="retention-risk-list" class="ops-risk-list"></div>
+              </article>
+            </div>
+          </section>
+
+          <!--
+          <section id="admin-preview-panel" class="analytics-panel growth-panel" aria-label="Admin action preview">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Admin Preview</p>
+                <h2>Review-only admin actions</h2>
+              </div>
+              <span id="admin-preview-status" class="status-badge">Review-only</span>
+            </div>
+
+            <div id="admin-preview-metrics" class="ops-metric-grid"></div>
+
+            <div class="ops-two-column">
+              <div>
+                <div class="refund-section-heading">
+                  <p class="eyebrow">Action templates</p>
+                  <h3>Command previews</h3>
+                </div>
+                <div id="admin-action-list" class="ops-list"></div>
+              </div>
+              <article id="admin-action-detail" class="ops-detail" aria-label="Admin action preview detail"></article>
+            </div>
+          </section>
+          -->
+
+          <section id="shortest-qa-panel" class="analytics-panel growth-panel" aria-label="Shortest QA generator">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Shortest QA</p>
+                <h2>Natural-language test journeys</h2>
+              </div>
+              <span id="shortest-qa-status" class="status-badge">Local</span>
+            </div>
+
+            <div id="shortest-qa-metrics" class="ops-metric-grid"></div>
+
+            <div class="ops-two-column">
+              <div>
+                <div class="refund-section-heading">
+                  <p class="eyebrow">Suites</p>
+                  <h3>Agent lane coverage</h3>
+                </div>
+                <div id="shortest-qa-list" class="ops-list"></div>
+              </div>
+              <article id="shortest-qa-detail" class="ops-detail" aria-label="Shortest QA detail"></article>
+            </div>
+          </section>
+
+              </div>
+            </div>
+          </section>
+
+          <section id="analytics-detail-group" class="dashboard-group panel-group" data-panel-group="analytics-detail" data-panel-default="traffic-source-panel" aria-label="Analytics detail views">
+            <div class="dashboard-group-header">
+              <div>
+                <p class="eyebrow">Detail views</p>
+                <h2>Supporting evidence</h2>
+                <p class="group-description">Traffic, churn, location, UTM, and export views are related evidence panels, so they share one container.</p>
+              </div>
+              <span class="group-status">Drilldown</span>
+            </div>
+            <div class="panel-group-shell">
+              <nav class="panel-tab-list" role="tablist" aria-label="Analytics detail views">
+                <button class="panel-tab active" type="button" role="tab" data-panel-target="traffic-source-panel" aria-selected="true">
+                  <span>Sources</span>
+                  <small>Revenue by channel</small>
+                </button>
+                <button class="panel-tab" type="button" role="tab" data-panel-target="churn-panel" aria-selected="false">
+                  <span>Churn</span>
+                  <small>Subscription health</small>
+                </button>
+                <button class="panel-tab" type="button" role="tab" data-panel-target="locations-panel" aria-selected="false">
+                  <span>Locations</span>
+                  <small>Buyer geography</small>
+                </button>
+                <button class="panel-tab" type="button" role="tab" data-panel-target="utm-panel" aria-selected="false">
+                  <span>UTM</span>
+                  <small>Tracked campaigns</small>
+                </button>
+                <button class="panel-tab" type="button" role="tab" data-panel-target="export-panel" aria-selected="false">
+                  <span>Export</span>
+                  <small>Customer CSV</small>
+                </button>
+              </nav>
+              <div class="panel-stack">
+          <section id="traffic-source-panel" class="source-table-wrap traffic-source-panel" aria-label="Traffic source performance">
+            <div class="source-title-row">
+              <div>
+                <p class="eyebrow">Traffic sources</p>
+                <h3>Traffic source performance</h3>
+              </div>
+              <label class="inline-control" for="source-sort-select">
+                <span>Sort</span>
+                <select id="source-sort-select">
+                  <option value="revenue" selected>Revenue</option>
+                  <option value="views">Views</option>
+                  <option value="sales">Sales</option>
+                  <option value="conversion">Conversion</option>
+                  <option value="source">Source</option>
+                </select>
+              </label>
+            </div>
+            <div class="table-header">
+              <span>Source</span>
+              <span>Views / sales</span>
+              <span>Conversion</span>
+              <span>Sales</span>
+            </div>
+            <div id="source-table" class="source-table"></div>
+          </section>
+
+          <section class="analytics-feature-grid analytics-detail-grid" aria-label="Sales analytics details">
+              <article id="churn-panel" class="dashboard-detail">
+                <div class="detail-header">
+                  <div>
+                    <p class="eyebrow">Churn</p>
+                    <h3>Subscription health</h3>
+                  </div>
+                  <div class="detail-actions">
+                    <button
+                      id="churn-sort-button"
+                      class="sort-icon-button"
+                      type="button"
+                      aria-label="Sort churn metrics from highest to lowest"
+                      aria-pressed="true"
+                    >
+                      <span class="sort-arrow" aria-hidden="true"></span>
+                    </button>
+                    <span id="churn-range-badge" class="detail-badge">Last 30 days</span>
+                  </div>
+                </div>
+                <div id="churn-metric-grid" class="mini-metric-grid"></div>
+                <p id="churn-formula" class="detail-note"></p>
+              </article>
+
+              <article id="locations-panel" class="dashboard-detail">
+                <div class="detail-header">
+                  <div>
+                    <p class="eyebrow">Locations</p>
+                    <h3>Where buyers are</h3>
+                  </div>
+                  <label class="scope-control" for="location-scope-select">
+                    <span>Scope</span>
+                    <select id="location-scope-select">
+                      <option value="world" selected>World</option>
+                      <option value="us">United States</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="locations-table" class="detail-table"></div>
+              </article>
+
+              <article id="utm-panel" class="dashboard-detail wide">
+                <div class="detail-header">
+                  <div>
+                    <p class="eyebrow">UTM links</p>
+                    <h3>Tracked campaigns</h3>
+                  </div>
+                </div>
+                <div id="utm-table" class="detail-table wide-table"></div>
+              </article>
+
+              <article id="export-panel" class="dashboard-detail wide export-detail-panel">
+                <div class="detail-header">
+                  <div>
+                    <p class="eyebrow">Export</p>
+                    <h3>Customer sales CSV</h3>
+                  </div>
+                </div>
+                <p id="export-summary" class="detail-note"></p>
+                <button id="export-csv-button" class="secondary-button export-csv-button" type="button">
+                  Export CSV
+                </button>
+              </article>
+          </section>
+              </div>
+            </div>
+          </section>
         </section>
+        </div>
       </main>
     </div>
 
-    <script type="module" src="./src/app.js"></script>
+    <script type="module" src="./src/app.js?v=prompt-context-examples-20260501-1"></script>
   </body>
 </html>

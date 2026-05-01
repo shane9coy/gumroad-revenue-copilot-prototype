@@ -4,7 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check demo/src/app.js && node --check demo/src/analytics.js && node --check demo/data/products.js",
-    "demo": "python3 -m http.server 8080 --directory demo"
+    "api": "python3 -m uvicorn backend.api:app --host 127.0.0.1 --port 8001 --reload",
+    "api:test": "GUMROAD_MERCHANT_PROFILE=test GUMROAD_MERCHANT_DB=data/gumroad_merchant_test.sqlite GUMROAD_MERCHANT_CHAT_DB=data/gumroad_merchant_test_chat.sqlite python3 -m uvicorn backend.api:app --host 127.0.0.1 --port 8001 --reload",
+    "check": "node --check demo/src/app.js && node --check demo/src/analytics.js && node --check demo/data/products.js && python3 -m py_compile backend/api.py gumroad_merchant/*.py",
+    "demo": "python3 -m http.server 8080 --directory demo",
+    "smoke:actions": "python3 scripts/run_agent_action_smoke.py",
+    "mcp": "scripts/gumroad-merchant-mcp.sh"
   }
 }

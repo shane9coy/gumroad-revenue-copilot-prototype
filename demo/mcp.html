@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gumroad Merchant MCP Setup</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .brief-page {
+        min-height: 100vh;
+        padding: 32px;
+      }
+
+      .brief-container {
+        width: min(980px, 100%);
+        margin: 0 auto;
+      }
+
+      .mcp-menu {
+        margin-top: 18px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .mcp-menu-button,
+      .copy-icon-button {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        color: var(--ink);
+        cursor: pointer;
+        transition: transform 180ms var(--motion), box-shadow 180ms var(--motion), background 180ms var(--motion);
+      }
+
+      .mcp-menu-button {
+        min-height: 40px;
+        padding: 9px 13px;
+        font-weight: 700;
+      }
+
+      .mcp-menu-button.active,
+      .mcp-menu-button:hover {
+        background: var(--accent);
+        color: var(--line-strong);
+        box-shadow: var(--lift-shadow);
+        transform: translate(-1px, -1px);
+      }
+
+      .brief-card {
+        margin-top: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        padding: 22px;
+      }
+
+      .brief-card[hidden] {
+        display: none;
+      }
+
+      .brief-card h2 {
+        margin-top: 24px;
+      }
+
+      .brief-card h2:first-child {
+        margin-top: 0;
+      }
+
+      .brief-card ul,
+      .brief-card ol {
+        margin: 10px 0 0;
+        padding-left: 22px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .brief-card li + li {
+        margin-top: 6px;
+      }
+
+      .setup-grid,
+      .admin-action-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .command-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .setup-tile,
+      .admin-action-card,
+      .command-item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel-warm);
+        padding: 16px;
+      }
+
+      .setup-tile strong,
+      .admin-action-card strong,
+      .command-item strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .command-item code {
+        display: block;
+        margin-top: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        color: var(--ink);
+        padding: 10px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        font-size: 0.86rem;
+        line-height: 1.45;
+      }
+
+      .code-block,
+      .installer-text {
+        margin: 12px 0 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel-warm);
+        color: var(--ink);
+        overflow: auto;
+        padding: 14px;
+        font-size: 0.86rem;
+        line-height: 1.5;
+        white-space: pre;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      }
+
+      .installer-text {
+        display: block;
+        width: 100%;
+        min-height: 520px;
+        resize: vertical;
+      }
+
+      .path-pill {
+        display: inline-flex;
+        max-width: 100%;
+        margin-top: 8px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 5px 9px;
+        color: var(--ink);
+        background: var(--panel-warm);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        font-size: 0.8rem;
+        overflow-wrap: anywhere;
+      }
+
+      .panel-tools {
+        margin-top: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .prompt-mode-group,
+      .prompt-action-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .prompt-mode-button {
+        min-height: 38px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel-warm);
+        color: var(--ink);
+        cursor: pointer;
+        padding: 8px 12px;
+        font-weight: 800;
+        transition: transform 180ms var(--motion), box-shadow 180ms var(--motion), background 180ms var(--motion);
+      }
+
+      .prompt-mode-button.active,
+      .prompt-mode-button:hover {
+        background: var(--accent);
+        color: var(--line-strong);
+        box-shadow: var(--lift-shadow);
+        transform: translate(-1px, -1px);
+      }
+
+      .copy-icon-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 38px;
+        padding: 8px 12px;
+        font-weight: 800;
+      }
+
+      .copy-icon-button:hover {
+        background: var(--mint);
+        color: var(--line-strong);
+      }
+
+      .copy-icon-button svg {
+        width: 17px;
+        height: 17px;
+      }
+
+      .copy-status {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 760px) {
+        .brief-page {
+          padding: 18px;
+        }
+
+        .setup-grid,
+        .admin-action-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="brief-page">
+      <div class="brief-container">
+        <p class="eyebrow">MCP server</p>
+        <h1>Connect a local agent to Gumroad Merchant</h1>
+        <p class="muted-copy">
+          The dashboard is one interface for the prototype. MCP is the second one:
+          a local agent can call the same Gumroad Merchant tools from Codex,
+          Claude, Cursor, or another MCP-capable workspace.
+        </p>
+
+        <nav class="mcp-menu" aria-label="MCP setup menu">
+          <button class="mcp-menu-button active" type="button" data-mcp-panel="setup" aria-pressed="true">Set up</button>
+          <button class="mcp-menu-button" type="button" data-mcp-panel="installer" aria-pressed="false">Installer Prompt</button>
+          <button class="mcp-menu-button" type="button" data-mcp-panel="admin" aria-pressed="false">MCP Merchant automation</button>
+          <button class="mcp-menu-button" type="button" data-mcp-panel="commands" aria-pressed="false">Command List</button>
+        </nav>
+
+        <section id="mcp-panel-setup" class="brief-card mcp-panel">
+          <h2>Admin API/CLI Context</h2>
+          <p class="muted-copy">
+            I moved the issue-specific admin API/CLI framing here because it is
+            really an agent-surface question, not the main browser dashboard
+            story. Gumroad issue #4677 asks how admin functionality could be
+            exposed through an API and/or CLI, and MCP is the cleanest place to
+            show that direction without turning the browser demo into an admin
+            tool.
+          </p>
+          <p class="muted-copy">
+            MCP makes sense for this prototype because the Gumroad Merchant
+            agent is already built around explicit calls, routing, and safety
+            boundaries inside the web UI. The same workflow layer can move into
+            an MCP server, so a creator or internal operator can talk to
+            Gumroad Merchant through their own local agent setup, their choice
+            of agent provider, their preferred LLM provider, or whatever AI
+            application they already use.
+          </p>
+          <p class="muted-copy">
+            In that setup, the local agent can inspect the tool contract,
+            preview the action shape, choose the right execution mode, and keep
+            sensitive writes gated. The browser dashboard stays focused on
+            creator-facing review workflows; this MCP tab carries the admin
+            API/CLI exploration.
+          </p>
+          <ul>
+            <li>Prioritize exact user and purchase lookup before sensitive writes.</li>
+            <li>Use short-lived scoped admin tokens from existing admin identity.</li>
+            <li>Keep internal admin APIs separate from the public v2 API surface.</li>
+            <li>Expose reviewable commands through an internal CLI shape, not browser cookies or static API keys.</li>
+            <li>Use Gumroad Merchant MCP as the local seeded harness for that contract.</li>
+          </ul>
+
+          <h2>Overview</h2>
+          <p class="muted-copy">
+            The MCP path takes the Gumroad Merchant buildout from the web UI and
+            exposes the same calls through a local stdio server. The agent still
+            uses explicit tool names, bounded inputs, seeded data, and clear
+            execution modes. The important change is that the creator can talk to
+            Gumroad Merchant from the agent environment they already use.
+          </p>
+
+          <div class="setup-grid">
+            <div class="setup-tile">
+              <strong>1. Copy the installer prompt</strong>
+              <p class="muted-copy">
+                Open the Installer Prompt tab and copy the full prompt into the
+                MCP-capable agent you want to configure.
+              </p>
+            </div>
+            <div class="setup-tile">
+              <strong>2. Let the agent inspect its host</strong>
+              <p class="muted-copy">
+                The prompt tells the receiving agent to detect Codex, Claude,
+                Cursor, or another MCP host before editing config.
+              </p>
+            </div>
+            <div class="setup-tile">
+              <strong>3. Add the local server command</strong>
+              <p class="muted-copy">
+                The MCP command is the repo launcher script, not a cloud URL or
+                production Gumroad credential.
+              </p>
+            </div>
+            <div class="setup-tile">
+              <strong>4. Ask for the help menu</strong>
+              <p class="muted-copy">
+                After reload, ask: "Use Gumroad Merchant to show me what I can
+                do." The server returns tools, prompts, parameters, and safety
+                boundaries.
+              </p>
+            </div>
+          </div>
+
+          <h2>Manual Config</h2>
+          <p class="muted-copy">
+            If you want to wire it by hand, point your MCP host at the launcher
+            inside this project checkout. Replace <span class="path-pill">&lt;PROJECT_ROOT&gt;</span>
+            with the absolute path to the repo folder on your machine.
+          </p>
+          <pre class="code-block">&lt;PROJECT_ROOT&gt;/scripts/gumroad-merchant-mcp.sh</pre>
+
+          <p class="muted-copy">
+            The config shape depends on the agent host. In TOML-style hosts, the
+            entry should look like this:
+          </p>
+          <pre class="code-block">[mcp_servers.gumroad_merchant]
+	command = "&lt;PROJECT_ROOT&gt;/scripts/gumroad-merchant-mcp.sh"</pre>
+
+          <h2>Safety Protocol</h2>
+          <ul>
+            <li>The local demo runs in <span class="path-pill">GUMROAD_MERCHANT_MODE=seeded</span>.</li>
+            <li>It uses local seeded demo data and a local Gumroad help-doc corpus.</li>
+            <li>It does not call Gumroad production services or read creator records.</li>
+            <li>Seeded demo actions return <span class="path-pill">review_only: true</span> and <span class="path-pill">will_execute: false</span> when they would affect a real Gumroad account.</li>
+            <li>Local write tools can only write test-profile rows or generated artifacts inside this repo.</li>
+            <li>The production MCP direction is scoped read-write automation, not a permanent read-only wall: low-risk reads can run directly, while sensitive writes need scoped auth, preflight checks, confirmation, and audit logs.</li>
+          </ul>
+        </section>
+
+        <section id="mcp-panel-installer" class="brief-card mcp-panel" hidden>
+          <h2>Installer Prompt</h2>
+          <p class="muted-copy">
+            Copy this installer prompt into your MCP-capable agent. The receiving
+            agent should edit its own MCP config, preserve existing servers,
+            reload, and call the Gumroad Merchant help menu.
+          </p>
+
+          <div class="panel-tools">
+            <div class="prompt-mode-group" role="tablist" aria-label="Installer prompt type">
+              <button class="prompt-mode-button active" type="button" data-installer-prompt="personal" role="tab" aria-selected="true">Personal</button>
+              <button class="prompt-mode-button" type="button" data-installer-prompt="prod" role="tab" aria-selected="false">Prod</button>
+            </div>
+            <div class="prompt-action-group">
+              <span class="copy-status" id="installer-copy-status" aria-live="polite">Personal prompt loaded</span>
+              <button class="copy-icon-button" type="button" id="copy-installer-prompt" aria-label="Copy installer prompt">
+                <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="10" height="10" rx="2"></rect>
+                  <path d="M5 15V5a2 2 0 0 1 2-2h10"></path>
+                </svg>
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <textarea id="installer-prompt-text" class="installer-text" readonly spellcheck="false"># Gumroad Merchant MCP Agent Install
+
+You are helping me connect this local Gumroad Merchant prototype to an MCP-capable agent.
+
+The repo is here:
+
+```text
+/Users/sc/Project Files/gumroad
+```
+
+The MCP launcher is here:
+
+```text
+/Users/sc/Project Files/gumroad/scripts/gumroad-merchant-mcp.sh
+```
+
+Your job is to install or configure the local MCP server for the agent host you are running inside. Do not guess the host config format. Inspect the local environment first, preserve existing MCP servers, and only add a `gumroad_merchant` server entry.
+
+## What This Server Does
+
+Gumroad Merchant MCP exposes the same local demo capabilities as the browser prototype:
+
+- analytics and product metrics
+- Refund Ops and chargeback dispute packets
+- Content Radar and marketing plans
+- Retention Saver
+- Admin Preview
+- Shortest QA
+- Gumroad help-doc search
+- local agent action artifacts
+
+The point is to let a local agent call the same merchant workflow tools instead of trying to infer everything from a prompt. In this seeded prototype, production-impacting actions stay in review mode. In the product direction, the same MCP shape becomes a scoped read-write automation layer for a real Gumroad business.
+
+## Safety Protocol
+
+Before installing or using this seeded server, preserve these boundaries:
+
+- Run the server in seeded mode.
+- Do not add production Gumroad credentials.
+- Do not call Gumroad production services.
+- Do not read real creator records.
+- Treat generated production-impacting actions as review-only unless the tool explicitly says it is a local test write.
+- Admin Preview may return command text, preflight checks, blocked reasons, and audit-note copy, but this seeded server must not execute real admin commands.
+- Seeded MCP responses that would affect a real Gumroad account should return `review_only: true` and `will_execute: false`.
+- Local write tools may only write test-profile rows or generated artifacts inside this repo.
+
+Product direction:
+
+- Add scoped read-write tools for refunds, disputes, emails, posts, product edits, pricing changes, subscription changes, payout operations, product catalog updates, and monthly sales workflows.
+- Split write tools into `dry_run`, `confirm`, and `apply` modes so the agent can summarize the action before it executes.
+- Require scoped merchant/admin tokens, role checks, idempotency keys, preflight validation, and audit notes for real writes.
+- Let safe reads run directly; require explicit confirmation for refunds, payout changes, subscription edits, pricing changes, and other account-impacting actions.
+- Return the intended action, affected object, risk level, confirmation state, audit trail, and next safe action in every write response.
+
+## Install Steps
+
+1. Verify the repo and launcher exist:
+
+```bash
+cd "/Users/sc/Project Files/gumroad"
+test -x scripts/gumroad-merchant-mcp.sh
+```
+
+2. Install Python dependencies if needed:
+
+```bash
+cd "/Users/sc/Project Files/gumroad"
+python3 -m pip install -r requirements.txt
+```
+
+If this machine has the bundled Codex runtime, this is also valid:
+
+```bash
+cd "/Users/sc/Project Files/gumroad"
+/Users/sc/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 -m pip install -r requirements.txt
+```
+
+3. Configure the current MCP host to run this command:
+
+```text
+/Users/sc/Project Files/gumroad/scripts/gumroad-merchant-mcp.sh
+```
+
+For Codex, add this to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.gumroad_merchant]
+command = "/Users/sc/Project Files/gumroad/scripts/gumroad-merchant-mcp.sh"
+```
+
+For other MCP hosts, add a server named `gumroad_merchant` with the same command. If the host uses JSON, YAML, or TOML, preserve its existing config and add only this server entry.
+
+4. Restart or reload the MCP host.
+
+5. Confirm the server is available by asking:
+
+```text
+Use Gumroad Merchant to show me what I can do.
+```
+
+The first tool to call is:
+
+```text
+get_gumroad_merchant_help_menu
+```
+
+## Smoke Test
+
+From the repo, run:
+
+```bash
+python3 scripts/run_mcp_smoke.py
+```
+
+	The smoke test starts the MCP server over stdio, lists tools, and checks representative workflows for Refund Ops, dispute evidence, Content Radar, Retention Saver, Admin Preview, issue #4677 guidance, Shortest QA, and the MCP help menu.</textarea>
+          <script type="text/plain" id="prod-installer-prompt-template"># Gumroad Merchant MCP Production Install
+
+You are helping me connect my agent to Gumroad Merchant MCP.
+
+This is the production-style install path. Do not look for Shane's local repo and do not use `/Users/sc/Project Files/gumroad`. Configure the MCP host to point at the hosted Gumroad Merchant MCP server.
+
+## Server
+
+Use this server name:
+
+```text
+gumroad_merchant
+```
+
+Use the Gumroad Merchant MCP URL I provide:
+
+```text
+<GUMROAD_MERCHANT_MCP_URL>
+```
+
+If I have not provided the URL yet, ask me for the official Gumroad Merchant MCP URL. Do not invent credentials, package names, or private endpoints.
+
+## Your Job
+
+1. Detect the MCP-capable host you are running inside: Codex, Claude, Cursor, or another local agent app.
+2. Inspect the host's MCP config format before editing anything.
+3. Preserve existing MCP servers.
+4. Add a `gumroad_merchant` server entry that points to the hosted MCP server URL.
+5. Reload or restart the MCP host if required.
+6. Confirm the server is available by asking Gumroad Merchant for its help menu.
+
+## Future Auth Flow
+
+When the production auth layer is available, use browser-based login instead of static API keys:
+
+- Start a Gumroad MCP login flow from the CLI or agent host.
+- Open the Gumroad login and consent link in the user's web browser.
+- Let the user choose the Gumroad account and the MCP permission profile.
+- Store only short-lived scoped tokens through the host's secure credential store.
+- Never paste Gumroad passwords, browser cookies, or long-lived admin keys into MCP config.
+
+## Permission Model
+
+The production UI should let the Gumroad user control access by activity:
+
+- monthly sales: read
+- customer and purchase lookup: read
+- product catalog: read or write
+- refunds: read, draft, or execute after confirmation
+- disputes: read, draft, or submit after confirmation
+- emails and receipts: draft or send after confirmation
+- posts and announcements: draft or publish after confirmation
+- product edits and pricing: draft or apply after confirmation
+- subscriptions and payouts: read, draft, or execute with higher-risk confirmation
+
+## Config Shape
+
+If the host supports remote MCP servers, use the hosted URL directly:
+
+```json
+{
+  "mcpServers": {
+    "gumroad_merchant": {
+      "url": "<GUMROAD_MERCHANT_MCP_URL>"
+    }
+  }
+}
+```
+
+If the host only supports local stdio servers, ask for the official Gumroad CLI bridge command once it exists. Do not make up a package name.
+
+## First Prompt After Install
+
+After reload, ask:
+
+```text
+Use Gumroad Merchant to show me what I can do.
+```
+
+The server should return available tools, permission scopes, auth state, safe next actions, and any missing setup steps.</script>
+        </section>
+
+        <section id="mcp-panel-admin" class="brief-card mcp-panel" hidden>
+          <h2>MCP Merchant automation</h2>
+          <p class="muted-copy">
+            Review-only is the boundary for this seeded demo, not the ceiling
+            for the MCP server. MCP is where Gumroad Merchant should become a
+            real automation surface: the same calls and routing from the web UI,
+            exposed to Codex, Claude, Cursor, or another agent a creator already
+            uses.
+          </p>
+          <h2>User UI Permission Controls</h2>
+          <p class="muted-copy">
+            I would add an MCP section inside the Gumroad user settings where a
+            creator controls what their local agent can read, draft, and
+            execute. Monthly sales, customer lookup, product catalog, refunds,
+            disputes, emails, posts, pricing, subscriptions, and payouts should
+            each have their own access level. That gives the agent enough
+            permission to run the business, while the creator still decides
+            which activities are read-only, which can stage a draft, and which
+            are allowed to execute after confirmation.
+          </p>
+
+          <div class="admin-action-grid">
+            <div class="admin-action-card">
+              <strong>Read the business</strong>
+              <p class="muted-copy">Monthly sales, product catalog, refunds, disputes, subscriptions, payout state, and customer history as exact tool calls instead of dashboard hunting.</p>
+            </div>
+            <div class="admin-action-card">
+              <strong>Run merchant workflows</strong>
+              <p class="muted-copy">Draft and eventually execute refunds, dispute packets, buyer emails, posts, product edits, pricing updates, and subscription changes with the agent carrying context forward.</p>
+            </div>
+            <div class="admin-action-card">
+              <strong>Gate real writes</strong>
+              <p class="muted-copy">Use dry-run, confirm, and apply modes so the agent can explain the action before it touches money, access, pricing, payouts, or customer communication.</p>
+            </div>
+            <div class="admin-action-card">
+              <strong>Keep an audit trail</strong>
+              <p class="muted-copy">Every write should return the affected object, requested change, risk level, confirmation state, idempotency key, and audit note.</p>
+            </div>
+          </div>
+
+          <h2>Planned Read-write Surface</h2>
+          <ul>
+            <li>Monthly sales, product catalog, customer lookup, purchase lookup, refund history, dispute status, payout state, and subscription health.</li>
+            <li>Refund drafts and refund execution with eligibility checks, amount validation, reason capture, and merchant confirmation.</li>
+            <li>Dispute workflows that gather evidence, summarize the response, stage attachments, and submit only after confirmation.</li>
+            <li>Emails, receipts, posts, and product announcements with preview, recipient checks, and send confirmation.</li>
+            <li>Product listing edits, pricing changes, file or content updates, subscription changes, and payout holds/resumes behind role checks and audit logging.</li>
+          </ul>
+
+          <h2>Execution Model</h2>
+          <ul>
+            <li>Default reads are direct and high-signal, so the agent can summarize the business without asking the creator to navigate a dashboard.</li>
+            <li>Write tools expose `dry_run`, `confirm`, and `apply` modes instead of a single dangerous button.</li>
+            <li>Production writes require scoped tokens, role checks, preflight validation, idempotency keys, and durable audit notes.</li>
+            <li>High-risk writes, like payouts, pricing, mass email, subscription access, and refunds, require explicit confirmation with the exact object and effect shown first.</li>
+            <li>The current seeded MCP harness proves the contract locally; the production path connects the same contract to real Gumroad merchant APIs.</li>
+          </ul>
+        </section>
+
+        <section id="mcp-panel-commands" class="brief-card mcp-panel" hidden>
+          <h2>Command List</h2>
+          <p class="muted-copy">
+            After the MCP server is connected, these are the kinds of plain
+            language commands a creator could ask their agent to run. The agent
+            handles the tool calls and brings back the answer, draft, or next
+            safe action.
+          </p>
+
+          <div class="command-list">
+            <article class="command-item">
+              <strong>Open the help menu</strong>
+              <p class="muted-copy">Start here when you want the agent to show the available Gumroad Merchant tools and permission state.</p>
+              <code>Use Gumroad Merchant to show me what I can do.</code>
+            </article>
+            <article class="command-item">
+              <strong>Summarize the business</strong>
+              <p class="muted-copy">Pull the important revenue, conversion, refund, traffic, and churn context into one short readout.</p>
+              <code>Use Gumroad Merchant to summarize monthly sales and tell me what changed.</code>
+            </article>
+            <article class="command-item">
+              <strong>Check product listings</strong>
+              <p class="muted-copy">Ask for product-page status, files, pricing, and metadata without clicking through every listing.</p>
+              <code>Use Gumroad Merchant to review my product catalog and flag any listing that needs an update.</code>
+            </article>
+            <article class="command-item">
+              <strong>Review refunds</strong>
+              <p class="muted-copy">Have the agent find the highest-risk refund case and explain the safest next step.</p>
+              <code>Use Gumroad Merchant to review refund risk and draft the next action.</code>
+            </article>
+            <article class="command-item">
+              <strong>Build a dispute packet</strong>
+              <p class="muted-copy">Collect the evidence, timeline, buyer context, and response draft for a chargeback workflow.</p>
+              <code>Use Gumroad Merchant to build a dispute packet for the highest-risk case.</code>
+            </article>
+            <article class="command-item">
+              <strong>Draft customer communication</strong>
+              <p class="muted-copy">Create a buyer email or receipt resend draft while keeping send permission separate.</p>
+              <code>Use Gumroad Merchant to draft a buyer reply for the refund case that needs attention.</code>
+            </article>
+            <article class="command-item">
+              <strong>Plan growth work</strong>
+              <p class="muted-copy">Turn current product and traffic signals into a campaign, post, or launch plan.</p>
+              <code>Use Gumroad Merchant to build a marketing plan for the product with the biggest opportunity.</code>
+            </article>
+            <article class="command-item">
+              <strong>Preview a write action</strong>
+              <p class="muted-copy">Show the exact object, risk, confirmation state, and audit note before any write is allowed.</p>
+              <code>Use Gumroad Merchant to dry-run a pricing update and show me what would change.</code>
+            </article>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const menuButtons = document.querySelectorAll("[data-mcp-panel]");
+      const panels = document.querySelectorAll(".mcp-panel");
+      const copyButton = document.querySelector("#copy-installer-prompt");
+      const installerPrompt = document.querySelector("#installer-prompt-text");
+      const prodInstallerPrompt = document.querySelector("#prod-installer-prompt-template");
+      const promptModeButtons = document.querySelectorAll("[data-installer-prompt]");
+      const copyStatus = document.querySelector("#installer-copy-status");
+      const installerPrompts = {
+        personal: installerPrompt.value,
+        prod: (prodInstallerPrompt?.textContent || "").trim(),
+      };
+      let activeInstallerPrompt = "personal";
+
+      function installerPromptLabel(promptType) {
+        return promptType === "prod" ? "Prod" : "Personal";
+      }
+
+      function showInstallerPrompt(promptType) {
+        const nextPromptType = installerPrompts[promptType] ? promptType : "personal";
+        activeInstallerPrompt = nextPromptType;
+        installerPrompt.value = installerPrompts[nextPromptType];
+
+        promptModeButtons.forEach((button) => {
+          const active = button.dataset.installerPrompt === nextPromptType;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-selected", String(active));
+        });
+
+        copyStatus.textContent = `${installerPromptLabel(nextPromptType)} prompt loaded`;
+      }
+
+      function showPanel(panelName) {
+        menuButtons.forEach((button) => {
+          const active = button.dataset.mcpPanel === panelName;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", String(active));
+        });
+
+        panels.forEach((panel) => {
+          panel.hidden = panel.id !== `mcp-panel-${panelName}`;
+        });
+      }
+
+      menuButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          showPanel(button.dataset.mcpPanel || "setup");
+        });
+      });
+
+      promptModeButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          showInstallerPrompt(button.dataset.installerPrompt || "personal");
+        });
+      });
+
+      copyButton.addEventListener("click", async () => {
+        const text = installerPrompt.value;
+
+        try {
+          if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            installerPrompt.select();
+            document.execCommand("copy");
+          }
+          copyStatus.textContent = `Copied ${installerPromptLabel(activeInstallerPrompt)} prompt`;
+        } catch {
+          installerPrompt.select();
+          document.execCommand("copy");
+          copyStatus.textContent = `Copied ${installerPromptLabel(activeInstallerPrompt)} prompt`;
+        }
+      });
+    </script>
+  </body>
+</html>

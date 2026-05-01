@@ -14,10 +14,10 @@
       --muted: #94a3b8;
       --line: #334155;
       --cyan: #22d3ee;
-      --emerald: #34d399;
+      --emerald: #23A093;
       --violet: #a78bfa;
       --amber: #fbbf24;
-      --pink: #FF90E8;
+      --accent: #FF90E8;
       --rose: #fb7185;
     }
 
@@ -170,7 +170,7 @@
           <span class="status-dot" aria-hidden="true"></span>
           <h1>Gumroad Revenue Copilot</h1>
         </div>
-        <p class="subtitle">Standalone demo architecture: seeded local data proves the metrics, signal, and suggestion flow while the future Rails path stays explicit and separate.</p>
+        <p class="subtitle">Gumroad Merchant architecture overview: seeded analytics flow into deterministic signals, agent lanes, review-only actions, and a future Rails integration path with permissions and audit trails called out.</p>
       </div>
       <div class="badge">seeded local demo data only</div>
     </header>
@@ -193,7 +193,7 @@
             <polygon points="0 0, 11 4, 0 8" fill="#fbbf24"/>
           </marker>
 
-          <marker id="arrow-pink" markerWidth="11" markerHeight="8" refX="10" refY="4" orient="auto">
+          <marker id="arrow-accent" markerWidth="11" markerHeight="8" refX="10" refY="4" orient="auto">
             <polygon points="0 0, 11 4, 0 8" fill="#FF90E8"/>
           </marker>
 
@@ -217,7 +217,7 @@
 
         <path d="M 245 528 C 330 528, 308 370, 392 328" fill="none" stroke="#fbbf24" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow-amber)"/>
         <path d="M 392 552 C 494 548, 486 372, 652 328" fill="none" stroke="#fbbf24" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow-amber)"/>
-        <path d="M 772 405 C 820 454, 880 454, 928 405" fill="none" stroke="#FF90E8" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#arrow-pink)"/>
+        <path d="M 772 405 C 820 454, 880 454, 928 405" fill="none" stroke="#FF90E8" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#arrow-accent)"/>
 
         <!-- Boundaries -->
         <rect x="48" y="98" width="1104" height="306" rx="14" fill="none" stroke="#22d3ee" stroke-width="1.4" stroke-dasharray="9 5" opacity="0.65"/>
@@ -236,13 +236,13 @@
           <text x="167" y="233" fill="#ffffff" font-size="13" font-weight="700" text-anchor="middle">Demo Data</text>
           <text x="167" y="258" fill="#cbd5e1" font-size="9" text-anchor="middle">synthetic products</text>
           <text x="167" y="274" fill="#cbd5e1" font-size="9" text-anchor="middle">views, sales, refunds</text>
-          <text x="167" y="290" fill="#cbd5e1" font-size="9" text-anchor="middle">referrers, tags, ratings</text>
+          <text x="167" y="290" fill="#cbd5e1" font-size="9" text-anchor="middle">trends, CLI, QA fixtures</text>
           <text x="167" y="311" fill="#fbbf24" font-size="8" text-anchor="middle">not production data</text>
         </g>
 
         <g>
           <rect x="342" y="191" width="170" height="132" rx="8" fill="#0f172a"/>
-          <rect x="342" y="191" width="170" height="132" rx="8" fill="rgba(6, 78, 59, 0.42)" stroke="#34d399" stroke-width="1.6"/>
+          <rect x="342" y="191" width="170" height="132" rx="8" fill="rgba(35, 160, 147, 0.32)" stroke="#23A093" stroke-width="1.6"/>
           <text x="427" y="222" fill="#ffffff" font-size="13" font-weight="700" text-anchor="middle">Metrics Builder</text>
           <text x="427" y="249" fill="#cbd5e1" font-size="9" text-anchor="middle">conversion rate</text>
           <text x="427" y="265" fill="#cbd5e1" font-size="9" text-anchor="middle">period deltas</text>
@@ -252,37 +252,37 @@
 
         <g>
           <rect x="602" y="191" width="170" height="132" rx="8" fill="#0f172a"/>
-          <rect x="602" y="191" width="170" height="132" rx="8" fill="rgba(6, 78, 59, 0.42)" stroke="#34d399" stroke-width="1.6"/>
+          <rect x="602" y="191" width="170" height="132" rx="8" fill="rgba(35, 160, 147, 0.32)" stroke="#23A093" stroke-width="1.6"/>
           <text x="687" y="222" fill="#ffffff" font-size="13" font-weight="700" text-anchor="middle">Signal Detector</text>
           <text x="687" y="249" fill="#cbd5e1" font-size="9" text-anchor="middle">low conversion</text>
           <text x="687" y="265" fill="#cbd5e1" font-size="9" text-anchor="middle">source outperformance</text>
-          <text x="687" y="281" fill="#cbd5e1" font-size="9" text-anchor="middle">refund/review warnings</text>
+          <text x="687" y="281" fill="#cbd5e1" font-size="9" text-anchor="middle">refund, trend, churn risks</text>
           <text x="687" y="303" fill="#86efac" font-size="8" text-anchor="middle">conservative thresholds</text>
         </g>
 
         <g>
           <rect x="862" y="191" width="170" height="132" rx="8" fill="#0f172a"/>
-          <rect x="862" y="191" width="170" height="132" rx="8" fill="rgba(255, 144, 232, 0.28)" stroke="#FF90E8" stroke-width="1.6"/>
+          <rect x="862" y="191" width="170" height="132" rx="8" fill="rgba(36, 19, 31, 0.78)" stroke="#FF90E8" stroke-width="1.6"/>
           <text x="947" y="216" fill="#ffffff" font-size="13" font-weight="700" text-anchor="middle">Suggestion</text>
           <text x="947" y="234" fill="#ffffff" font-size="13" font-weight="700" text-anchor="middle">Packager</text>
-          <text x="947" y="260" fill="#cbd5e1" font-size="9" text-anchor="middle">creator-facing copy</text>
-          <text x="947" y="276" fill="#cbd5e1" font-size="9" text-anchor="middle">cited evidence</text>
-          <text x="947" y="292" fill="#cbd5e1" font-size="9" text-anchor="middle">safe next actions</text>
+          <text x="947" y="260" fill="#cbd5e1" font-size="9" text-anchor="middle">campaigns, retention</text>
+          <text x="947" y="276" fill="#cbd5e1" font-size="9" text-anchor="middle">admin previews, QA</text>
+          <text x="947" y="292" fill="#cbd5e1" font-size="9" text-anchor="middle">cited safe next actions</text>
           <text x="947" y="309" fill="#fed7aa" font-size="8" text-anchor="middle">AI layer in real product</text>
         </g>
 
         <g>
           <rect x="1014" y="364" width="110" height="72" rx="8" fill="#0f172a"/>
           <rect x="1014" y="364" width="110" height="72" rx="8" fill="rgba(8, 51, 68, 0.45)" stroke="#22d3ee" stroke-width="1.6"/>
-          <text x="1069" y="392" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">Static UI</text>
-          <text x="1069" y="414" fill="#cbd5e1" font-size="8.5" text-anchor="middle">reviewable cards</text>
+          <text x="1069" y="392" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">Web UI</text>
+          <text x="1069" y="414" fill="#cbd5e1" font-size="8.5" text-anchor="middle">&amp; MCP access</text>
         </g>
 
         <g>
           <rect x="512" y="352" width="260" height="54" rx="8" fill="#0f172a"/>
           <rect x="512" y="352" width="260" height="54" rx="8" fill="rgba(30, 41, 59, 0.66)" stroke="#94a3b8" stroke-width="1.2"/>
           <text x="642" y="375" fill="#e5e7eb" font-size="11" font-weight="700" text-anchor="middle">Evidence Contract</text>
-          <text x="642" y="393" fill="#94a3b8" font-size="8.5" text-anchor="middle">every suggestion cites precomputed metrics</text>
+          <text x="642" y="393" fill="#94a3b8" font-size="8.5" text-anchor="middle">every lane cites precomputed seeded facts</text>
         </g>
 
         <!-- Future lane components -->
@@ -302,16 +302,16 @@
 
         <g>
           <rect x="520" y="522" width="158" height="58" rx="7" fill="#0f172a"/>
-          <rect x="520" y="522" width="158" height="58" rx="7" fill="rgba(6, 78, 59, 0.36)" stroke="#34d399" stroke-width="1.4"/>
+          <rect x="520" y="522" width="158" height="58" rx="7" fill="rgba(35, 160, 147, 0.28)" stroke="#23A093" stroke-width="1.4"/>
           <text x="599" y="545" fill="#ffffff" font-size="11" font-weight="700" text-anchor="middle">Metrics Job</text>
           <text x="599" y="563" fill="#bbf7d0" font-size="8.5" text-anchor="middle">Rails service object</text>
         </g>
 
         <g>
           <rect x="736" y="522" width="158" height="58" rx="7" fill="#0f172a"/>
-          <rect x="736" y="522" width="158" height="58" rx="7" fill="rgba(255, 144, 232, 0.25)" stroke="#FF90E8" stroke-width="1.4"/>
+          <rect x="736" y="522" width="158" height="58" rx="7" fill="rgba(36, 19, 31, 0.72)" stroke="#FF90E8" stroke-width="1.4"/>
           <text x="815" y="545" fill="#ffffff" font-size="11" font-weight="700" text-anchor="middle">AI Suggestion</text>
-          <text x="815" y="563" fill="#fed7aa" font-size="8.5" text-anchor="middle">strict JSON package</text>
+          <text x="815" y="563" fill="#fed7aa" font-size="8.5" text-anchor="middle">review-only JSON package</text>
         </g>
 
         <g>
@@ -331,9 +331,9 @@
           <text x="68" y="666" fill="#cbd5e1" font-size="10" font-weight="700">Legend</text>
           <rect x="130" y="655" width="16" height="10" rx="2" fill="rgba(76, 29, 149, 0.38)" stroke="#a78bfa"/>
           <text x="154" y="664" fill="#94a3b8" font-size="8.5">data</text>
-          <rect x="204" y="655" width="16" height="10" rx="2" fill="rgba(6, 78, 59, 0.42)" stroke="#34d399"/>
+          <rect x="204" y="655" width="16" height="10" rx="2" fill="rgba(35, 160, 147, 0.32)" stroke="#23A093"/>
           <text x="228" y="664" fill="#94a3b8" font-size="8.5">deterministic service</text>
-          <rect x="360" y="655" width="16" height="10" rx="2" fill="rgba(255, 144, 232, 0.28)" stroke="#FF90E8"/>
+          <rect x="360" y="655" width="16" height="10" rx="2" fill="rgba(36, 19, 31, 0.72)" stroke="#FF90E8"/>
           <text x="384" y="664" fill="#94a3b8" font-size="8.5">suggestion packaging</text>
           <rect x="544" y="655" width="16" height="10" rx="2" fill="rgba(8, 51, 68, 0.45)" stroke="#22d3ee"/>
           <text x="568" y="664" fill="#94a3b8" font-size="8.5">UI</text>
@@ -346,7 +346,7 @@
     <section class="cards" aria-label="Architecture notes">
       <article class="card">
         <h2>Demo Boundary</h2>
-        <p>The browser demo reads seeded local fixtures. It proves the user experience and evidence contract without scraping Gumroad or touching production creator data.</p>
+        <p>The browser demo reads seeded local fixtures. It proves analytics, Refund Ops, Content Radar, Retention Saver, Admin Preview, and Shortest QA without scraping Gumroad or touching production creator data.</p>
       </article>
       <article class="card">
         <h2>Deterministic Core</h2>
@@ -354,7 +354,7 @@
       </article>
       <article class="card">
         <h2>Product Path</h2>
-        <p>The real implementation connects Gumroad Rails models and database facts to a metrics builder, signal detector, AI suggestion service, and product UI.</p>
+        <p>The real implementation connects Gumroad Rails models and database facts to metrics builders, lane-specific detectors, AI suggestion services, audit trails, and product UI.</p>
       </article>
     </section>
 
