@@ -1212,6 +1212,10 @@ html[data-theme="dark"] .dashboard-group {
   border-bottom: 1px solid var(--line);
 }
 
+.dashboard-group-header.is-toggleable {
+  cursor: pointer;
+}
+
 html[data-theme="dark"] .dashboard-group-header {
   border-bottom-color: var(--glass-edge);
 }
@@ -2889,8 +2893,8 @@ html[data-theme="dark"] .merchant-session-controls {
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 8px;
   min-width: 0;
-  height: var(--merchant-chat-height, 420px);
-  min-height: 260px;
+  height: var(--merchant-chat-height, 620px);
+  min-height: 620px;
   max-height: 760px;
   overflow: hidden;
   padding: 8px;
@@ -2966,7 +2970,7 @@ html[data-theme="dark"] .merchant-session-controls {
 
 .merchant-session-list {
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 
 .merchant-session-list[hidden] {
@@ -2976,9 +2980,9 @@ html[data-theme="dark"] .merchant-session-controls {
 .merchant-session-item {
   display: grid;
   width: 100%;
-  min-height: 54px;
-  gap: 4px;
-  padding: 8px;
+  min-height: 42px;
+  gap: 2px;
+  padding: 6px;
   border: 1px solid rgba(49, 91, 179, 0.42);
   border-radius: var(--radius);
   background: rgba(255, 253, 248, 0.14);
@@ -3006,7 +3010,7 @@ html[data-theme="dark"] .merchant-session-controls {
   display: grid;
   width: 100%;
   min-width: 0;
-  gap: 4px;
+  gap: 2px;
   border: 0;
   padding: 0;
   background: transparent;
@@ -3030,13 +3034,13 @@ html[data-theme="dark"] .merchant-session-controls {
 
 .merchant-session-title {
   color: inherit;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 950;
 }
 
 .merchant-session-meta {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 850;
 }
 
@@ -3064,8 +3068,8 @@ html[data-theme="dark"] .merchant-session-controls {
 .merchant-messages {
   display: grid;
   gap: 9px;
-  height: var(--merchant-chat-height, 420px);
-  min-height: 260px;
+  height: var(--merchant-chat-height, 620px);
+  min-height: 620px;
   max-height: 760px;
   overflow: auto;
   padding: 12px;

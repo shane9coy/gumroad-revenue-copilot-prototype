@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gumroad Revenue Copilot Demo</title>
     <link rel="icon" type="image/png" href="./assets/gumroad-merchant-icon.png" />
-    <link rel="stylesheet" href="./styles.css?v=merchant-rail-history-scroll-20260502" />
+    <link rel="stylesheet" href="./styles.css?v=merchant-session-saved-count-20260502" />
   </head>
   <body>
     <div class="app-shell">
@@ -303,8 +303,8 @@
             <div class="merchant-chat-shell">
               <nav class="merchant-session-sidebar" aria-label="Gumroad Merchant conversations">
                 <div class="merchant-session-history" aria-label="Conversation history cards">
-                  <div id="merchant-session-list" class="merchant-session-list" data-merchant-session-panel="recent"></div>
-                  <div id="merchant-saved-session-list" class="merchant-session-list" data-merchant-session-panel="saved" hidden></div>
+                  <div id="merchant-session-list" class="merchant-session-list" data-merchant-session-panel="recent" hidden></div>
+                  <div id="merchant-saved-session-list" class="merchant-session-list" data-merchant-session-panel="saved"></div>
                 </div>
                 <div class="merchant-session-controls">
                   <div class="merchant-session-toolbar" aria-label="Conversation controls">
@@ -315,22 +315,22 @@
                   </div>
                   <div class="merchant-session-tabs" role="tablist" aria-label="Conversation history">
                     <button
-                      class="merchant-session-tab active"
-                      type="button"
-                      data-merchant-session-view="recent"
-                      aria-pressed="true"
-                    >
-                      <span>Recent</span>
-                      <small>10 max</small>
-                    </button>
-                    <button
                       class="merchant-session-tab"
                       type="button"
-                      data-merchant-session-view="saved"
+                      data-merchant-session-view="recent"
                       aria-pressed="false"
                     >
+                      <span>Recent</span>
+                      <small data-merchant-session-count="recent">10 max</small>
+                    </button>
+                    <button
+                      class="merchant-session-tab active"
+                      type="button"
+                      data-merchant-session-view="saved"
+                      aria-pressed="true"
+                    >
                       <span>Saved</span>
-                      <small>Manual</small>
+                      <small data-merchant-session-count="saved">2 saved</small>
                     </button>
                   </div>
                 </div>
@@ -685,6 +685,6 @@
       </main>
     </div>
 
-    <script type="module" src="./src/app.js?v=merchant-session-limit-10-20260502"></script>
+    <script type="module" src="./src/app.js?v=merchant-session-saved-count-20260502"></script>
   </body>
 </html>

@@ -143,7 +143,7 @@ const state = {
     recent: [],
     saved: [],
   },
-  merchantSessionView: "recent",
+  merchantSessionView: "saved",
   merchantSessionsLoading: false,
   merchantSending: false,
   merchantSamplesDismissed: false,
@@ -231,6 +231,7 @@ const embeddedPageDescription = document.querySelector("#embedded-page-descripti
 const embeddedPageClose = document.querySelector("#embedded-page-close");
 const workspaceNavLinks = document.querySelectorAll("[data-dashboard-view], [data-embedded-page]");
 const merchantPanel = document.querySelector(".merchant-panel");
+const merchantChatShell = document.querySelector(".merchant-chat-shell");
 const merchantStatus = document.querySelector("#merchant-status");
 const merchantMessages = document.querySelector("#merchant-messages");
 const merchantSamples = document.querySelector("#merchant-samples");
@@ -257,6 +258,10 @@ const MERCHANT_API_BASE =
 const MERCHANT_SESSION_STORAGE_KEY = "gumroad-merchant-session-id";
 const MERCHANT_TRANSCRIPT_HEIGHT_STORAGE_KEY = "gumroad-merchant-transcript-height";
 const MERCHANT_RAIL_COLLAPSED_STORAGE_KEY = "gumroad-merchant-rail-collapsed";
+const MERCHANT_TRANSCRIPT_MIN_HEIGHT = 620;
+const MERCHANT_TRANSCRIPT_MOBILE_MIN_HEIGHT = 360;
+const MERCHANT_RECENT_SESSION_LIMIT = 10;
+const MERCHANT_SAVED_SESSION_LIMIT = 10;
 const THEME_STORAGE_KEY = "gumroad-merchant-theme";
 const embeddedPages = {
   architecture: {
@@ -979,6 +984,7 @@ function dashboardGroupTitle(group) {
 function setDashboardGroupCollapsed(group, collapsed) {
   const shell = group.querySelector(":scope > .panel-group-shell");
   const toggle = group.querySelector("[data-dashboard-group-toggle]");
+  const header = group.querySelector(":scope > .dashboard-group-header");
   const label = dashboardGroupTitle(group);
 
   group.classList.toggle("is-group-collapsed", collapsed);
@@ -992,6 +998,10 @@ function setDashboardGroupCollapsed(group, collapsed) {
     toggle.setAttribute("aria-expanded", String(!collapsed));
     toggle.setAttribute("aria-label", actionLabel);
     toggle.title = actionLabel;
+  }
+
+  if (header) {
+    header.title = `${collapsed ? "Open" : "Collapse"} ${label}`;
   }
 }
 
@@ -1020,10 +1030,20 @@ function setupDashboardGroupToggle(group) {
   `;
   const actionSlot = header.querySelector(":scope > .merchant-panel-actions");
   (actionSlot ?? header).append(toggle);
+  header.classList.add("is-toggleable");
+  header.setAttribute("aria-controls", shell.id);
 
   toggle.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
+    setDashboardGroupCollapsed(group, !group.classList.contains("is-group-collapsed"));
+  });
+
+  header.addEventListener("click", (event) => {
+    if (event.target.closest("button, a, select, input, textarea, label, [role='tab']")) {
+      return;
+    }
+
     setDashboardGroupCollapsed(group, !group.classList.contains("is-group-collapsed"));
   });
 
@@ -3170,11 +3190,17 @@ function renderMerchantSessions() {
   const currentSession = activeMerchantSession();
   const saved = Boolean(currentSession?.saved_at);
   const activeView = state.merchantSessionView === "saved" ? "saved" : "recent";
-
   merchantSessionTabs.forEach((tab) => {
     const isActive = tab.dataset.merchantSessionView === activeView;
     tab.classList.toggle("active", isActive);
     tab.setAttribute("aria-pressed", isActive ? "true" : "false");
+    const label = tab.querySelector("[data-merchant-session-count]");
+    if (label && tab.dataset.merchantSessionView === "recent") {
+      label.textContent = `${MERCHANT_RECENT_SESSION_LIMIT} max`;
+    }
+    if (label && tab.dataset.merchantSessionView === "saved") {
+      label.textContent = `${state.merchantSessions.saved.length.toLocaleString()} saved`;
+    }
   });
   merchantSessionPanels.forEach((panel) => {
     panel.hidden = panel.dataset.merchantSessionPanel !== activeView;
@@ -3350,8 +3376,8 @@ async function loadMerchantSessions() {
   try {
     const sessions = await merchantFetch(
       `/api/agent/chat/sessions?${new URLSearchParams({
-        recent_limit: "10",
-        saved_limit: "50",
+        recent_limit: String(MERCHANT_RECENT_SESSION_LIMIT),
+        saved_limit: String(MERCHANT_SAVED_SESSION_LIMIT),
       })}`
     );
     state.merchantSessions = {
@@ -3589,7 +3615,13 @@ async function deleteMerchantSession(sessionId = state.merchantSessionId) {
       method: "DELETE",
     });
     if (isCurrentSession) {
-      await createNewMerchantChat();
+      state.merchantSessionId = "";
+      window.localStorage.removeItem(MERCHANT_SESSION_STORAGE_KEY);
+      state.merchantMessages = initialMerchantMessages();
+      state.merchantSamplesDismissed = false;
+      await loadMerchantSessions();
+      merchantStatus.textContent = "Ready";
+      renderMerchantChat();
     } else {
       await loadMerchantSessions();
       merchantStatus.textContent = "Ready";
@@ -4072,13 +4104,17 @@ function renderMerchantMessageContent(content) {
 }
 
 function clampMerchantTranscriptHeight(value) {
-  const viewportMax = Math.max(320, window.innerHeight - 220);
-  return Math.max(260, Math.min(Math.round(value), Math.min(760, viewportMax)));
+  const minHeight = window.matchMedia("(max-width: 760px)").matches
+    ? MERCHANT_TRANSCRIPT_MOBILE_MIN_HEIGHT
+    : MERCHANT_TRANSCRIPT_MIN_HEIGHT;
+  const viewportMax = Math.max(minHeight, window.innerHeight - 180);
+  return Math.max(minHeight, Math.min(Math.round(value), Math.min(760, viewportMax)));
 }
 
 function setMerchantTranscriptHeight(value) {
   const height = clampMerchantTranscriptHeight(value);
   state.merchantTranscriptHeight = height;
+  merchantChatShell?.style.setProperty("--merchant-chat-height", `${height}px`);
   merchantMessages.style.setProperty("--merchant-chat-height", `${height}px`);
   window.localStorage.setItem(MERCHANT_TRANSCRIPT_HEIGHT_STORAGE_KEY, String(height));
 }
