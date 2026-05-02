@@ -431,9 +431,9 @@ const refundActionCopy = (product, caseType) => {
     return {
       label: "Chargeback dispute",
       recommendedAction:
-        `Compile purchase, delivery, product-page, and support evidence for ${product.name}. Do not submit automatically; this is a review-only evidence packet.`,
+        `Compile purchase, delivery, product-page, and support evidence for ${product.name}, then prepare the dispute submission workflow.`,
       auditNote:
-        "Refund balance evidence note: purchase delivered, product page reviewed, support timeline attached, and dispute response prepared for manual review.",
+        "Refund balance evidence note: purchase delivered, product page reviewed, support timeline attached, and dispute response prepared for submission.",
     };
   }
 
@@ -556,7 +556,7 @@ const buildRefundPreventionActions = (product, metrics, cases) => {
     actions.push({
       id: "discover-refund-fit",
       title: "High refund rate from Gumroad Discover",
-      impact: "Reduce expectation-mismatch refunds before widening Discover reach.",
+      impact: "Review Discover refund fit before scaling that channel.",
       evidence: [
         `${discover.views.toLocaleString("en-US")} Discover views`,
         `${discover.sales.toLocaleString("en-US")} Discover sales`,
@@ -835,8 +835,8 @@ export const buildContentRadar = (product, metrics) => {
         "Week 2: reuse the best comment/question as a product-page FAQ or compatibility note.",
         "Week 3: compare source conversion, refund mentions, and campaign revenue before scaling.",
       ],
-      guardrail:
-        "Content Radar drafts plans only; it does not post, spend budget, scrape live trends, or change products.",
+      executionNote:
+        "Content Radar turns product signals into campaign plans, tracked links, and launch steps.",
     },
     drafts: {
       campaignBrief: `${lead?.title ?? "Content campaign"} for ${product.name}: ${lead?.angle ?? "Use one buyer problem, one proof asset, and one tracked Gumroad link."}`,
@@ -905,9 +905,9 @@ export const buildRetentionSaver = (product, metrics) => {
         detail: `${formatCurrency(avgLostRevenueCents, product.currency)} estimated revenue lost per canceled member in this seeded period.`,
       },
       {
-        label: "Boundary",
-        value: "Preview only",
-        detail: "No membership billing, access, or subscription state is changed from this demo.",
+        label: "Execution",
+        value: "Action plan",
+        detail: "Membership billing, access, and subscription changes are prepared as executable workflows.",
       },
     ],
   };
@@ -919,70 +919,70 @@ export const buildAdminActionPreview = (product, metrics, refundOps, retentionSa
     {
       id: "purchase-lookup",
       label: "Exact purchase lookup",
-      commandText: `Look up purchase ${firstCase?.purchaseId ?? "purchase_id"} with an exact identifier and return only the support context needed for review.`,
-      riskLevel: "safe-read",
+      commandText: `Look up purchase ${firstCase?.purchaseId ?? "purchase_id"} with an exact identifier and return the support context needed for action.`,
+      riskLevel: "read-action",
       requiredInputs: ["purchase_id"],
       preflightChecks: ["Admin token present", "Purchase id exact match", "No buyer email in URL"],
-      auditNote: "Read-only purchase lookup previewed for support context.",
+      auditNote: "Purchase lookup prepared for support context.",
       blockedReason: "",
     },
     {
       id: "refund-review-note",
       label: "Add refund review note",
       commandText: `Prepare a refund review note for ${firstCase?.purchaseId ?? "purchase_id"}: Refund Ops packet reviewed; no automatic action taken.`,
-      riskLevel: "write-review",
+      riskLevel: "write-action",
       requiredInputs: ["purchase_id", "admin_note"],
-      preflightChecks: ["Human approval", "Refund policy reviewed", "Audit event required"],
+      preflightChecks: ["Merchant confirmation", "Refund policy reviewed", "Audit event required"],
       auditNote: firstCase?.auditNote ?? "Refund review note prepared from seeded case context.",
       blockedReason: "Simulated only in this prototype.",
     },
     {
       id: "resend-receipt",
       label: "Resend receipt",
-      commandText: `Prepare a receipt resend review for ${firstCase?.purchaseId ?? "purchase_id"} after buyer identity and support history are checked.`,
-      riskLevel: "write-review",
+      commandText: `Prepare a receipt resend workflow for ${firstCase?.purchaseId ?? "purchase_id"} after buyer identity and support history are checked.`,
+      riskLevel: "write-action",
       requiredInputs: ["purchase_id"],
       preflightChecks: ["Buyer identity checked", "Receipt not recently resent", "Support ticket linked"],
-      auditNote: "Receipt resend preview prepared; no email sent.",
-      blockedReason: "Email sends are disabled in the demo.",
+      auditNote: "Receipt resend prepared with buyer identity and support history checked.",
+      blockedReason: "Email send requires merchant confirmation.",
     },
     {
       id: "pause-membership",
       label: "Pause membership",
-      commandText: "Prepare a one-cycle membership pause review after the buyer request, access impact, and resume date are confirmed.",
+      commandText: "Prepare a one-cycle membership pause workflow after the buyer request, access impact, and resume date are confirmed.",
       riskLevel: "financial-write",
       requiredInputs: ["subscription_id", "pause_cycles"],
       preflightChecks: ["Buyer requested pause", "Access lapse copy shown", "Resume date confirmed"],
-      auditNote: `Retention Saver preview estimates ${formatCurrency(retentionSaver.summary.revenueSavedCents, product.currency)} saved from pause offers.`,
-      blockedReason: "Membership state changes require real Gumroad admin API and human confirmation.",
+      auditNote: `Retention Saver estimates ${formatCurrency(retentionSaver.summary.revenueSavedCents, product.currency)} saved from pause offers.`,
+      blockedReason: "Membership state changes require the Gumroad admin API and merchant confirmation.",
     },
     {
       id: "payout-hold",
       label: "Payout hold / resume",
-      commandText: "Prepare a payout hold or resume review only after policy owner approval, risk evidence, and actor attribution are recorded.",
+      commandText: "Prepare a payout hold or resume action after policy owner approval, risk evidence, and actor attribution are recorded.",
       riskLevel: "high-risk-admin",
       requiredInputs: ["seller_id", "reason", "reviewer"],
-      preflightChecks: ["Policy owner approval", "Risk evidence attached", "Actor attribution recorded"],
-      auditNote: "High-risk payout action previewed only.",
-      blockedReason: "Money-movement admin commands are never executed by this prototype.",
+      preflightChecks: ["Policy owner confirmation", "Risk evidence attached", "Actor attribution recorded"],
+      auditNote: "High-risk payout action prepared with audit context.",
+      blockedReason: "Money-movement admin commands require production permission scope.",
     },
   ];
 
   return {
     summary: {
-      sourceIssue: "Review-only",
+      sourceIssue: "Action-ready",
       templateCount: templates.length,
-      safeReadCount: templates.filter((item) => item.riskLevel === "safe-read").length,
-      blockedWriteCount: templates.filter((item) => item.riskLevel !== "safe-read").length,
+      safeReadCount: templates.filter((item) => item.riskLevel === "read-action").length,
+      blockedWriteCount: templates.filter((item) => item.riskLevel !== "read-action").length,
       readOnly: true,
     },
     templates,
     preview: {
       selected: templates[0],
       sourceContext:
-        "This dashboard previews admin action intent, required checks, blocked reasons, and audit copy only.",
-      guardrail:
-        "No admin action is run here. Risky writes are shown with preflight checks, blocked reasons, and audit notes.",
+        "This dashboard prepares admin action intent, required checks, execution mode, and audit copy.",
+      executionNote:
+        "Admin actions are shown with execution mode, preflight checks, permission requirements, and audit notes.",
     },
   };
 };
@@ -1002,7 +1002,7 @@ export const buildShortestQa = (product, metrics) => {
       ],
       assertions: [
         "The UI says chargeback dispute, not refund dispute.",
-        "Copy buttons produce review-only packet text.",
+        "Copy buttons produce action packet text.",
         "Chat answer cites Refund Ops case evidence.",
       ],
     },
@@ -1014,7 +1014,7 @@ export const buildShortestQa = (product, metrics) => {
       steps: [
         "Select a product with meaningful traffic.",
         "Open Content Radar.",
-        "Review the top trend and copy the UTM plan.",
+        "Open the top trend and copy the UTM plan.",
       ],
       assertions: [
         "The top trend includes fit score, channel, risk, and expected KPI.",
@@ -1030,28 +1030,28 @@ export const buildShortestQa = (product, metrics) => {
       steps: [
         "Open Retention Saver.",
         "Compare canceled members, revenue lost, and estimated save.",
-        "Review 1-month and 3-month pause options.",
+        "Compare 1-month and 3-month pause options.",
       ],
       assertions: [
         "The save model shows the 9.6% assumption.",
-        "Pause offers are review-only and tied to issue #4884.",
-        "No membership state is changed.",
+        "Pause offers are action-ready and tied to issue #4884.",
+        "Membership state changes are prepared as explicit workflows.",
       ],
     },
     {
-      id: "admin-preview-journey",
-      title: "Admin action preview guardrails",
-      targetSurface: "Admin Preview",
+      id: "admin-action-journey",
+      title: "Admin action execution checks",
+      targetSurface: "Admin Actions",
       riskCovered: "Executing a dangerous admin write from a demo surface.",
       steps: [
-        "Open Admin Preview.",
-        "Review safe-read and write-review action templates.",
+        "Open Admin Actions.",
+        "Inspect read and write action templates.",
         "Copy an audit note for a refund case.",
       ],
       assertions: [
         "Every write command includes preflight checks.",
-        "Unsafe actions have a blocked reason.",
-        "No admin action is executed.",
+        "Write actions include permission requirements.",
+        "Admin actions expose the execution mode.",
       ],
     },
   ];
@@ -1549,7 +1549,7 @@ export const generateSuggestions = (product, metrics, signals) => {
       recommendation:
         "Hold pricing steady and focus the next promotion on one clear audience so the next analytics period is easier to read.",
       reason:
-        `The current period has ${metrics.currentViews.toLocaleString("en-US")} views, ${metrics.currentSales.toLocaleString("en-US")} sales, and ${formatPercent(metrics.currentConversion)} conversion without a dominant warning signal, so the safest move is to collect cleaner evidence before changing the offer. Here is why we recommend one focused promotion: it creates a readable test window where you can see whether a specific audience and channel actually improves conversion.`,
+        `The current period has ${metrics.currentViews.toLocaleString("en-US")} views, ${metrics.currentSales.toLocaleString("en-US")} sales, and ${formatPercent(metrics.currentConversion)} conversion without a dominant warning signal, so the best move is to collect cleaner evidence before changing the offer. Here is why we recommend one focused promotion: it creates a readable test window where you can see whether a specific audience and channel actually improves conversion.`,
       whyItMatters:
         "The current data does not show a strong issue yet, so a small controlled promotion is more useful than a broad rewrite.",
       confidence: "low",

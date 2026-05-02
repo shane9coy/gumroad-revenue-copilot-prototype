@@ -1,7 +1,7 @@
-"""Reviewable local Shortest-style QA scenarios for Gumroad Merchant.
+"""Local Shortest-style QA scenarios for Gumroad Merchant.
 
 The generated tests are deterministic natural-language journeys for human or
-agent review. They do not automate a browser, call external services, or mutate
+agent validation. They do not automate a browser, call external services, or mutate
 Gumroad Merchant data.
 """
 
@@ -28,7 +28,7 @@ _SUITES: tuple[dict[str, Any], ...] = (
     {
         "id": "refund_ops",
         "name": "Refund Ops",
-        "purpose": "Verify review-only refund, dispute, buyer-reply, and audit-note journeys.",
+        "purpose": "Verify refund, dispute, buyer-reply, and audit-note journeys.",
         "target_surfaces": ["Refund Ops panel", "Refund Ops API", "Merchant chat refund routing"],
     },
     {
@@ -46,8 +46,8 @@ _SUITES: tuple[dict[str, Any], ...] = (
     {
         "id": "admin_action_preview",
         "name": "Admin/CLI Action Preview",
-        "purpose": "Verify admin and CLI previews expose suggested actions without applying them.",
-        "target_surfaces": ["Admin action preview", "CLI smoke output", "Review-only action payloads"],
+        "purpose": "Verify admin and CLI workflows expose suggested actions before execution.",
+        "target_surfaces": ["Admin action workflow", "CLI smoke output", "Action payloads"],
     },
     {
         "id": "merchant_chat_fallback",
@@ -60,7 +60,7 @@ _SUITES: tuple[dict[str, Any], ...] = (
 
 _SCENARIOS: tuple[dict[str, Any], ...] = (
     {
-        "id": "refund_ops_dispute_packet_review_only",
+        "id": "refund_ops_dispute_packet_action_ready",
         "suite_id": "refund_ops",
         "title": "Chargeback evidence packet can be reviewed without being submitted",
         "priority": "critical",
@@ -78,7 +78,7 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
             "Stop before any external submission step.",
         ],
         "assertions": [
-            "The answer names a chargeback dispute case and includes a review-only boundary.",
+            "The answer names a chargeback dispute case and includes the next action step.",
             "The packet includes purchase evidence, delivery/access evidence, product-page promise review, and support-thread review.",
             "The response includes an audit note but does not claim that Gumroad, Stripe, PayPal, or the card network received the packet.",
             "The case remains a local seeded case with no mutation or send status.",
@@ -90,7 +90,7 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
         ],
         "pass_fail_evidence": {
             "pass": [
-                "Response or JSON includes review_only=true or the phrase review-only.",
+                "Response or JSON includes action_ready=true or explicit execution-mode language.",
                 "Evidence checklist has purchase, delivery/access, product-page, and support-contact items.",
                 "No text says submitted, sent, refunded, won, or closed as a completed external action.",
             ],
@@ -99,7 +99,7 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
                 "The packet lacks an audit note or policy snapshot.",
                 "The case is treated as a buyer reply instead of a chargeback dispute.",
             ],
-            "capture": ["case_id", "case_type", "ready_for_review", "copy_text", "audit_note"],
+            "capture": ["case_id", "case_type", "ready_for_action", "copy_text", "audit_note"],
         },
         "source_tools": ["list_refund_cases_tool", "build_dispute_evidence_pack_tool", "run_agent_chat"],
         "read_only": True,
@@ -113,7 +113,7 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
         "persona": "Creator deciding how to respond to a refund request",
         "setup": [
             "Use seeded Refund Ops cases.",
-            "Select Review mode or ask for the top refund request reply.",
+            "Select Resolve mode or ask for the top refund request reply.",
             "Do not connect a mail sender or payment API.",
         ],
         "steps": [
@@ -135,7 +135,7 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
         ],
         "pass_fail_evidence": {
             "pass": [
-                "Response includes draft/review-only language.",
+                "Response includes a prepared draft and next action language.",
                 "Response includes recommended_action and audit_note.",
                 "No outbound email, refund, or case-close side effect is described.",
             ],
@@ -169,7 +169,7 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
         ],
         "assertions": [
             "The journey points to category, tags, description, reviews, or Discover impressions as evidence.",
-            "The action stays in review mode and describes what the creator should inspect or edit.",
+            "The action stays in the prepared workflow and describes what the creator can inspect or edit.",
             "The wording does not claim Gumroad Discover placement will improve automatically.",
             "The recommendation is specific to buyer, use case, format, or included assets.",
         ],
@@ -181,7 +181,7 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
         "pass_fail_evidence": {
             "pass": [
                 "Signal or answer references metadata completeness, Discover impressions, or missing tags/category.",
-                "Action payload includes label, copy_text, and steps for human review.",
+                "Action payload includes label, copy_text, and steps for merchant confirmation.",
                 "No mutation status or saved product edit is returned.",
             ],
             "fail": [
@@ -214,7 +214,7 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
         ],
         "assertions": [
             "The response cites source conversion, sales, revenue, or UTM evidence.",
-            "The recommendation keeps the page stable except for a proposed reviewable copy test.",
+            "The recommendation keeps the page stable except for a proposed copy test.",
             "Direct traffic is caveated as possibly containing apps, email, bookmarks, or private shares.",
             "The action is a hypothesis to review, not a command to broaden spend.",
         ],
@@ -261,7 +261,7 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
             "The response includes churn and refund evidence from the selected product or portfolio.",
             "The recommendation does not jump directly to a price cut or mass coupon.",
             "The customer export stays aggregate-only and does not return buyer names or emails.",
-            "The action is framed as review-only strategy.",
+            "The action is framed as strategy with concrete next steps.",
         ],
         "risk_covered": [
             "Misdiagnosing churn/refunds as only a pricing problem.",
@@ -297,7 +297,7 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
             "Treat all customer export rows as synthetic samples.",
         ],
         "steps": [
-            "Ask what customer export data can safely support a retention decision.",
+            "Ask what customer export data can support a retention decision.",
             "Review sample row count, do-not-contact count, refunded rows, recurring rows, and top referrers.",
             "Confirm the answer uses aggregate counts and summary warnings.",
             "Confirm the answer avoids generating an outreach list or sending campaign copy.",
@@ -335,22 +335,22 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
         "read_only": True,
     },
     {
-        "id": "admin_preview_action_payload_no_mutation",
+        "id": "admin_action_payload_no_mutation",
         "suite_id": "admin_action_preview",
-        "title": "Admin action preview exposes copy and steps without applying the action",
+        "title": "Admin action workflow exposes copy and steps before execution",
         "priority": "critical",
-        "target_surface": "Admin/CLI Action Preview payload",
+        "target_surface": "Admin/CLI Action payload",
         "persona": "Internal reviewer checking a suggested product-page or metadata action",
         "setup": [
             "Use a known signal id from detected signals.",
             "Select a product with an actionable recommendation, such as prod-design-kit or prod-audio-pack.",
-            "Run through endpoint, agent tool, or CLI preview only.",
+            "Run through endpoint, agent tool, or CLI command workflow.",
         ],
         "steps": [
             "Request the action review for one signal id.",
             "Inspect the payload label, copy_text, action kind, and ordered steps.",
             "Confirm the payload gives the reviewer enough context to approve, edit, or reject.",
-            "Verify no product, price, refund, email, or dispute state changed after preview.",
+            "Verify no product, price, refund, email, or dispute state changed before explicit execution.",
         ],
         "assertions": [
             "The result has found=true for a valid signal id.",
@@ -359,18 +359,18 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
             "The result does not include an applied, saved, sent, or submitted status.",
         ],
         "risk_covered": [
-            "Admin preview silently mutating production-like state.",
+            "Admin action workflow mutating production-like state before confirmation.",
             "Reviewer receiving an action without enough evidence to judge it.",
             "Action payloads becoming too low-level for a merchant workflow.",
         ],
         "pass_fail_evidence": {
             "pass": [
                 "Payload includes action.kind, action.label, action.copy_text, and action.steps.",
-                "Payload remains a preview and contains no mutation status.",
-                "Running the preview twice returns the same content for the same input.",
+                "Payload remains a prepared action and contains no mutation status.",
+                "Running the workflow twice returns the same content for the same input.",
             ],
             "fail": [
-                "The preview writes product metadata or changes a case status.",
+                "The workflow writes product metadata or changes a case status before execution.",
                 "The action has no steps or no copy text.",
                 "The second run differs without a changed input.",
             ],
@@ -380,9 +380,9 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
         "read_only": True,
     },
     {
-        "id": "admin_preview_cli_smoke_json_shape",
+        "id": "admin_action_cli_smoke_json_shape",
         "suite_id": "admin_action_preview",
-        "title": "CLI smoke returns reviewable JSON with suite coverage and no external dependency",
+        "title": "CLI smoke returns actionable JSON with suite coverage and no external dependency",
         "priority": "medium",
         "target_surface": "scripts/run_shortest_qa_smoke.py",
         "persona": "Developer validating QA scenario generation before wiring endpoints",
@@ -450,13 +450,13 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
         ],
         "risk_covered": [
             "Refund triage questions falling through to generic next-move strategy.",
-            "Fallback mode losing safety boundaries from live-agent instructions.",
+            "Fallback mode losing execution controls from live-agent instructions.",
             "Creator mistaking a draft reply for a sent message.",
         ],
         "pass_fail_evidence": {
             "pass": [
                 "fallback is true.",
-                "Answer includes refund case, buyer reply draft, review-only, or audit note language.",
+                "Answer includes refund case, buyer reply draft, action-ready, or audit note language.",
                 "Citations include product and refund case or refund summary evidence.",
             ],
             "fail": [
@@ -541,7 +541,7 @@ _SCENARIOS: tuple[dict[str, Any], ...] = (
         "risk_covered": [
             "Invented Gumroad policy.",
             "Misusing nearby citations as proof for an unsupported answer.",
-            "Live-model absence causing lower safety in policy routing.",
+            "Live-model absence weakening policy routing.",
         ],
         "pass_fail_evidence": {
             "pass": [
@@ -661,8 +661,8 @@ def generate_shortest_qa_tests(
         "version": QA_VERSION,
         "title": "Gumroad Merchant Shortest QA scenarios",
         "description": (
-            "Deterministic local user-journey tests for reviewing Gumroad Merchant "
-            "Refund Ops, Content Radar, Retention Saver, Admin Action Preview, and chat fallback behavior."
+            "Deterministic local user-journey tests for Gumroad Merchant "
+            "Refund Ops, Content Radar, Retention Saver, Admin Actions, and chat fallback behavior."
         ),
         "filters": {
             "suite_id": normalized_suite,
@@ -690,7 +690,7 @@ def get_shortest_qa_summary() -> dict[str, Any]:
     return {
         "version": QA_VERSION,
         "name": "Gumroad Merchant Shortest QA Generator",
-        "purpose": "Generate reviewable local QA journeys instead of low-level unit tests.",
+        "purpose": "Generate local QA journeys instead of low-level unit tests.",
         "read_only": True,
         "deterministic": True,
         "external_dependencies": [],
@@ -705,7 +705,7 @@ def get_shortest_qa_summary() -> dict[str, Any]:
             "refund_ops": "Refund queue, buyer reply draft, dispute evidence packet, audit boundary.",
             "content_radar": "Discover metadata gap, source angle reuse, attribution caution.",
             "retention_saver": "Churn/refund mismatch, customer export sample and privacy boundaries.",
-            "admin_action_preview": "Action preview JSON shape, CLI smoke, no mutation.",
+            "admin_action_preview": "Action workflow JSON shape, CLI smoke, no mutation.",
             "merchant_chat_fallback": "Refund Ops route, mixed help/analytics route, unknown policy boundary.",
         },
     }
@@ -729,6 +729,6 @@ def shortest_qa_overview_sentence() -> str:
     summary = get_shortest_qa_summary()
     suite_names = ", ".join(suite["name"] for suite in summary["suites"])
     return (
-        f"{summary['name']} provides {summary['test_count']} deterministic review-only "
+        f"{summary['name']} provides {summary['test_count']} deterministic "
         f"Shortest-style scenarios across {summary['suite_count']} suites: {suite_names}."
     )

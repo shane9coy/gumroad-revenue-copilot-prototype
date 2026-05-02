@@ -319,7 +319,7 @@ Audit note for human reviewer (case refund-prod-creator-os-2)
 
 - Why it’s high risk: Largest monetary item among the 30-day seed cases and currently in evidence collection stage. The mismatch between promised onboarding content and delivered assets is the core risk vector for chargeback liability.
 
-- Recommended audit actions (review-only): 
+- Recommended audit actions (review-only):
   - Compile a side-by-side comparison of Product Page Promise versus delivered onboarding content (videos, setup checklist).
   - Attach the latest support thread and any relevant correspondence.
   - Prepare a merchant-facing note explaining the gaps and intended onboarding guidance.
@@ -368,7 +368,7 @@ Week 1 — YouTube teaser and short-form momentum
 - Channel/assets: 1 long-form teaser video plus 2 short clips (30s and 15s) highlighting the before/after concept and the Notion workspace impact.
 - Move (plan action): Tease the concept, prompt viewers to watch the upcoming walkthrough, and drive to the Gumroad product page with a tracked link.
 - UTM/campaign: content_radar_creator_os_for_notion_youtube_intro
-- Drafts to review: 1 long video outline and 2 short-cut outlines plus captions. 
+- Drafts to review: 1 long video outline and 2 short-cut outlines plus captions.
 - KPI (draft target): YouTube view-to-landing-click rate and product-page CTR to be defined after the first week (measurement window: next seeded analytics period).
 - Notes: This sets up baseline audience interest and gives you a first signal for messaging clarity before the deeper walkthrough.
 

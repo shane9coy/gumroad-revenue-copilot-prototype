@@ -342,9 +342,9 @@ def evidence_for_trend(
     if refund_actions:
         evidence.append(
             {
-                "label": "Refund guardrail",
+                "label": "Refund check",
                 "value": refund_actions[0]["title"],
-                "comparison": "review before scaling",
+                "comparison": "check before scaling",
             }
         )
     return evidence
@@ -430,7 +430,7 @@ def risk_payload(metrics: dict[str, Any], refund_actions: list[dict[str, Any]], 
             }
         )
     if refund_actions:
-        risks.append({"label": "Review-only guardrail", "detail": refund_actions[0]["recommended_action"]})
+        risks.append({"label": "Refund check", "detail": refund_actions[0]["recommended_action"]})
     if metrics["product"]["id"] == "all":
         risks.append({"label": "Portfolio blend", "detail": "All-products output mixes categories; validate the plan against one product before using copy."})
     return risks
@@ -452,6 +452,7 @@ def build_trend_record(
     utm_row = best_utm_for_channel(channel, utm_rows)
     campaign = campaign_name(trend, channel, product, utm_row)
     score = trend_score(trend, product, metrics, dashboard)
+    fit_score = max(0.0, min(100.0, score * 5))
     return {
         "id": f"{product['id']}::{trend['id']}",
         "trend_id": trend["id"],
@@ -473,7 +474,9 @@ def build_trend_record(
         "evidence": evidence_for_trend(metrics, dashboard, utm_row, refund_actions),
         "risks": risk_payload(metrics, refund_actions, trend),
         "draft_outlines": draft_outline_payload(product, trend, channel, campaign),
-        "score": round_value(score, 2),
+        "score": round_value(fit_score, 2),
+        "raw_score": round_value(score, 2),
+        "score_formatted": f"{round_value(fit_score, 0):.0f}/100",
         "read_only": True,
     }
 
@@ -532,7 +535,7 @@ def get_content_radar_summary(db_path: Path | str, product_id: str = "all", date
             "top_source": metrics["current_sources"][0] if metrics["current_sources"] else None,
             "top_utm": top_utm or None,
         },
-        "refund_guardrails": context["refund_actions"][:3],
+        "refund_checks": context["refund_actions"][:3],
         "read_only": True,
         "boundary": "Seeded local Content Radar only; no web searches, posting, emails, product edits, refunds, or external API calls are performed.",
     }
@@ -569,10 +572,10 @@ def build_marketing_plan(
                 "channel": trend["channel"],
                 "campaign_utm_name": trend["campaign_utm_name"],
                 "move": trend["trend_angle"],
-                "draft_to_review": trend["draft_outlines"][0],
+                "draft_to_prepare": trend["draft_outlines"][0],
                 "expected_kpi": trend["expected_kpi"],
                 "risk_check": trend["risks"][0],
-                "review_only": True,
+                "action_ready": True,
             }
         )
     while len(plan_steps) < weeks:
@@ -586,7 +589,7 @@ def build_marketing_plan(
                 "channel": previous["channel"] if previous else "Newsletter",
                 "campaign_utm_name": f"content_radar_week_{week}_measurement",
                 "move": "Compare tracked clicks, sales, conversion, and refunds before starting another broad campaign.",
-                "draft_to_review": {
+                "draft_to_prepare": {
                     "asset_type": "measurement_note",
                     "channel": "Internal review",
                     "title": "Campaign readout",
@@ -608,7 +611,7 @@ def build_marketing_plan(
                     "label": "Attribution risk",
                     "detail": "Do not treat direct traffic as campaign lift unless the link is tracked.",
                 },
-                "review_only": True,
+                "action_ready": True,
             }
         )
     target_sales = round(baseline_sales * (1 + 0.04 * weeks))
@@ -617,7 +620,7 @@ def build_marketing_plan(
         "date_range": date_range,
         "horizon_weeks": weeks,
         "objective": (
-            f"Run {weeks} review-only content tests tied to tracked UTM names, aiming to move from "
+            f"Run {weeks} content tests tied to tracked UTM names, aiming to move from "
             f"{baseline_sales:,} seeded sales toward about {target_sales:,} sales while holding refund quality steady."
         ),
         "baseline": summary["analytics_baseline"],
@@ -680,10 +683,10 @@ def draft_campaign_assets(
         "review_checklist": [
             "Confirm the copy matches the product contents and support boundaries.",
             "Confirm the UTM campaign name is unique for this content angle.",
-            "Check refund guardrails before widening reach.",
+            "Check refund pressure before widening reach.",
         ],
         "read_only": True,
-        "boundary": "Draft assets are copyable outlines only; this function does not send, post, save, or update anything.",
+        "boundary": "Draft assets are campaign-ready outlines with explicit execution steps.",
     }
 
 

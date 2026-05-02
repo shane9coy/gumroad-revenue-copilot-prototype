@@ -9,6 +9,7 @@
     "check": "node --check demo/src/app.js && node --check demo/src/analytics.js && node --check demo/data/products.js && python3 -m py_compile backend/api.py gumroad_merchant/*.py",
     "demo": "python3 -m http.server 8080 --directory demo",
     "smoke:actions": "python3 scripts/run_agent_action_smoke.py",
+    "smoke:context": "python3 scripts/run_agent_question_context_smoke.py",
     "mcp": "scripts/gumroad-merchant-mcp.sh"
   }
 }

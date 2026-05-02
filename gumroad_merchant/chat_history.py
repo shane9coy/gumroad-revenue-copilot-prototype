@@ -315,6 +315,7 @@ def list_sessions(conn: sqlite3.Connection, recent_limit: int = 10, saved_limit:
         SELECT *
         FROM chat_sessions
         WHERE archived_at IS NULL
+          AND message_count > 0
         ORDER BY COALESCE(latest_message_at, updated_at, created_at) DESC, created_at DESC
         LIMIT ?
         """,
@@ -324,7 +325,9 @@ def list_sessions(conn: sqlite3.Connection, recent_limit: int = 10, saved_limit:
         """
         SELECT *
         FROM chat_sessions
-        WHERE archived_at IS NULL AND saved_at IS NOT NULL
+        WHERE archived_at IS NULL
+          AND saved_at IS NOT NULL
+          AND message_count > 0
         ORDER BY saved_at DESC, COALESCE(latest_message_at, updated_at, created_at) DESC
         LIMIT ?
         """,

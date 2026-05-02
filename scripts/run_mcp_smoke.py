@@ -62,8 +62,8 @@ def assert_envelope(payload: dict[str, Any], tool_name: str) -> dict[str, Any]:
     assert payload["ok"] is True, payload
     assert payload["tool"] == tool_name, payload
     assert payload["data_source"] == "seeded_demo", payload
-    assert payload["review_only"] is True, payload
-    assert payload["will_execute"] is False, payload
+    assert payload["execution_mode"] in {"seeded_analysis", "local_test_write"}, payload
+    assert payload["requires_confirmation"] is False, payload
     assert "result" in payload, payload
     return payload["result"]
 
@@ -108,7 +108,7 @@ async def run() -> dict[str, Any]:
                 "build_dispute_evidence_pack",
                 {"case_id": dispute_case["case_id"]},
             )
-            assert dispute_pack["review_only"] is True, dispute_pack
+            assert dispute_pack["action_ready"] is True, dispute_pack
             assert dispute_pack["copy_text"], dispute_pack
             assert dispute_pack["evidence_checklist"], dispute_pack
 
@@ -133,7 +133,7 @@ async def run() -> dict[str, Any]:
                 "preview_admin_action",
                 {"action_id": "refund_review", "case_id": dispute_case["case_id"]},
             )
-            assert admin_preview["will_execute"] is False, admin_preview
+            assert admin_preview["requires_confirmation"] is True, admin_preview
             assert admin_preview["command_text"], admin_preview
 
             qa_tests = await call(session, "generate_shortest_qa_tests", {"suite_id": "refund_ops", "limit": 2})

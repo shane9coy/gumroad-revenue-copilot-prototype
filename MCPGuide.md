@@ -3,7 +3,7 @@
 Gumroad Merchant MCP exposes the local seeded Gumroad Merchant agent tools through
 Model Context Protocol over stdio. This is the no-web-UI path for the demo:
 Codex, Claude, Cursor, or another MCP-capable agent can call the same analytics,
-Refund Ops, Content Radar, Retention Saver, Admin Preview, Shortest QA, and help
+Refund Ops, Content Radar, Retention Saver, Admin Actions, Shortest QA, and help
 search tools without opening the dashboard.
 
 ## Issue 4677 Alignment
@@ -23,7 +23,7 @@ pinned direction from the GitHub thread:
 - create a separate `/internal/admin` API contract rather than extending the
   public v2 API
 - expose commands under `gumroad admin` in the existing CLI
-- use the seeded demo as review-only contract proof, then graduate production
+- use the seeded demo as contract proof, then graduate production
   operations into scoped read-write tools with confirmation, audit logs, and
   role-based permissions
 
@@ -71,15 +71,21 @@ The demo includes an agent handoff folder:
 
 ```text
 demo/mcp/
-|-- gumroad-merchant-mcp-agent-install.md
+|-- gumroad-merchant-agent-skill/
+|   `-- SKILL.md
 `-- gumroad-merchant-mcp-prod-install.md
 ```
 
 Open `demo/mcp/` in Finder and drag
-`gumroad-merchant-mcp-agent-install.md` into a local agent chat window for this
-machine's personal seeded setup. Use `gumroad-merchant-mcp-prod-install.md` for
-the generic production handoff: it points an agent at a hosted MCP server URL and
-describes the future browser-based Gumroad auth flow.
+`gumroad-merchant-mcp-prod-install.md` into a local agent chat window. It is the
+single installer prompt for GitHub checkouts and the hosted production handoff:
+it points the agent at repo-relative MCP routes, keeps the seeded local demo
+separate from real credentials, and describes the future browser-based Gumroad
+auth flow.
+
+Use `gumroad-merchant-agent-skill/SKILL.md` when you want a reusable agent skill
+with the full command guide, common parameters, safety defaults, and current MCP
+tool map.
 
 This is intentionally just an installer prompt. MCP does not require a separate
 skill file: the host config registers the server, the server exposes tool
@@ -154,8 +160,8 @@ The current MCP server exposes read-only tools plus explicit local test-write to
   diagram generation.
 - Retention Saver: membership churn summary, cancellation risks, pause-offer
   plans, and modeled revenue-saved estimates.
-- Admin Preview: simulated `gumroad-admin` templates, command previews, and full
-  action previews, plus the Gumroad issue `#4677` direction for turning admin
+- Admin Actions: simulated `gumroad-admin` templates, command workflows, and full
+  action payloads, plus the Gumroad issue `#4677` direction for turning admin
   work into scoped API/CLI/MCP contracts.
 - Shortest QA: suite metadata and deterministic natural-language QA journeys.
 - Help/search: seeded product search and official Gumroad help-doc search.
@@ -174,8 +180,8 @@ Every tool returns the same top-level envelope:
   "ok": true,
   "tool": "tool_name",
   "data_source": "seeded_demo",
-  "review_only": true,
-  "will_execute": false,
+  "execution_mode": "seeded_analysis",
+  "requires_confirmation": false,
   "mode": "seeded",
   "result": {}
 }
@@ -190,8 +196,8 @@ Expected failures return:
   "ok": false,
   "tool": "tool_name",
   "data_source": "seeded_demo",
-  "review_only": true,
-  "will_execute": false,
+  "execution_mode": "seeded_analysis",
+  "requires_confirmation": false,
   "mode": "seeded",
   "error": {
     "message": "What failed",
@@ -201,21 +207,21 @@ Expected failures return:
 }
 ```
 
-## Safety Boundary
+## Execution Scope
 
 V1 is local seeded stdio only. It does not call Gumroad production services and
 does not read production creator data.
 
-For the seeded demo, production-impacting actions return previews,
-preflight checks, blocked reasons, and audit-note copy. They should return
-`review_only: true` and `will_execute: false` when they would affect a real
-Gumroad account.
+For the seeded demo, production-impacting actions return prepared workflows,
+preflight checks, permission requirements, and audit-note copy. They return
+`execution_mode` and `requires_confirmation` so the caller knows what can run
+directly and what needs an explicit confirmed step.
 
 For production, write tools should be classified by risk instead of blocked by
 default:
 
-- safe reads can run directly and return concise business context
-- write tools should support `dry_run`, `confirm`, and `apply` modes
+- low-risk reads can run directly and return concise business context
+- write tools should support `prepare`, `confirm`, and `apply` modes
 - real writes require scoped merchant/admin tokens, role checks, preflight
   validation, idempotency keys, and audit logs
 - high-risk writes, including refunds, payout changes, subscription access,
@@ -232,7 +238,7 @@ python3 scripts/run_mcp_smoke.py
 
 The smoke test starts the MCP server over stdio, lists available tools, and calls
 representative workflows for Refund Ops, dispute evidence, Content Radar,
-Retention Saver, Admin Preview, issue `#4677` open-question resolution, and
+Retention Saver, Admin Actions, issue `#4677` open-question resolution, and
 Shortest QA. It also verifies the MCP help menu is available. Use
 `python3 scripts/run_agent_action_smoke.py` for the local write/action-artifact
 regression path.

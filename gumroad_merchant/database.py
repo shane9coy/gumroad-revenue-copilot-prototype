@@ -423,7 +423,7 @@ def refund_prevention_copy(product: dict[str, Any], case_type: str) -> tuple[str
             "Chargeback dispute",
             (
                 f"Compile purchase, delivery, product-page, and support evidence for {product_name}. "
-                "Do not submit automatically; this is a review-only evidence packet."
+                "Prepare the dispute packet with the required evidence and audit context."
             ),
             (
                 "Refund balance evidence note: purchase delivered, product page reviewed, support timeline attached, "
@@ -914,12 +914,51 @@ def current_snapshot_status(db_path: Path | str, refreshed: bool = False) -> Sna
         )
 
 
+def expected_seeded_counts() -> dict[str, int]:
+    customer_sales = [sale for product in PRODUCTS for sale in generated_customer_sales(product)]
+    refund_cases = [
+        refund_case
+        for product in PRODUCTS
+        for refund_case in generated_refund_cases(product, generated_customer_sales(product))
+    ]
+    return {
+        "products": len(PRODUCTS),
+        "period_metrics": len(PRODUCTS) * 2,
+        "traffic_sources": sum(
+            len(product["current"]["sources"]) + len(product["previous"]["sources"]) for product in PRODUCTS
+        ),
+        "customer_sales": len(customer_sales),
+        "refund_cases": len(refund_cases),
+        "help_docs": len(HELP_DOCS),
+        "help_doc_chunks": len(iter_help_chunks()),
+    }
+
+
+def seeded_tables_are_complete(db_path: Path | str) -> bool:
+    expected = expected_seeded_counts()
+    try:
+        with closing(connect(db_path)) as conn:
+            ensure_schema(conn)
+            for table, expected_count in expected.items():
+                row = conn.execute(f"SELECT COUNT(*) AS n FROM {table}").fetchone()
+                if int(row["n"] if row else 0) != expected_count:
+                    return False
+    except sqlite3.DatabaseError:
+        return False
+    return True
+
+
 def refresh_database(db_path: Path | str, force: bool = False) -> SnapshotStatus:
     path = Path(db_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     current_hash = fixture_snapshot_hash()
     status = current_snapshot_status(path)
-    should_refresh = force or not status.source_hash or status.source_hash != current_hash
+    should_refresh = (
+        force
+        or not status.source_hash
+        or status.source_hash != current_hash
+        or not seeded_tables_are_complete(path)
+    )
     if should_refresh:
         seed_database(path)
         return current_snapshot_status(path, refreshed=True)

@@ -119,7 +119,7 @@ const state = {
   customStartDate: defaultCustomStartDate,
   customEndDate: defaultCustomEndDate,
   locationScope: "world",
-  chartExpanded: false,
+  activeTrendMetric: "revenue",
   sourceSort: "revenue",
   churnSortDirection: "desc",
   locationSortDirection: "desc",
@@ -143,6 +143,7 @@ const state = {
   merchantSending: false,
   merchantSamplesDismissed: false,
   merchantChatFullscreen: false,
+  merchantRailCollapsed: false,
   merchantTranscriptHeight: null,
   analyticsSource: {
     label: "Static seed fallback",
@@ -171,19 +172,18 @@ const utmTable = document.querySelector("#utm-table");
 const exportSummary = document.querySelector("#export-summary");
 const exportCsvButton = document.querySelector("#export-csv-button");
 const suggestions = document.querySelector("#suggestions");
-const confidenceSummary = document.querySelector("#confidence-summary");
 const portfolioTabs = document.querySelector("#portfolio-tabs");
 const portfolioDetail = document.querySelector("#portfolio-detail");
 const barChart = document.querySelector("#bar-chart");
 const chartCaption = document.querySelector("#chart-caption");
-const chartExpandButton = document.querySelector("#chart-expand-button");
 const chartDetailPanel = document.querySelector("#chart-detail-panel");
 const chartSourceBreakdown = document.querySelector("#chart-source-breakdown");
+const chartMetricButtons = document.querySelectorAll("[data-chart-metric]");
 const sourceSortSelect = document.querySelector("#source-sort-select");
-const churnSortButton = document.querySelector("#churn-sort-button");
 const locationSortButton = document.querySelector("#location-sort-button");
 const refundOpsStatus = document.querySelector("#refund-ops-status");
 const refundOpsMetrics = document.querySelector("#refund-ops-metrics");
+const refundOpsLayout = document.querySelector(".refund-ops-layout");
 const refundCaseHeading = document.querySelector("#refund-case-heading");
 const refundCaseList = document.querySelector("#refund-case-list");
 const refundCaseDetail = document.querySelector("#refund-case-detail");
@@ -215,6 +215,9 @@ const actionReviewClose = document.querySelector("#action-review-close");
 const actionReviewCopyButton = document.querySelector("#action-review-copy-button");
 const actionReviewCopyStatus = document.querySelector("#action-review-copy-status");
 const dashboardView = document.querySelector("#dashboard-view");
+const clickSignalHeader = document.querySelector("#click-signal-header");
+const clickSignalClose = document.querySelector("#click-signal-close");
+const merchantLanesGroup = document.querySelector("#merchant-lanes-group");
 const embeddedPagePanel = document.querySelector("#embedded-page-panel");
 const embeddedPageFrame = document.querySelector("#embedded-page-frame");
 const embeddedPageKicker = document.querySelector("#embedded-page-kicker");
@@ -230,6 +233,7 @@ const merchantChatForm = document.querySelector("#merchant-chat-form");
 const merchantChatInput = document.querySelector("#merchant-chat-input");
 const merchantChatSubmit = document.querySelector("#merchant-chat-submit");
 const merchantFullscreenButton = document.querySelector("#merchant-fullscreen-button");
+const merchantRailToggle = document.querySelector("#merchant-rail-toggle");
 const merchantResizeGrip = document.querySelector("#merchant-resize-grip");
 const merchantVoiceRow = document.querySelector("#merchant-voice-row");
 const merchantVoiceButton = document.querySelector("#merchant-voice-button");
@@ -241,42 +245,41 @@ const merchantSessionList = document.querySelector("#merchant-session-list");
 const merchantSavedSessionList = document.querySelector("#merchant-saved-session-list");
 const merchantSessionTabs = document.querySelectorAll("[data-merchant-session-view]");
 const merchantSessionPanels = document.querySelectorAll("[data-merchant-session-panel]");
-const merchantActiveTitle = document.querySelector("#merchant-active-title");
-const merchantActiveMeta = document.querySelector("#merchant-active-meta");
 const themeToggle = document.querySelector("#theme-toggle");
 
 const MERCHANT_API_BASE =
   window.GUMROAD_MERCHANT_API_BASE ?? "http://127.0.0.1:8001";
 const MERCHANT_SESSION_STORAGE_KEY = "gumroad-merchant-session-id";
 const MERCHANT_TRANSCRIPT_HEIGHT_STORAGE_KEY = "gumroad-merchant-transcript-height";
+const MERCHANT_RAIL_COLLAPSED_STORAGE_KEY = "gumroad-merchant-rail-collapsed";
 const THEME_STORAGE_KEY = "gumroad-merchant-theme";
 const embeddedPages = {
   architecture: {
-    src: "./architecture.html?v=merchant-architecture-20260501",
+    src: "./architecture.html?v=action-language-cleanup-20260501",
     kicker: "Architecture",
     title: "Gumroad Merchant architecture",
     description:
-      "This frame explains the whole demo: seeded analytics become detected signals, agent lanes turn them into review-only recommendations, and the future Rails path shows where real Gumroad data, permissions, and audit trails would connect.",
+      "This frame explains the whole demo: seeded analytics become detected signals, agent lanes turn them into action-ready recommendations, and the future Rails path shows where real Gumroad data, permissions, and audit trails would connect.",
   },
   chatflow: {
-    src: "./chatbot-redis-temporal-architecture.html?v=merchant-durability-20260501",
+    src: "./chatbot-redis-temporal-architecture.html?v=action-language-cleanup-20260501",
     kicker: "Chat flow",
     title: "Gumroad Merchant durability",
     description:
       "This frame explains how the agent becomes production-durable: SQL stores the transcript of record, Redis coordinates in-flight state, and Temporal can run 24-hour workflows, retries, and long agent jobs across browser reloads or later sessions.",
   },
   mcp: {
-    src: "./mcp.html?v=merchant-mcp-command-list-20260501",
+    src: "./mcp.html?v=merchant-mcp-skill-download-20260502",
     kicker: "MCP server",
     title: "Connect your local agent",
     description:
       "This frame shows how to connect Codex, Claude, Cursor, or another MCP-capable local agent to Gumroad Merchant with a copyable installer prompt and the scoped automation plan.",
   },
   brief: {
-    src: "./brief.html?v=brief-actions-removed-20260501-1",
+    src: "./brief.html?v=action-language-cleanup-20260501",
     kicker: "Prototype brief",
     title: "Hackathon demo brief",
-    description: "The reviewer-facing project brief without leaving the dashboard.",
+    description: "The operator-facing project brief without leaving the dashboard.",
   },
 };
 const dashboardShortcuts = {
@@ -317,16 +320,16 @@ const signalPanelConfigs = [
   { id: "merchant-panel", selector: ".merchant-panel", showPrompt: false },
   { id: "suggested-next-moves-panel", selector: "#suggested-next-moves-panel", promptKey: "suggestions" },
   { id: "sales-panel", selector: "#sales-panel", promptKey: "performance" },
-  { id: "refund-ops-panel", selector: "#refund-ops-panel", promptKey: "refunds" },
+  { id: "refund-ops-panel", selector: "#refund-ops-panel", promptKey: "refunds", showPrompt: false, showToggle: false, lockOpen: true },
   { id: "content-radar-panel", selector: "#content-radar-panel", promptKey: "content" },
   { id: "retention-saver-panel", selector: "#retention-saver-panel", promptKey: "retention" },
   { id: "admin-preview-panel", selector: "#admin-preview-panel", promptKey: "admin" },
   { id: "shortest-qa-panel", selector: "#shortest-qa-panel", promptKey: "qa" },
-  { id: "traffic-source-panel", selector: ".traffic-source-panel", promptKey: "sources" },
-  { id: "churn-panel", selector: "#churn-panel", promptKey: "churn" },
-  { id: "locations-panel", selector: "#locations-panel", promptKey: "sources" },
-  { id: "utm-panel", selector: "#utm-panel", promptKey: "content" },
-  { id: "export-panel", selector: "#export-panel", promptKey: "export" },
+  { id: "traffic-source-panel", selector: ".traffic-source-panel", promptKey: "sources", showToggle: false, lockOpen: true },
+  { id: "churn-panel", selector: "#churn-panel", promptKey: "churn", showToggle: false, lockOpen: true },
+  { id: "locations-panel", selector: "#locations-panel", promptKey: "sources", showToggle: false, lockOpen: true },
+  { id: "utm-panel", selector: "#utm-panel", promptKey: "content", showToggle: false, lockOpen: true },
+  { id: "export-panel", selector: "#export-panel", promptKey: "export", showToggle: false, lockOpen: true },
 ];
 
 let stagedPromptTimer = 0;
@@ -463,15 +466,146 @@ function buildAgentAnswerExamples(product, metrics, dashboard = buildSalesDashbo
   };
 }
 
+function visiblePromptRows(rows, limit = 6) {
+  return joinPromptItems(rows.filter(Boolean).slice(0, limit));
+}
+
 function buildSectionPrompt(sectionId, product, metrics, range) {
   const productName = product.name;
+
+  if (sectionId === "sales-panel") {
+    const dashboard = buildSalesDashboard(product, metrics);
+    const topSource = metrics.currentSources[0];
+    const rows = [
+      `Revenue ${formatCurrency(metrics.currentRevenueCents, product.currency)} (${formatDelta(metrics.revenueDeltaPercent, "last period")})`,
+      `${metrics.currentSales.toLocaleString("en-US")} sales from ${metrics.currentViews.toLocaleString("en-US")} views`,
+      `Conversion ${formatPercent(metrics.currentConversion)} (${formatDelta(metrics.conversionDelta, "last period")})`,
+      `Refund rate ${formatPercent(metrics.currentRefundRate)} from ${metrics.currentRefunds.toLocaleString("en-US")} refunds`,
+      topSource
+        ? `Top source ${topSource.name}: ${topSource.views.toLocaleString("en-US")} views, ${topSource.sales.toLocaleString("en-US")} sales, ${formatCurrency(topSource.revenueCents, product.currency)} revenue`
+        : "",
+      `Churn read ${formatPercent(dashboard.churn.rate)} with ${formatCurrency(dashboard.churn.revenueLostCents, product.currency)} recurring revenue lost`,
+    ];
+
+    return `Explain the Recent signal section for ${productName} over the ${range}. Use these current data points: ${visiblePromptRows(rows)}. Interpret what changed, which evidence matters most, and the next action the merchant should take.`;
+  }
+
+  if (sectionId === "suggested-next-moves-panel") {
+    const signals = detectSignals(product, metrics);
+    const cards = generateSuggestions(product, metrics, signals);
+    const rows = cards.map((card) => {
+      const evidence = asArray(card.evidence)
+        .map((item) => `${item.label}: ${item.value}${item.comparison ? ` (${item.comparison})` : ""}`)
+        .join(", ");
+      return `${card.label} / ${card.title}: ${card.confidence} confidence. ${card.reason ?? card.whyItMatters ?? card.recommendation}${evidence ? ` Evidence: ${evidence}` : ""}`;
+    });
+
+    return `Explain the Suggested next moves section for ${productName} over the ${range}. Use these current recommendation rows: ${visiblePromptRows(rows, 4)}. Tell me why each suggestion is ranked this way, where the evidence is strongest or weakest, and which action should be staged first.`;
+  }
+
+  if (sectionId === "refund-ops-panel") {
+    const refundOps = getRefundOpsView(product, metrics);
+    const activeMode = state.refundMode;
+    const visibleCases = refundOps.cases.filter((item) => item.mode === activeMode);
+    const caseRows = activeMode === "prevent"
+      ? refundOps.preventionActions.map((action) =>
+        `${action.title}: ${action.recommendedAction}. Evidence: ${action.evidence.join(", ")}`
+      )
+      : visibleCases.map((caseItem) =>
+        `${caseItem.label}: ${formatCurrency(caseItem.amountCents, product.currency)}, risk ${caseItem.riskScore}/100, ${caseItem.reason}. Recommended action: ${caseItem.recommendedAction}`
+      );
+    const rows = [
+      `Mode ${activeMode} with ${refundOpsModeCount(refundOps, activeMode).toLocaleString("en-US")} visible items`,
+      `Refund rate ${formatPercent(refundOps.summary.refundRate)} vs ${formatPercent(refundOps.summary.previousRefundRate)} previous`,
+      `Disputed ${formatCurrency(refundOps.summary.disputedAmountCents, product.currency)}`,
+      `Open cases ${refundOps.summary.casesNeedingReview.toLocaleString("en-US")}`,
+      `Preventable estimate ${formatCurrency(refundOps.summary.preventableRefundEstimateCents, product.currency)}`,
+      ...caseRows,
+    ];
+
+    return `Explain the Refund Ops section for ${productName} over the ${range}. Use these current Refund Ops data points: ${visiblePromptRows(rows, 7)}. Interpret the active tab, the biggest risk, and the next case or prevention action to handle.`;
+  }
+
+  if (sectionId === "content-radar-panel") {
+    const radar = getContentRadarView(product, metrics);
+    const activeTrend =
+      radar.trends.find((trend) => trend.id === state.activeContentTrendId) ?? radar.trends[0];
+    const rows = [
+      `${radar.summary.trendCount.toLocaleString("en-US")} trends; top fit ${radar.summary.topFitScore}/100`,
+      `Primary channel ${radar.summary.primaryChannel}`,
+      `Expected KPI ${radar.summary.expectedKpi}`,
+      activeTrend
+        ? `Selected trend ${activeTrend.title}: ${activeTrend.fitScore}/100 fit, channel ${activeTrend.channel}, KPI ${activeTrend.expectedKpi}`
+        : "",
+      activeTrend?.rationale ? `Rationale ${activeTrend.rationale}` : "",
+      activeTrend?.evidence?.length ? `Evidence ${activeTrend.evidence.join(", ")}` : "",
+      activeTrend?.risks?.length ? `Risks ${activeTrend.risks.join(", ")}` : "",
+      activeTrend?.utmPlan ? `UTM ${activeTrend.utmPlan}` : "",
+    ];
+
+    return `Explain the Content Radar section for ${productName} over the ${range}. Use these current trend data points: ${visiblePromptRows(rows)}. Explain why the selected trend is recommended, what KPI should improve, what risk to watch, and whether a tracked campaign should be created.`;
+  }
+
+  if (sectionId === "retention-saver-panel") {
+    const retention = getRetentionView(product, metrics);
+    const offerRows = retention.pauseOffers.map((offer) =>
+      `${offer.label}: ${formatCurrency(offer.estimatedSavedCents, product.currency)} estimated saved, best for ${offer.bestFor}`
+    );
+    const riskRows = retention.risks.map((risk) => `${risk.label}: ${risk.value}. ${risk.detail}`);
+    const rows = [
+      `Churn ${formatPercent(retention.summary.churnRate)} from ${retention.summary.canceledMembers.toLocaleString("en-US")} canceled memberships`,
+      `Lost recurring revenue ${formatCurrency(retention.summary.revenueLostCents, product.currency)}`,
+      `Modeled saved revenue ${formatCurrency(retention.summary.revenueSavedCents, product.currency)} with ${formatPercent(retention.summary.saveRate)} save assumption`,
+      ...offerRows,
+      ...riskRows,
+    ];
+
+    return `Explain the Retention Saver section for ${productName} over the ${range}. Use these current pause and churn data points: ${visiblePromptRows(rows, 7)}. Explain what the save estimate means, which risk matters most, and what retention action should happen next.`;
+  }
+
+  if (sectionId === "admin-preview-panel") {
+    const adminPreview = getAdminPreviewView(product, metrics);
+    const activeAction =
+      adminPreview.templates.find((template) => template.id === state.activeAdminActionId) ?? adminPreview.templates[0];
+    const rows = [
+      `${adminPreview.summary.templateCount.toLocaleString("en-US")} templates`,
+      `${adminPreview.summary.safeReadCount.toLocaleString("en-US")} reads available`,
+      `${adminPreview.summary.blockedWriteCount.toLocaleString("en-US")} writes with preflight checks`,
+      activeAction
+        ? `Selected action ${activeAction.label}: ${activeAction.riskLevel}, ${activeAction.unsafeWrite ? "write action" : "read action"}`
+        : "",
+      activeAction?.commandText ? `Command ${activeAction.commandText}` : "",
+      activeAction?.requiredInputs?.length ? `Required inputs ${activeAction.requiredInputs.join(", ")}` : "",
+      activeAction?.preflightChecks?.length ? `Preflight ${activeAction.preflightChecks.join(", ")}` : "",
+      activeAction?.auditNote ? `Audit note ${activeAction.auditNote}` : "",
+    ];
+
+    return `Explain the Admin Actions section for ${productName}. Use these current action data points: ${visiblePromptRows(rows)}. Explain what can run locally, what needs preflight, and which action is safest to prepare first.`;
+  }
+
+  if (sectionId === "shortest-qa-panel") {
+    const qa = getShortestQaView(product, metrics);
+    const activeSuite =
+      qa.suites.find((suite) => suite.id === state.activeQaSuiteId) ?? qa.suites[0];
+    const rows = [
+      `${qa.summary.suiteCount.toLocaleString("en-US")} suites`,
+      `${qa.summary.assertionCount.toLocaleString("en-US")} assertions`,
+      activeSuite ? `Selected suite ${activeSuite.title}: ${activeSuite.targetSurface}` : "",
+      activeSuite?.riskCovered ? `Risk covered ${activeSuite.riskCovered}` : "",
+      activeSuite?.steps?.length ? `Steps ${activeSuite.steps.join(", ")}` : "",
+      activeSuite?.assertions?.length ? `Assertions ${activeSuite.assertions.join(", ")}` : "",
+      activeSuite?.passFailEvidence ? `Pass/fail evidence ${activeSuite.passFailEvidence}` : "",
+    ];
+
+    return `Explain the Shortest QA section for ${productName} over the ${range}. Use these current QA data points: ${visiblePromptRows(rows)}. Explain what this suite validates, what evidence proves pass/fail, and which test should run first.`;
+  }
 
   if (sectionId === "traffic-source-panel") {
     const rows = getSortedSources(metrics).map((source) =>
       `${source.name}: ${source.views.toLocaleString("en-US")} views, ${source.sales.toLocaleString("en-US")} sales, ${formatPercent(source.conversion)} conversion, ${formatCurrency(source.revenueCents, product.currency)} revenue, AOV ${formatCurrency(source.averageOrderCents, product.currency)}`
     );
 
-    return `Analyze traffic source performance for ${productName} over the ${range}. Use the current source sort (${state.sourceSort}) and these rows: ${joinPromptItems(rows)}. Compare source quality, conversion, revenue concentration, and recommend one review-only source test.`;
+    return `Analyze traffic source performance for ${productName} over the ${range}. Use the current source sort (${state.sourceSort}) and these rows: ${joinPromptItems(rows)}. Compare source quality, conversion, revenue concentration, and recommend one source test the merchant can run.`;
   }
 
   if (sectionId === "churn-panel") {
@@ -485,7 +619,7 @@ function buildSectionPrompt(sectionId, product, metrics, range) {
       `Formula ${dashboard.churn.formula}`,
     ];
 
-    return `Analyze subscription health for ${productName} over the ${range}. Pull the churn panel data into the answer: ${joinPromptItems(rows)}. Use this answer-style example for churn/refund context: "${examples.churn}" Explain whether churn risk is getting better or worse and suggest one review-only retention action.`;
+    return `Analyze subscription health for ${productName} over the ${range}. Pull the churn panel data into the answer: ${joinPromptItems(rows)}. Use this answer-style example for churn/refund context: "${examples.churn}" Explain whether churn risk is getting better or worse and suggest one retention action the merchant can apply.`;
   }
 
   if (sectionId === "locations-panel") {
@@ -500,7 +634,7 @@ function buildSectionPrompt(sectionId, product, metrics, range) {
       `${location.country}, ${location.region}: ${location.views.toLocaleString("en-US")} views, ${location.sales.toLocaleString("en-US")} sales, ${formatCurrency(location.revenueCents, product.currency)} revenue`
     );
 
-    return `Analyze where buyers are coming from for ${productName} over the ${range}. Use the current geography scope (${scopeLabel}) and these buyer-location rows: ${joinPromptItems(locations)}. Use this answer-style example when comparing locations to another signal: "${examples.locations}" Summarize the strongest geographies, weak-but-interesting regions, and one review-only next action.`;
+    return `Analyze where buyers are coming from for ${productName} over the ${range}. Use the current geography scope (${scopeLabel}) and these buyer-location rows: ${joinPromptItems(locations)}. Use this answer-style example when comparing locations to another signal: "${examples.locations}" Summarize the strongest geographies, weak-but-interesting regions, and one next action.`;
   }
 
   if (sectionId === "utm-panel") {
@@ -510,11 +644,11 @@ function buildSectionPrompt(sectionId, product, metrics, range) {
       `${link.campaign} (${link.source}/${link.medium}): ${link.clicks.toLocaleString("en-US")} clicks, ${link.sales.toLocaleString("en-US")} sales, ${formatPercent(link.conversion)} conversion, ${formatCurrency(link.revenueCents, product.currency)} revenue`
     );
 
-    return `Analyze tracked campaign performance for ${productName} over the ${range}. Use these UTM rows: ${joinPromptItems(rows)}. Use this answer-style example for attribution cleanup: "${examples.utm}" Compare attribution quality, identify which campaign deserves another test, and keep the recommendation review-only.`;
+    return `Analyze tracked campaign performance for ${productName} over the ${range}. Use these UTM rows: ${joinPromptItems(rows)}. Use this answer-style example for attribution cleanup: "${examples.utm}" Compare attribution quality and identify which campaign deserves another test or automation.`;
   }
 
   if (sectionId === "export-panel") {
-    return `Explain the customer sales CSV export for ${productName} over the ${range}. Describe which fields matter, how the one-day buffer should be interpreted, and how to use the export safely without applying account changes.`;
+    return `Explain the customer sales CSV export for ${productName} over the ${range}. Describe which fields matter, how the one-day buffer should be interpreted, and which follow-up actions this export should drive.`;
   }
 
   return "";
@@ -529,33 +663,39 @@ function buildMerchantPrompt(promptKey, detail = {}) {
 
   const prompts = {
     performance: `Explain what the Recent signal section is for ${productName} over the ${range}. Tell me how to interpret revenue, views, conversion, refund rate, and signal confidence before I decide on a next move. Use this answer-style example when explaining conversion: "${answerExamples.conversions}"`,
-    refunds: `Explain what the Refund Ops section is for ${productName} over the ${range}. Walk me through Prevent, Review, and Dispute mode, what the risk scores mean, and how to interpret the case evidence safely.`,
+    refunds: `Explain what the Refund Ops section is for ${productName} over the ${range}. Walk me through Prevent, Resolve, and Dispute mode, what the risk scores mean, and what action should happen next.`,
     content: `Explain what the Content Radar section is for ${productName} over the ${range}. Describe how to read the trend fit, recommended channel, KPI baseline/target, evidence, and risks before creating a tracked campaign.`,
-    retention: `Explain what the Retention Saver section is for ${productName} over the ${range}. Show how to interpret churn, lost revenue, save-rate assumptions, pause offers, and review-only guardrails.`,
-    admin: `Explain what the Admin Preview section is for ${productName}. Describe how to interpret safe reads, blocked writes, preflight checks, audit notes, and why nothing executes automatically.`,
-    qa: `Explain what the Shortest QA section is for the Gumroad Merchant demo. Describe how to interpret suites, scenarios, assertions, pass/fail evidence, and review-only safety boundaries.`,
+    retention: `Explain what the Retention Saver section is for ${productName} over the ${range}. Show how to interpret churn, lost revenue, save-rate assumptions, pause offers, and retention automations.`,
+    admin: `Explain what the Admin Actions section is for ${productName}. Describe how to interpret reads, writes, preflight checks, audit notes, and execution modes.`,
+    qa: `Explain what the Shortest QA section is for the Gumroad Merchant demo. Describe how to interpret suites, scenarios, assertions, pass/fail evidence, and automation coverage.`,
     sources: `Explain what the traffic-source section is for ${productName} over the ${range}. Show how to compare views, sales, conversion, revenue, and source quality before choosing a next test.`,
     suggestions: `Explain what the Suggested next moves section is for ${productName} over the ${range}. Show how to read confidence, rationale, evidence, and what actions the agent can stage or apply locally.`,
     churn: `Explain what the Subscription health section is for ${productName} over the ${range}. Show how to interpret churn rate, churned users, revenue lost, and retention risk. Use this answer-style example for churn/refund context: "${answerExamples.churn}"`,
-    export: `Explain what the synthetic customer sales CSV section is for ${productName}. Show how to interpret the export fields, why the one-day buffer matters, and how to use it safely.`,
+    export: `Explain what the synthetic customer sales CSV section is for ${productName}. Show how to interpret the export fields, why the one-day buffer matters, and what actions the export should trigger.`,
   };
 
   if (detail.prompt) return detail.prompt;
+  if (detail.subsectionLabel && detail.sectionId) {
+    const sectionPrompt = buildSectionPrompt(detail.sectionId, product, metrics, range);
+    if (sectionPrompt) {
+      return `${sectionPrompt} Focus specifically on the "${detail.subsectionLabel}" subsection and connect its visible context (${detail.label ?? "current visible values"}) to the section data.`;
+    }
+  }
   if (detail.sectionId) {
     const sectionPrompt = buildSectionPrompt(detail.sectionId, product, metrics, range);
     if (sectionPrompt) return sectionPrompt;
   }
   if (detail.subsectionLabel) {
-    return `Explain the "${detail.subsectionLabel}" part of the ${detail.sectionLabel ?? promptKey} section for ${productName} over the ${range}. Analyze the current data shown here: ${detail.label ?? "the visible card values"}. Tell me what it means, why it matters, and one review-only follow-up action.`;
+    return `Explain the "${detail.subsectionLabel}" part of the ${detail.sectionLabel ?? promptKey} section for ${productName} over the ${range}. Analyze the current data shown here: ${detail.label ?? "the visible card values"}. Tell me what it means, why it matters, and one follow-up action.`;
   }
   if (detail.metricLabel) {
-    return `Explain the ${detail.metricLabel} metric for ${productName} over the ${range}. Current value: ${detail.metricValue}. Context: ${detail.metricChange}. What should I do next, review-only?`;
+    return `Explain the ${detail.metricLabel} metric for ${productName} over the ${range}. Current value: ${detail.metricValue}. Context: ${detail.metricChange}. What should I do next?`;
   }
   if (detail.sourceName) {
     return `Explain the ${detail.sourceName} traffic source for ${productName}. Compare its views, sales, conversion, and revenue, then suggest one follow-up test.`;
   }
   if (detail.label) {
-    return `Explain this ${detail.type ?? "signal"} for ${productName}: ${detail.label}. Cite the evidence and suggest the next review-only action.`;
+    return `Explain this ${detail.type ?? "signal"} for ${productName}: ${detail.label}. Cite the evidence and suggest the next action.`;
   }
 
   return prompts[promptKey] ?? prompts.performance;
@@ -585,14 +725,14 @@ function buildMerchantFollowups(message) {
 
   const shared = [
     `Show the exact evidence behind this for ${productName}.`,
-    `Turn this into one review-only action I can approve or reject.`,
+    `Turn this into one action I can apply or schedule.`,
     `What signal should I click next for ${productName}?`,
   ];
 
   if (normalized.includes("refund") || normalized.includes("chargeback")) {
     return [
-      `Which refund case should I review first for ${productName}?`,
-      `Draft the safest buyer reply, but keep it review-only.`,
+      `Which refund case should I resolve first for ${productName}?`,
+      `Draft the buyer reply and show the next send step.`,
       shared[0],
     ];
   }
@@ -608,7 +748,7 @@ function buildMerchantFollowups(message) {
   if (normalized.includes("retention") || normalized.includes("churn") || normalized.includes("pause")) {
     return [
       `Which churn signal matters most for ${productName}?`,
-      `Draft a pause-before-cancel offer I can review.`,
+      `Draft a pause-before-cancel offer I can apply or schedule.`,
       shared[0],
     ];
   }
@@ -616,7 +756,7 @@ function buildMerchantFollowups(message) {
   if (normalized.includes("admin") || normalized.includes("cli") || normalized.includes("command")) {
     return [
       `Show the preflight checks before this admin action.`,
-      `Explain why this stays blocked until approval.`,
+      `Explain the required permission and next execution step.`,
       shared[1],
     ];
   }
@@ -719,19 +859,14 @@ function setupSignalAccordions() {
     }
     panel.append(body);
 
-    const controls = document.createElement("div");
-    controls.className = "signal-panel-controls";
+    const controlsMarkup = config.showPrompt !== false ? renderSectionAgentButton(config.promptKey, config.id) : "";
 
-    controls.innerHTML = `
-      ${config.showToggle === false ? "" : `
-      <button class="signal-panel-toggle" type="button" data-signal-toggle aria-expanded="${config.defaultOpen ? "true" : "false"}">
-        <span class="toggle-glyph" aria-hidden="true"></span>
-        <span>${config.defaultOpen ? "Collapse" : "Open"}</span>
-      </button>
-      `}
-      ${config.showPrompt !== false ? renderSectionAgentButton(config.promptKey, config.id) : ""}
-    `;
-    header.append(controls);
+    if (controlsMarkup) {
+      const controls = document.createElement("div");
+      controls.className = "signal-panel-controls";
+      controls.innerHTML = controlsMarkup;
+      header.append(controls);
+    }
     header.classList.add("signal-panel-header");
     panel.classList.add("signal-panel");
     panel.dataset.signalPanelReady = "true";
@@ -747,11 +882,6 @@ function setupSignalAccordions() {
         toggleSignalPanel(panel);
       });
     }
-
-    controls.querySelector("[data-signal-toggle]")?.addEventListener("click", (event) => {
-      event.stopPropagation();
-      toggleSignalPanel(panel);
-    });
 
     toggleSignalPanel(panel, config.lockOpen ? true : Boolean(config.defaultOpen));
   });
@@ -860,7 +990,12 @@ function setupDashboardGroupToggle(group) {
   const header = group.querySelector(":scope > .dashboard-group-header");
   const shell = group.querySelector(":scope > .panel-group-shell");
 
-  if (!header || !shell || header.querySelector("[data-dashboard-group-toggle]")) {
+  if (
+    group.dataset.groupCollapsible === "false" ||
+    !header ||
+    !shell ||
+    header.querySelector("[data-dashboard-group-toggle]")
+  ) {
     return;
   }
 
@@ -874,7 +1009,8 @@ function setupDashboardGroupToggle(group) {
   toggle.innerHTML = `
     <span class="toggle-glyph" aria-hidden="true"></span>
   `;
-  header.append(toggle);
+  const actionSlot = header.querySelector(":scope > .merchant-panel-actions");
+  (actionSlot ?? header).append(toggle);
 
   toggle.addEventListener("click", (event) => {
     event.preventDefault();
@@ -921,10 +1057,14 @@ function promptKeyForElement(element) {
 
 function decorateSubsectionAgentButtons() {
   const targets = document.querySelectorAll(
-    ".refund-section-heading, .chart-title, .detail-header:not(.signal-panel-header), .ops-detail-header"
+    ".refund-section-heading, .detail-header:not(.signal-panel-header), .ops-detail-header"
   );
 
   targets.forEach((target) => {
+    if (target.closest("#refund-ops-panel")) {
+      return;
+    }
+
     if (target.closest(".merchant-message") || target.querySelector(":scope > .mini-agent-button")) {
       return;
     }
@@ -944,6 +1084,7 @@ function decorateSubsectionAgentButtons() {
     button.className = "mini-agent-button inline-mini-agent-button";
     button.type = "button";
     button.dataset.merchantPrompt = buildMerchantPrompt(promptKey, {
+      sectionId: target.closest(".signal-panel")?.id ?? "",
       sectionLabel: target.closest(".signal-panel")?.querySelector(".signal-panel-header h2, .signal-panel-header h3")?.textContent?.trim() ?? promptKey,
       subsectionLabel: label,
       label: target.textContent.trim().replace(/\s+/g, " "),
@@ -1020,12 +1161,43 @@ function renderProductHeader(product) {
     .join("");
 }
 
+const ESTIMATED_PAYOUT_FEE_RATE = 0.1;
+
+function estimatePayoutCents(metrics, period = "current") {
+  const revenueCents =
+    period === "previous" ? metrics.previousRevenueCents : metrics.currentRevenueCents;
+  const refundCents =
+    period === "previous" ? metrics.previousRefundCents : metrics.currentRefundCents;
+  const netBeforeFees = Math.max(0, revenueCents - refundCents);
+
+  return Math.round(netBeforeFees * (1 - ESTIMATED_PAYOUT_FEE_RATE));
+}
+
+function percentChange(current, previous) {
+  if (previous > 0) return (current - previous) / previous;
+  return current > 0 ? 1 : 0;
+}
+
 function renderMetrics(product, metrics) {
+  const currentPayoutCents = estimatePayoutCents(metrics);
+  const previousPayoutCents = estimatePayoutCents(metrics, "previous");
+  const payoutDeltaPercent = percentChange(currentPayoutCents, previousPayoutCents);
   const cards = [
     {
       label: "Revenue",
       value: formatCurrency(metrics.currentRevenueCents, product.currency),
       change: formatDelta(metrics.revenueDeltaPercent, "prior period"),
+    },
+    {
+      label: "Payout",
+      value: formatCurrency(currentPayoutCents, product.currency),
+      change: formatDelta(payoutDeltaPercent, "prior payout"),
+      tone: currentPayoutCents >= previousPayoutCents ? "good" : "warn",
+    },
+    {
+      label: "Sales",
+      value: metrics.currentSales.toLocaleString(),
+      change: formatDelta(metrics.salesDeltaPercent, "prior period"),
     },
     {
       label: "Views",
@@ -1052,11 +1224,6 @@ function renderMetrics(product, metrics) {
 
       return `
         <article class="metric-card ${tone}" style="--index: ${index}">
-          ${renderMiniAgentButton("performance", {
-            sectionLabel: "Recent signal",
-            subsectionLabel: card.label,
-            label: `${card.label}: ${card.value}. ${card.change}`,
-          })}
           <div class="metric-label">${card.label}</div>
           <div class="metric-value">${card.value}</div>
           <div class="metric-change ${tone}">${card.change}</div>
@@ -1071,9 +1238,9 @@ function clampNumber(value, min, max) {
 }
 
 const productImagePalettes = [
-  ["#ff90e8", "#ffc900", "#211817"],
+  ["#F883E1", "#ffc900", "#211817"],
   ["#23a093", "#fff7ec", "#211817"],
-  ["#315bb3", "#ff90e8", "#fffdf8"],
+  ["#315bb3", "#F883E1", "#fffdf8"],
   ["#ffc900", "#3b1930", "#fffdf8"],
 ];
 
@@ -1215,7 +1382,7 @@ function renderProductPortfolio() {
     activeMetrics.currentViews > 0 ? activeMetrics.discoverImpressions / activeMetrics.currentViews : 0;
   const revenueShare = activeMetrics.currentRevenueCents / totalRevenue;
   const viewShare = activeMetrics.currentViews / totalViews;
-  const portfolioPrompt = `Review ${activeProduct.name} for ${getRangeLabel()}: revenue ${formatCurrency(activeMetrics.currentRevenueCents, activeProduct.currency)}, ${activeMetrics.currentSales.toLocaleString("en-US")} sales, ${formatPercent(activeMetrics.currentConversion)} conversion, ${formatPercent(activeMetrics.currentRefundRate)} refund rate. Compare it against the rest of the product portfolio and suggest review-only next steps.`;
+  const portfolioPrompt = `Analyze ${activeProduct.name} for ${getRangeLabel()}: revenue ${formatCurrency(activeMetrics.currentRevenueCents, activeProduct.currency)}, ${activeMetrics.currentSales.toLocaleString("en-US")} sales, ${formatPercent(activeMetrics.currentConversion)} conversion, ${formatPercent(activeMetrics.currentRefundRate)} refund rate. Compare it against the rest of the product portfolio and suggest actionable next steps.`;
   const statCards = [
     {
       label: "Revenue",
@@ -1331,7 +1498,7 @@ function renderProductPortfolio() {
         <p class="eyebrow">Product read</p>
         <h3>${escapeHtml(activeProduct.name)} in context</h3>
         <p>
-          ${escapeHtml(activeProduct.name)} contributes ${formatPercent(revenueShare)} of portfolio revenue and ${formatPercent(viewShare)} of portfolio views for ${escapeHtml(getRangeLabel())}. Conversion is ${activeMetrics.currentConversion >= averageConversion ? "above" : "below"} the product average, so the next review should compare traffic quality against refund pressure before scaling.
+          ${escapeHtml(activeProduct.name)} contributes ${formatPercent(revenueShare)} of portfolio revenue and ${formatPercent(viewShare)} of portfolio views for ${escapeHtml(getRangeLabel())}. Conversion is ${activeMetrics.currentConversion >= averageConversion ? "above" : "below"} the product average, so the next move should compare traffic quality against refund pressure before scaling.
         </p>
       </div>
       <div class="portfolio-progress-list">
@@ -1364,69 +1531,334 @@ function renderProductPortfolio() {
   `;
 }
 
-function renderChart(product, metrics) {
-  const divisor = getRangeDays();
-  const maxValue = Math.max(
-    Math.round(metrics.currentViews / divisor),
-    Math.round(metrics.previousViews / divisor),
-    Math.round((metrics.currentSales / divisor) * 20),
-    Math.round((metrics.previousSales / divisor) * 20),
-    1,
-  );
-  const chartUnit = "day";
+const trendChartMetrics = {
+  revenue: {
+    label: "Revenue",
+    axisLabel: "Daily revenue",
+    kind: "currency",
+    normalizeByDay: true,
+  },
+  payout: {
+    label: "Payout",
+    axisLabel: "Daily estimated payout",
+    kind: "currency",
+    normalizeByDay: true,
+  },
+  sales: {
+    label: "Sales",
+    axisLabel: "Daily sales",
+    kind: "number",
+    normalizeByDay: true,
+  },
+  conversion: {
+    label: "Conversion",
+    axisLabel: "Conversion rate",
+    kind: "percent",
+    normalizeByDay: false,
+  },
+  views: {
+    label: "Views",
+    axisLabel: "Daily views",
+    kind: "number",
+    normalizeByDay: true,
+  },
+  refundRate: {
+    label: "Refunds",
+    axisLabel: "Refund rate",
+    kind: "percent",
+    normalizeByDay: false,
+  },
+};
 
-  const groups = [
-    {
-      label: `Prior ${chartUnit}`,
-      period: {
-        views: Math.round(metrics.previousViews / divisor),
-        sales: roundDisplay(metrics.previousSales / divisor),
-        revenueCents: Math.round(metrics.previousRevenueCents / divisor),
-      },
-    },
-    {
-      label: `Current ${chartUnit}`,
-      period: {
-        views: Math.round(metrics.currentViews / divisor),
-        sales: roundDisplay(metrics.currentSales / divisor),
-        revenueCents: Math.round(metrics.currentRevenueCents / divisor),
-      },
-    },
+const trendChartPalette = [
+  "#F883E1",
+  "#23a093",
+  "#7ca4ff",
+  "#ffc900",
+  "#b891ff",
+  "#ff7a59",
+];
+
+function getTrendMetricConfig() {
+  if (!trendChartMetrics[state.activeTrendMetric]) {
+    state.activeTrendMetric = "revenue";
+  }
+
+  return trendChartMetrics[state.activeTrendMetric];
+}
+
+function getTrendMetricValue(metrics, metricKey, period) {
+  const isPrevious = period === "previous";
+
+  if (metricKey === "revenue") {
+    return isPrevious ? metrics.previousRevenueCents : metrics.currentRevenueCents;
+  }
+
+  if (metricKey === "payout") {
+    return estimatePayoutCents(metrics, period);
+  }
+
+  if (metricKey === "sales") {
+    return isPrevious ? metrics.previousSales : metrics.currentSales;
+  }
+
+  if (metricKey === "conversion") {
+    return isPrevious ? metrics.previousConversion : metrics.currentConversion;
+  }
+
+  if (metricKey === "views") {
+    return isPrevious ? metrics.previousViews : metrics.currentViews;
+  }
+
+  if (metricKey === "refundRate") {
+    return isPrevious ? metrics.previousRefundRate : metrics.currentRefundRate;
+  }
+
+  return 0;
+}
+
+function getTrendDisplayValue(metrics, metricKey, period, days) {
+  const config = trendChartMetrics[metricKey] ?? trendChartMetrics.revenue;
+  const value = getTrendMetricValue(metrics, metricKey, period);
+
+  return config.normalizeByDay ? value / Math.max(days, 1) : value;
+}
+
+function getTrendPointCount(days) {
+  if (days <= 30) return 12;
+  if (days <= 90) return 14;
+  return 16;
+}
+
+function getTrendDateBounds() {
+  normalizeCustomDateRange();
+
+  const start = parseDateInput(state.customStartDate) ?? parseDateInput(defaultCustomStartDate);
+  const end = parseDateInput(state.customEndDate) ?? parseDateInput(defaultCustomEndDate);
+
+  return { start, end };
+}
+
+function dateAtTrendPoint(start, end, pointIndex, pointCount) {
+  const ratio = pointCount <= 1 ? 1 : pointIndex / (pointCount - 1);
+  const dateTime = start.getTime() + (end.getTime() - start.getTime()) * ratio;
+
+  return new Date(dateTime);
+}
+
+function formatTrendDateLabel(date, start, end) {
+  const crossesYears = start.getUTCFullYear() !== end.getUTCFullYear();
+  const label = new Intl.DateTimeFormat("en-US", {
+    timeZone: "UTC",
+    month: "short",
+    day: "numeric",
+    year: crossesYears ? "2-digit" : undefined,
+  }).format(date);
+
+  return crossesYears ? label.replace(", ", " '") : label;
+}
+
+function buildTrendDateTicks(pointCount) {
+  const { start, end } = getTrendDateBounds();
+  const candidates = [
+    { index: 0 },
+    { index: Math.floor((pointCount - 1) / 2) },
+    { index: pointCount - 1 },
   ];
+  const usedIndexes = new Set();
 
-  chartCaption.textContent = `${groups[1].period.sales.toLocaleString()} sales / ${chartUnit} from ${groups[1].period.views.toLocaleString()} views`;
-  const linePoints = groups
-    .map((group, index) => {
-      const x = groups.length === 1 ? 50 : 20 + index * 60;
-      const y = 94 - Math.max(8, ((group.period.sales * 20) / maxValue) * 80);
-      return `${x},${Math.max(8, Math.min(92, y))}`;
+  return candidates
+    .filter((tick) => {
+      if (usedIndexes.has(tick.index)) return false;
+      usedIndexes.add(tick.index);
+      return true;
     })
-    .join(" ");
+    .map((tick) => {
+      const date = dateAtTrendPoint(start, end, tick.index, pointCount);
 
-  barChart.innerHTML = `
-    <svg class="chart-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <polyline points="${linePoints}"></polyline>
-    </svg>
-    ${groups
-    .map((group, index) => {
-      const viewHeight = Math.max(8, (group.period.views / maxValue) * 100);
-      const salesHeight = Math.max(8, ((group.period.sales * 20) / maxValue) * 100);
-      const tooltip = `${group.label}: ${group.period.views.toLocaleString()} views, ${group.period.sales.toLocaleString()} sales, ${formatCurrency(group.period.revenueCents, product.currency)}`;
+      return {
+        index: tick.index,
+        label: formatTrendDateLabel(date, start, end),
+      };
+    });
+}
 
+function buildTrendPoints(metrics, metricKey, days, pointCount, seriesIndex, productName) {
+  const config = trendChartMetrics[metricKey] ?? trendChartMetrics.revenue;
+  const previousValue = getTrendDisplayValue(metrics, metricKey, "previous", days);
+  const currentValue = getTrendDisplayValue(metrics, metricKey, "current", days);
+  const phase = (seriesIndex + 1) * 0.71 + String(productName).length * 0.037;
+  const waveScale = config.kind === "percent" ? 0.035 : 0.085;
+
+  return Array.from({ length: pointCount }, (_, pointIndex) => {
+    const t = pointCount <= 1 ? 1 : pointIndex / (pointCount - 1);
+    const baseValue = previousValue + (currentValue - previousValue) * t;
+    const isEndpoint = pointIndex === 0 || pointIndex === pointCount - 1;
+    const wave =
+      isEndpoint
+        ? 0
+        : Math.sin((pointIndex + 1) * 1.13 + phase) * waveScale +
+          Math.cos((pointIndex + 1) * 0.61 + phase) * (waveScale * 0.48);
+    const waveBase = Math.max(Math.abs(baseValue), config.kind === "percent" ? 0.01 : 1);
+    const rawValue = Math.max(0, baseValue + waveBase * wave);
+    const value = config.kind === "percent" ? clampNumber(rawValue, 0, 1) : rawValue;
+
+    return { index: pointIndex, value };
+  });
+}
+
+function trendProductsForChart(product) {
+  return state.selectedProductId === "all" ? portfolioProductViews() : [product];
+}
+
+function formatCompactNumber(value) {
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+  }
+
+  return String(roundDisplay(value));
+}
+
+function formatTrendValue(metricKey, value, currency) {
+  const config = trendChartMetrics[metricKey] ?? trendChartMetrics.revenue;
+
+  if (config.kind === "currency") {
+    return formatCurrency(Math.round(value), currency);
+  }
+
+  if (config.kind === "percent") {
+    return formatPercent(value);
+  }
+
+  return formatCompactNumber(value);
+}
+
+function formatTrendAxisValue(metricKey, value, currency) {
+  const config = trendChartMetrics[metricKey] ?? trendChartMetrics.revenue;
+
+  if (config.kind === "currency") {
+    const amount = Math.round(value / 100);
+    return `$${formatCompactNumber(amount)}`;
+  }
+
+  return formatTrendValue(metricKey, value, currency);
+}
+
+function renderChart(product, metrics) {
+  if (!barChart) return;
+
+  const metricConfig = getTrendMetricConfig();
+  const metricKey = state.activeTrendMetric;
+  const days = getRangeDays();
+  const pointCount = getTrendPointCount(days);
+  const chartProducts = trendProductsForChart(product);
+  const series = chartProducts.map((seriesProduct, index) => {
+    const seriesMetrics = buildProductMetrics(seriesProduct);
+
+    return {
+      product: seriesProduct,
+      metrics: seriesMetrics,
+      color: trendChartPalette[index % trendChartPalette.length],
+      points: buildTrendPoints(
+        seriesMetrics,
+        state.activeTrendMetric,
+        days,
+        pointCount,
+        index,
+        seriesProduct.name
+      ),
+    };
+  });
+  const values = series.flatMap((item) => item.points.map((point) => point.value));
+  const rawMax = Math.max(...values, metricConfig.kind === "percent" ? 0.01 : 1);
+  const yMax = metricConfig.kind === "percent"
+    ? Math.min(1, Math.max(0.01, rawMax * 1.18))
+    : Math.max(1, rawMax * 1.18);
+  const chart = {
+    width: 720,
+    height: 300,
+    left: 72,
+    right: 694,
+    top: 28,
+    bottom: 244,
+  };
+  const xFor = (pointIndex) =>
+    chart.left + ((chart.right - chart.left) * pointIndex) / Math.max(pointCount - 1, 1);
+  const yFor = (value) =>
+    chart.bottom - ((chart.bottom - chart.top) * value) / Math.max(yMax, 0.0001);
+  const yTicks = [0, 0.25, 0.5, 0.75, 1].map((tick) => yMax * tick);
+  const xTicks = buildTrendDateTicks(pointCount);
+  const grid = yTicks
+    .map((tickValue) => {
+      const y = yFor(tickValue);
       return `
-        <div class="bar-group" style="--index: ${index}">
-          <div class="bar-wrap">
-            <div class="bar" style="height: ${viewHeight}%" title="${escapeHtml(tooltip)}"></div>
-            <div class="bar-label">${group.label}<br />views</div>
-          </div>
-          <div class="bar-wrap">
-            <div class="bar sales" style="height: ${salesHeight}%" title="${escapeHtml(tooltip)}"></div>
-            <div class="bar-label">${group.label}<br />sales</div>
-          </div>
-        </div>
+        <line class="trend-grid-line" x1="${chart.left}" x2="${chart.right}" y1="${y}" y2="${y}"></line>
+        <text class="trend-axis-label" x="${chart.left - 12}" y="${y + 4}" text-anchor="end">${escapeSvgText(formatTrendAxisValue(metricKey, tickValue, product.currency))}</text>
       `;
     })
+    .join("");
+  const xLabels = xTicks
+    .map((tick) => {
+      const x = xFor(tick.index);
+      return `<text class="trend-axis-label" x="${x}" y="${chart.bottom + 30}" text-anchor="middle">${escapeSvgText(tick.label)}</text>`;
+    })
+    .join("");
+  const lineMarkup = series
+    .map((item, seriesIndex) => {
+      const coords = item.points.map((point) => ({
+        x: xFor(point.index),
+        y: yFor(point.value),
+        value: point.value,
+      }));
+      const polylinePoints = coords.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+      const visibleDots = coords.filter((_, pointIndex) =>
+        pointIndex === 0 || pointIndex === coords.length - 1 || pointIndex % 3 === seriesIndex % 3
+      );
+
+      return `
+        <polyline class="trend-chart-line" style="--series-color: ${item.color}" points="${polylinePoints}"></polyline>
+        ${visibleDots
+    .map((point) => `
+          <g>
+            <circle class="trend-chart-dot" style="--series-color: ${item.color}" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="4.8"></circle>
+            <title>${escapeSvgText(`${item.product.name}: ${formatTrendValue(metricKey, point.value, item.product.currency)}`)}</title>
+          </g>
+        `)
     .join("")}
+      `;
+    })
+    .join("");
+  const legend = series
+    .map((item) => {
+      const currentValue = item.points[item.points.length - 1]?.value ?? 0;
+
+      return `
+        <span class="trend-legend-item">
+          <span class="trend-legend-swatch" style="--series-color: ${item.color}"></span>
+          <span>${escapeHtml(item.product.name)}</span>
+          <strong>${escapeHtml(formatTrendValue(metricKey, currentValue, item.product.currency))}</strong>
+        </span>
+      `;
+    })
+    .join("");
+  const chartScope =
+    state.selectedProductId === "all" ? `${series.length} product lines` : product.name;
+
+  chartCaption.textContent = `${metricConfig.axisLabel} · ${getRangeLabel()} · ${chartScope}`;
+  chartMetricButtons.forEach((button) => {
+    const active = button.dataset.chartMetric === state.activeTrendMetric;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+
+  barChart.innerHTML = `
+    <svg class="trend-chart-svg" viewBox="0 0 ${chart.width} ${chart.height}" role="img" aria-label="${escapeHtml(metricConfig.label)} trend by product">
+      <rect class="trend-chart-stage" x="0" y="0" width="${chart.width}" height="${chart.height}" rx="16"></rect>
+      <g class="trend-grid">${grid}</g>
+      <g class="trend-lines">${lineMarkup}</g>
+      <g class="trend-x-axis">${xLabels}</g>
+    </svg>
+    <div class="trend-chart-legend">${legend}</div>
   `;
 
   renderChartDetail(product, metrics);
@@ -1525,7 +1957,6 @@ function renderSalesDashboard(product, metrics) {
   exportSummary.textContent = `${dashboard.csv.rows.length} synthetic customer rows prepared with customer, tax, fee, refund, subscription, affiliate, payment, referrer, location, and UTM fields. ${dashboard.csv.timezoneNote} Add a one-day buffer around exported ranges.`;
   exportCsvButton.dataset.csv = toCsv(dashboard.csv.columns, dashboard.csv.rows);
   exportCsvButton.dataset.filename = `${product.id}-sales-demo.csv`;
-  updateSortButton(churnSortButton, state.churnSortDirection, "churn metrics");
   updateSortButton(locationSortButton, state.locationSortDirection, "locations");
 }
 
@@ -1544,12 +1975,12 @@ function backendRefundCaseToView(caseItem) {
     paymentType: caseItem.payment_type ?? caseItem.paymentType ?? "Seeded payment",
     sourceName: caseItem.source_name ?? caseItem.sourceName ?? "Seeded source",
     riskScore: Math.round(toNumber(caseItem.risk_score ?? caseItem.riskScore, 0)),
-    recommendedAction: caseItem.recommended_action ?? caseItem.recommendedAction ?? "Review the case evidence before taking action.",
+    recommendedAction: caseItem.recommended_action ?? caseItem.recommendedAction ?? "Check the case evidence before taking action.",
     buyerReply: caseItem.buyer_reply ?? caseItem.buyerReply ?? "",
     disputeEvidence: caseItem.dispute_evidence ?? caseItem.disputeEvidence ?? "",
     auditNote: caseItem.audit_note ?? caseItem.auditNote ?? "",
     deliveryEvidence: caseItem.delivery_evidence ?? caseItem.deliveryEvidence ?? "Seeded delivery evidence is available in the local DB.",
-    policySnapshot: caseItem.policy_snapshot ?? caseItem.policySnapshot ?? "Review policy context before deciding.",
+    policySnapshot: caseItem.policy_snapshot ?? caseItem.policySnapshot ?? "Check policy context before deciding.",
     label: caseItem.label ?? formatStatus(caseType || mode),
     timeline: asArray(caseItem.timeline).map((item) => ({
       label: item.label ?? item.check ?? "Timeline",
@@ -1578,7 +2009,7 @@ function backendRefundActionToView(action) {
     id: String(action.id ?? action.title ?? crypto.randomUUID()),
     title: action.title ?? "Refund prevention action",
     impact: action.impact ?? "Calculated from Refund Ops summary and case data.",
-    recommendedAction: action.recommended_action ?? action.recommendedAction ?? "Review this action before changing product copy.",
+    recommendedAction: action.recommended_action ?? action.recommendedAction ?? "Check this action before changing product copy.",
     evidence: asArray(action.evidence).map(formatBackendEvidence).filter(Boolean),
   };
 }
@@ -1620,6 +2051,31 @@ function getRefundOpsView(product, metrics) {
     cases,
     preventionActions,
   };
+}
+
+function refundOpsModeCount(refundOps, activeMode) {
+  const modeCounts = refundOps.summary.modeCounts ?? {};
+  const visibleCount =
+    activeMode === "prevent"
+      ? refundOps.preventionActions.length
+      : refundOps.cases.filter((item) => item.mode === activeMode).length;
+
+  return visibleCount || toNumber(modeCounts[activeMode], 0);
+}
+
+function refundOpsStatusLabel(refundOps, activeMode) {
+  const count = refundOpsModeCount(refundOps, activeMode);
+  const countLabel = count.toLocaleString("en-US");
+
+  if (activeMode === "prevent") {
+    return { count, label: `${countLabel} prevent` };
+  }
+
+  if (activeMode === "dispute") {
+    return { count, label: `${countLabel} dispute${count === 1 ? "" : "s"}` };
+  }
+
+  return { count, label: `${countLabel} to review` };
 }
 
 function backendTrendToView(trend) {
@@ -1681,9 +2137,9 @@ function getContentRadarView(product, metrics) {
     },
     trends,
     plan: {
-      guardrail:
+      executionNote:
         insights.contentRadar.summary?.boundary ??
-        "Content Radar returns calculated campaign plans only; it does not post, spend, scrape, or edit products.",
+        "Content Radar turns trend signals into campaign plans, tracking rows, and launch steps.",
     },
     drafts: {
       campaignBrief: `${lead.title}: ${lead.rationale}`,
@@ -1696,13 +2152,13 @@ function retentionOfferToView(offer) {
   return {
     id: String(offer.id ?? offer.label ?? crypto.randomUUID()),
     label: offer.label ?? "Pause offer",
-    bestFor: offer.best_for ?? offer.bestFor ?? "Cancellation-intent review.",
+    bestFor: offer.best_for ?? offer.bestFor ?? "Cancellation-intent workflow.",
     estimatedSavedCents: toNumber(
       offer.estimated_revenue_saved_cents ?? offer.estimatedSavedCents ?? offer.estimated_revenue_saved?.cents,
       0
     ),
     reviewSteps: [
-      offer.merchant_review_prompt ?? "Review cancellation context before showing this offer.",
+      offer.merchant_review_prompt ?? "Check cancellation context before showing this offer.",
       `Use the ${offer.save_rate_assumption_formatted ?? "calculated"} save-rate assumption for this estimate.`,
       "Keep the normal cancellation path available.",
     ],
@@ -1818,15 +2274,15 @@ function getShortestQaView(product, metrics) {
 function adminTemplateToView(template) {
   return {
     id: String(template.id ?? template.title ?? crypto.randomUUID()),
-    label: template.title ?? template.label ?? "Admin action preview",
-    commandText: template.command_text ?? template.commandText ?? "gumroad-admin preview --dry-run",
+    label: template.title ?? template.label ?? "Admin action",
+    commandText: template.command_text ?? template.commandText ?? "gumroad-admin actions prepare",
     description: template.description ?? "",
     riskLevel: template.risk_level ?? template.riskLevel ?? "unknown",
     requiredInputs: asArray(template.required_inputs ?? template.requiredInputs),
     preflightChecks: asArray(template.preflight_checks ?? template.preflightChecks).map((check) =>
       typeof check === "string" ? check : check.detail ?? check.check ?? "Preflight check"
     ),
-    auditNote: template.audit_note ?? template.auditNote ?? "Review-only admin preview. No state is changed.",
+    auditNote: template.audit_note ?? template.auditNote ?? "Action prepared with audit trail and execution context.",
     blockedReason: template.blocked_reason ?? template.blockedReason ?? "",
     unsafeWrite: Boolean(template.unsafe_write ?? template.unsafeWrite),
   };
@@ -1866,10 +2322,10 @@ function getAdminPreviewView(product, metrics) {
       selected: mappedTemplates[0],
       sourceContext:
         summary.source_context?.summary ??
-        "Admin Preview renders commands and audit copy from backend tool payloads.",
-      guardrail:
+        "Admin Actions renders commands and audit copy from backend tool payloads.",
+      executionNote:
         summary.boundary ??
-        "No admin action is run here. Risky writes are shown with preflight checks, blocked reasons, and audit notes.",
+        "Admin Actions shows the execution mode, preflight checks, and audit notes for each merchant operation.",
     },
   };
 }
@@ -1877,8 +2333,10 @@ function getAdminPreviewView(product, metrics) {
 function renderRefundOps(product, metrics) {
   const refundOps = getRefundOpsView(product, metrics);
   const activeMode = state.refundMode;
+  const statusBadge = refundOpsStatusLabel(refundOps, activeMode);
   const visibleCases = refundOps.cases.filter((item) => item.mode === activeMode);
   const activeCaseStillVisible = visibleCases.some((item) => item.id === state.activeRefundCaseId);
+  refundOpsLayout?.classList.toggle("is-prevent-mode", activeMode === "prevent");
 
   if (activeMode === "prevent") {
     state.activeRefundCaseId = null;
@@ -1891,17 +2349,15 @@ function renderRefundOps(product, metrics) {
     button.classList.toggle("active", isActive);
     button.setAttribute("aria-pressed", String(isActive));
     const mode = button.dataset.refundMode;
-    if (mode && refundOps.summary.modeCounts[mode] !== undefined) {
-      button.dataset.count = String(refundOps.summary.modeCounts[mode]);
+    if (mode) {
+      button.dataset.count = String(refundOpsModeCount(refundOps, mode));
     }
   });
 
-  refundOpsStatus.textContent =
-    refundOps.source === "live"
-      ? refundOps.summary.casesNeedingReview > 0
-        ? `${refundOps.summary.casesNeedingReview} to review`
-        : "SQLite calculated"
-      : renderInsightSourceNote();
+  refundOpsStatus.textContent = statusBadge.label;
+  refundOpsStatus.dataset.count = String(statusBadge.count);
+  refundOpsStatus.dataset.mode = activeMode;
+  refundOpsStatus.dataset.source = refundOps.source;
 
   const metricCards = [
     {
@@ -1919,7 +2375,7 @@ function renderRefundOps(product, metrics) {
     {
       label: "Cases",
       value: refundOps.summary.casesNeedingReview.toLocaleString("en-US"),
-      note: "needing review",
+      note: "open cases",
       tone: refundOps.summary.casesNeedingReview > 0 ? "warn" : "good",
     },
     {
@@ -1934,11 +2390,6 @@ function renderRefundOps(product, metrics) {
     .map(
       (card) => `
         <article class="refund-metric ${card.tone}">
-          ${renderMiniAgentButton("refunds", {
-            sectionLabel: "Refund Ops",
-            subsectionLabel: card.label,
-            label: `${card.label}: ${card.value}. ${card.note}`,
-          })}
           <span>${escapeHtml(card.label)}</span>
           <strong>${escapeHtml(card.value)}</strong>
           <small>${escapeHtml(card.note)}</small>
@@ -1952,7 +2403,7 @@ function renderRefundOps(product, metrics) {
       ? "Prevention actions"
       : activeMode === "dispute"
         ? "Chargeback disputes"
-        : "Refund review queue";
+        : "Refund queue";
 
   if (activeMode === "prevent") {
     refundCaseList.innerHTML = refundOps.preventionActions
@@ -1962,9 +2413,8 @@ function renderRefundOps(product, metrics) {
           ${renderMiniAgentButton("refunds", {
             sectionLabel: "Refund prevention",
             subsectionLabel: action.title,
-            label: `${action.impact} Recommended action: ${action.recommendedAction}`,
+            label: `${action.title}. Recommended action: ${action.recommendedAction}`,
           })}
-          <span>${escapeHtml(action.impact)}</span>
           <h4>${escapeHtml(action.title)}</h4>
           <p>${escapeHtml(action.recommendedAction)}</p>
           </article>
@@ -1987,10 +2437,9 @@ function renderRefundOps(product, metrics) {
           ${renderMiniAgentButton("refunds", {
             sectionLabel: "Refund prevention insights",
             subsectionLabel: action.title,
-            label: `${action.impact} Evidence: ${action.evidence.join(", ")}`,
+            label: `${action.title}. Evidence: ${action.evidence.join(", ")}`,
           })}
           <h4>${escapeHtml(action.title)}</h4>
-          <p>${escapeHtml(action.impact)}</p>
           <div>
             ${action.evidence.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}
           </div>
@@ -2000,14 +2449,16 @@ function renderRefundOps(product, metrics) {
     .join("");
 }
 
-function renderOpsMetric([label, value, note], promptKey, type) {
+function renderOpsMetric([label, value, note], promptKey, type, showAgentButton = true) {
   return `
     <article class="ops-metric">
-      ${renderMiniAgentButton(promptKey, {
-        sectionLabel: type,
-        subsectionLabel: label,
-        label: `${label}: ${value}. ${note}`,
-      })}
+      ${showAgentButton
+        ? renderMiniAgentButton(promptKey, {
+            sectionLabel: type,
+            subsectionLabel: label,
+            label: `${label}: ${value}. ${note}`,
+          })
+        : ""}
       <span>${escapeHtml(label)}</span>
       <strong>${escapeHtml(value)}</strong>
       <small>${escapeHtml(note)}</small>
@@ -2037,7 +2488,7 @@ function renderContentRadar(product, metrics) {
     ["Top channel", radar.summary.primaryChannel, "best first test"],
     ["KPI", radar.summary.expectedKpi, "watch next"],
   ]
-    .map((item) => renderOpsMetric(item, "content", "content radar metric"))
+    .map((item) => renderOpsMetric(item, "content", "content radar metric", false))
     .join("");
 
   contentTrendList.innerHTML = radar.trends
@@ -2120,7 +2571,7 @@ function renderContentRadar(product, metrics) {
         <button class="secondary-button" type="button" data-copy-text="${escapeHtml(activeTrend.utmPlan ?? radar.drafts.utmPlan)}">Copy UTM plan</button>
         <button class="secondary-button" type="button" data-merchant-prompt="${escapeHtml(`Create the tracked campaign row and tracking URL for ${activeTrend.title} on ${activeTrend.channel}. Explain why this campaign should be tracked before we scale it.`)}">Create campaign</button>
       </div>
-      <p class="detail-note">${escapeHtml(radar.plan.guardrail)}</p>
+      <p class="detail-note">${escapeHtml(radar.plan.executionNote)}</p>
     `
     : `<div class="empty-state compact-empty">No content trends for this seeded selection.</div>`;
 }
@@ -2139,7 +2590,7 @@ function renderRetentionSaver(product, metrics) {
       retention.summary.saveRate ? `${formatPercent(retention.summary.saveRate)} assumption` : renderInsightSourceNote(),
     ],
   ]
-    .map((item) => renderOpsMetric(item, "retention", "retention metric"))
+    .map((item) => renderOpsMetric(item, "retention", "retention metric", false))
     .join("");
 
   if (retentionRiskBadge) {
@@ -2152,12 +2603,6 @@ function renderRetentionSaver(product, metrics) {
     .map(
       (offer, index) => `
         <article class="ops-card" style="--index: ${index}">
-          ${renderMiniAgentButton("retention", {
-            sectionLabel: "Pause offers",
-            subsectionLabel: offer.label,
-            label: `${offer.label}: ${offer.bestFor}. Estimated saved ${formatCurrency(offer.estimatedSavedCents, product.currency)}`,
-          })}
-          <span>${escapeHtml(offer.bestFor)}</span>
           <h4>${escapeHtml(offer.label)}</h4>
           <strong>${formatCurrency(offer.estimatedSavedCents, product.currency)} estimated saved</strong>
           <ol>
@@ -2202,13 +2647,13 @@ function renderAdminPreview(product, metrics) {
     adminPreview.templates.find((template) => template.id === state.activeAdminActionId) ?? leadAction;
 
   adminPreviewStatus.textContent =
-    adminPreview.source === "live" ? "Review-only backend" : renderInsightSourceNote();
+    adminPreview.source === "live" ? "Backend actions" : renderInsightSourceNote();
   adminPreviewMetrics.innerHTML = [
     ["Templates", adminPreview.summary.templateCount.toLocaleString("en-US"), adminPreview.source === "live" ? "backend tool output" : "Static seed fallback"],
-    ["Safe reads", adminPreview.summary.safeReadCount.toLocaleString("en-US"), "no state change"],
-    ["Blocked writes", adminPreview.summary.blockedWriteCount.toLocaleString("en-US"), "preflight required"],
+    ["Reads", adminPreview.summary.safeReadCount.toLocaleString("en-US"), "available"],
+    ["Writes", adminPreview.summary.blockedWriteCount.toLocaleString("en-US"), "preflight checks"],
   ]
-    .map((item) => renderOpsMetric(item, "admin", "admin preview metric"))
+    .map((item) => renderOpsMetric(item, "admin", "admin action metric"))
     .join("");
 
   adminActionList.innerHTML = adminPreview.templates
@@ -2223,7 +2668,7 @@ function renderAdminPreview(product, metrics) {
         >
           <span>
             <strong>${escapeHtml(template.label)}</strong>
-            <small>${escapeHtml(template.riskLevel)} · ${template.unsafeWrite ? "blocked write" : "safe read"}</small>
+            <small>${escapeHtml(template.riskLevel)} · ${template.unsafeWrite ? "write action" : "read action"}</small>
           </span>
           <span>
             <small>${template.requiredInputs.length} inputs</small>
@@ -2237,11 +2682,11 @@ function renderAdminPreview(product, metrics) {
     ? `
       <div class="ops-detail-header">
         <div>
-          <p class="eyebrow">Admin Preview</p>
+          <p class="eyebrow">Admin Actions</p>
           <h3>${escapeHtml(activeAction.label)}</h3>
           <p>${escapeHtml(activeAction.description || adminPreview.preview.sourceContext)}</p>
         </div>
-        <span class="detail-badge">${escapeHtml(activeAction.unsafeWrite ? "Blocked write" : "Safe read")}</span>
+        <span class="detail-badge">${escapeHtml(activeAction.unsafeWrite ? "Write action" : "Read action")}</span>
         ${renderMiniAgentButton("admin", {
           sectionLabel: "Admin action detail",
           subsectionLabel: activeAction.label,
@@ -2250,7 +2695,7 @@ function renderAdminPreview(product, metrics) {
       </div>
       <div class="ops-detail-grid">
         <div>
-          <span>Command preview</span>
+          <span>Command</span>
           <p>${escapeHtml(activeAction.commandText)}</p>
         </div>
         <div>
@@ -2264,14 +2709,14 @@ function renderAdminPreview(product, metrics) {
       ${
         activeAction.blockedReason
           ? `<p class="detail-note">${escapeHtml(activeAction.blockedReason)}</p>`
-          : `<p class="detail-note">${escapeHtml(adminPreview.preview.guardrail)}</p>`
+          : `<p class="detail-note">${escapeHtml(adminPreview.preview.executionNote)}</p>`
       }
       <div class="ops-copy-row">
         <button class="secondary-button" type="button" data-copy-text="${escapeHtml(activeAction.commandText)}">Copy command</button>
         <button class="secondary-button" type="button" data-copy-text="${escapeHtml(activeAction.auditNote)}">Copy audit note</button>
       </div>
     `
-    : `<div class="empty-state compact-empty">No admin preview template selected.</div>`;
+    : `<div class="empty-state compact-empty">No admin action selected.</div>`;
 }
 
 function renderShortestQa(product, metrics) {
@@ -2290,9 +2735,9 @@ function renderShortestQa(product, metrics) {
   shortestQaMetrics.innerHTML = [
     ["Suites", qa.summary.suiteCount.toLocaleString("en-US"), "journeys"],
     ["Assertions", qa.summary.assertionCount.toLocaleString("en-US"), "checks"],
-    ["Scope", qa.source === "live" ? "Backend" : "Local", "reviewable tests"],
+    ["Scope", qa.source === "live" ? "Backend" : "Local", "automated tests"],
   ]
-    .map((item) => renderOpsMetric(item, "qa", "QA metric"))
+    .map((item) => renderOpsMetric(item, "qa", "QA metric", false))
     .join("");
 
   shortestQaList.innerHTML = qa.suites
@@ -2400,14 +2845,13 @@ function renderRefundPreventionDetail(action, product) {
         <p class="eyebrow">Prevention</p>
         <h3>${escapeHtml(action.title)}</h3>
       </div>
-      <span class="detail-badge">Review-only</span>
+      <span class="detail-badge">Action-ready</span>
       ${renderMiniAgentButton("refunds", {
         sectionLabel: "Refund prevention detail",
         subsectionLabel: action.title,
-        label: `${action.impact} Recommended action: ${action.recommendedAction}`,
+        label: `${action.title}. Recommended action: ${action.recommendedAction}`,
       })}
     </div>
-    <p class="refund-detail-copy">${escapeHtml(action.impact)}</p>
     <div class="refund-detail-section">
       <h4>Recommended action</h4>
       <p>${escapeHtml(action.recommendedAction)}</p>
@@ -2415,7 +2859,7 @@ function renderRefundPreventionDetail(action, product) {
     <div class="refund-evidence-list">
       ${action.evidence.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}
     </div>
-    <p class="detail-note">No changes are applied to ${escapeHtml(product.name)} from this panel.</p>
+    <p class="detail-note">This panel prepares the product update workflow for ${escapeHtml(product.name)}.</p>
   `;
 }
 
@@ -2508,7 +2952,6 @@ function renderRefundEmptyDetail(mode) {
 
 function renderSuggestions(product, metrics) {
   if (!state.generated) {
-    confidenceSummary.textContent = "Waiting";
     suggestions.innerHTML = `<div class="empty-state">Choose a product and generate insights.</div>`;
     renderActionReview([]);
     return;
@@ -2516,8 +2959,6 @@ function renderSuggestions(product, metrics) {
 
   const signals = detectSignals(product, metrics);
   const cards = generateSuggestions(product, metrics, signals);
-  const strongCount = signals.filter((signal) => signal.confidence === "high").length;
-  confidenceSummary.textContent = strongCount > 0 ? `${strongCount} high-confidence signal` : `${signals.length} signal`;
   const cardIds = new Set(cards.map((card) => card.id));
 
   state.expandedSuggestionIds.forEach((id) => {
@@ -2537,10 +2978,6 @@ function renderSuggestions(product, metrics) {
 function renderSuggestionCard(card, index) {
   const isExpanded = state.expandedSuggestionIds.has(card.id);
   const detailId = `suggestion-detail-${card.id}`;
-  const prompt = buildMerchantPrompt("suggestions", {
-    label: `${card.title}. ${card.recommendation}`,
-    type: "suggested move",
-  });
 
   return `
     <article class="suggestion-card ${isExpanded ? "expanded" : ""}" style="--index: ${index}">
@@ -2557,11 +2994,8 @@ function renderSuggestionCard(card, index) {
           ${renderMiniAgentButton("suggestions", {
             sectionLabel: "Suggested next moves",
             subsectionLabel: card.title,
-            label: `${card.title}: ${card.reason ?? card.whyItMatters ?? card.recommendation}`,
+            label: `${card.label}: ${card.confidence} confidence. ${card.recommendation} ${card.reason ?? card.whyItMatters ?? ""}`,
           })}
-          <button class="suggestion-ask-button" type="button" data-merchant-prompt="${escapeHtml(prompt)}">
-            Ask Merchant
-          </button>
           <button
             class="suggestion-expand-button"
             type="button"
@@ -2611,7 +3045,7 @@ function renderActionReview(cards) {
 
   actionReview.hidden = false;
   actionReviewTitle.textContent = activeCard.action?.reviewTitle ?? activeCard.title;
-  actionReviewMeta.textContent = `${activeCard.label} · ${activeCard.confidence} confidence · review-only`;
+  actionReviewMeta.textContent = `${activeCard.label} · ${activeCard.confidence} confidence · ready`;
   actionReviewCopy.textContent = copyText;
   actionReviewCopyButton.dataset.copyText = copyText;
   actionReviewCopyStatus.textContent = "";
@@ -2642,9 +3076,24 @@ function render() {
 }
 
 function activeMerchantSession() {
+  return findMerchantSessionById(state.merchantSessionId);
+}
+
+function findMerchantSessionById(sessionId) {
+  const normalized = String(sessionId ?? "").trim();
+  if (!normalized) return null;
+
   return [...state.merchantSessions.recent, ...state.merchantSessions.saved].find(
-    (session) => session.id === state.merchantSessionId,
-  );
+    (session) => session.id === normalized,
+  ) ?? null;
+}
+
+function merchantLocalMessageCount() {
+  return state.merchantMessages.filter((message) => message.id !== INITIAL_MERCHANT_MESSAGE.id).length;
+}
+
+function merchantSessionIsManageable(session = activeMerchantSession()) {
+  return Number(session?.message_count ?? 0) > 0 || merchantLocalMessageCount() > 0;
 }
 
 function merchantSessionTitle(session) {
@@ -2686,19 +3135,43 @@ function renderMerchantSessionList(sessions, element, emptyText) {
       const isSaved = Boolean(session.saved_at);
       const title = merchantSessionTitle(session);
       const lastTouched = session.latest_message_at ?? session.updated_at ?? session.created_at;
+      const saveAction = isSaved ? "Unsave" : "Save";
 
       return `
-        <button
+        <article
           class="merchant-session-item ${isActive ? "active" : ""}"
-          type="button"
-          data-merchant-session-id="${escapeHtml(session.id)}"
-          aria-pressed="${isActive ? "true" : "false"}"
         >
-          <span class="merchant-session-title">${escapeHtml(title)}</span>
-          <span class="merchant-session-meta">
-            ${escapeHtml(formatSessionDate(lastTouched))} · ${Number(session.message_count ?? 0).toLocaleString()} msgs${isSaved ? " · saved" : ""}
+          <button
+            class="merchant-session-main"
+            type="button"
+            data-merchant-session-id="${escapeHtml(session.id)}"
+            aria-pressed="${isActive ? "true" : "false"}"
+          >
+            <span class="merchant-session-title">${escapeHtml(title)}</span>
+            <span class="merchant-session-meta">
+              ${escapeHtml(formatSessionDate(lastTouched))} · ${Number(session.message_count ?? 0).toLocaleString()} msgs${isSaved ? " · saved" : ""}
+            </span>
+          </button>
+          <span class="merchant-session-row-actions" aria-label="${escapeHtml(title)} controls">
+            <button
+              class="merchant-session-row-button"
+              type="button"
+              data-merchant-session-save-id="${escapeHtml(session.id)}"
+              data-merchant-session-save-next="${isSaved ? "false" : "true"}"
+              aria-label="${escapeHtml(`${saveAction} ${title}`)}"
+            >
+              ${escapeHtml(saveAction)}
+            </button>
+            <button
+              class="merchant-session-row-button danger"
+              type="button"
+              data-merchant-session-delete-id="${escapeHtml(session.id)}"
+              aria-label="${escapeHtml(`Delete ${title}`)}"
+            >
+              Delete
+            </button>
           </span>
-        </button>
+        </article>
       `;
     })
     .join("");
@@ -2707,8 +3180,6 @@ function renderMerchantSessionList(sessions, element, emptyText) {
 function renderMerchantSessions() {
   const currentSession = activeMerchantSession();
   const saved = Boolean(currentSession?.saved_at);
-  const title = merchantSessionTitle(currentSession);
-  const messageCount = Number(currentSession?.message_count ?? 0);
   const activeView = state.merchantSessionView === "saved" ? "saved" : "recent";
 
   merchantSessionTabs.forEach((tab) => {
@@ -2731,25 +3202,29 @@ function renderMerchantSessions() {
     state.merchantSessionsLoading ? "Loading saved chats" : "No saved chats yet",
   );
 
-  merchantActiveTitle.textContent = title;
-  merchantActiveMeta.textContent = currentSession
-    ? `${formatSessionDate(currentSession.latest_message_at ?? currentSession.updated_at)} · ${messageCount.toLocaleString()} messages${saved ? " · saved" : ""}`
-    : "Local demo";
-
   merchantSaveChatButton.textContent = saved ? "Unsave" : "Save";
-  merchantSaveChatButton.disabled = !state.merchantSessionId;
-  merchantRenameChatButton.disabled = !state.merchantSessionId;
-  merchantDeleteChatButton.disabled = !state.merchantSessionId;
+  const canManageCurrentSession = Boolean(state.merchantSessionId) && merchantSessionIsManageable(currentSession);
+  merchantSaveChatButton.disabled = !canManageCurrentSession || state.merchantSending;
+  merchantRenameChatButton.disabled = !canManageCurrentSession || state.merchantSending;
+  merchantDeleteChatButton.disabled = !canManageCurrentSession || state.merchantSending;
 }
 
 function renderMerchantChat() {
-  merchantMessages.innerHTML = state.merchantMessages
+  const messageMarkup = state.merchantMessages
     .map((message) => {
       const citations = Array.isArray(message.citations) ? message.citations : [];
       const followups = Array.isArray(message.followups) ? message.followups : [];
+      const isAssistant = message.role === "assistant";
 
       return `
         <article class="merchant-message ${escapeHtml(message.role)}">
+          ${
+            isAssistant
+              ? `<div class="merchant-message-avatar" aria-hidden="true">
+                  <img src="./assets/gumroad-merchant-icon.png" alt="" />
+                </div>`
+              : ""
+          }
           <div class="merchant-message-body">
             ${renderMerchantMessageContent(message.content)}
             ${
@@ -2787,6 +3262,28 @@ function renderMerchantChat() {
       `;
     })
     .join("");
+
+  const thinkingMarkup = state.merchantSending
+    ? `
+      <article class="merchant-message assistant merchant-message-thinking" aria-live="polite" aria-label="Gumroad Merchant is thinking">
+        <div class="merchant-message-avatar" aria-hidden="true">
+          <img src="./assets/gumroad-merchant-icon.png" alt="" />
+        </div>
+        <div class="merchant-message-body">
+          <div class="merchant-thinking-indicator">
+            <span>Thinking</span>
+            <span class="merchant-thinking-dots" aria-hidden="true">
+              <i></i>
+              <i></i>
+              <i></i>
+            </span>
+          </div>
+        </div>
+      </article>
+    `
+    : "";
+
+  merchantMessages.innerHTML = `${messageMarkup}${thinkingMarkup}`;
   merchantMessages.scrollTop = merchantMessages.scrollHeight;
   merchantSamples.hidden =
     state.merchantSamplesDismissed || state.merchantMessages.length > 1;
@@ -2859,7 +3356,7 @@ async function loadMerchantSessions() {
   try {
     const sessions = await merchantFetch(
       `/api/agent/chat/sessions?${new URLSearchParams({
-        recent_limit: "10",
+        recent_limit: "2",
         saved_limit: "50",
       })}`
     );
@@ -2999,22 +3496,37 @@ async function loadMerchantSession(sessionId) {
   }
 }
 
-async function toggleSaveMerchantSession() {
-  if (!state.merchantSessionId || state.merchantSending) {
+async function toggleSaveMerchantSession(sessionId = state.merchantSessionId, explicitSaved = null) {
+  const normalized = String(sessionId ?? "").trim();
+
+  if (!normalized || state.merchantSending) {
     return;
   }
 
-  const currentSession = activeMerchantSession();
-  const nextSaved = !Boolean(currentSession?.saved_at);
+  const currentSession = findMerchantSessionById(normalized);
+  const isCurrentSession = normalized === state.merchantSessionId;
+  const canManageTarget = Number(currentSession?.message_count ?? 0) > 0
+    || (isCurrentSession && merchantLocalMessageCount() > 0);
+
+  if (!canManageTarget) {
+    merchantStatus.textContent = "Send first";
+    renderMerchantChat();
+    return;
+  }
+
+  const nextSaved =
+    typeof explicitSaved === "boolean" ? explicitSaved : !Boolean(currentSession?.saved_at);
 
   try {
     merchantStatus.textContent = nextSaved ? "Saving" : "Unsaving";
-    await merchantFetch(`/api/agent/chat/sessions/${encodeURIComponent(state.merchantSessionId)}`, {
+    await merchantFetch(`/api/agent/chat/sessions/${encodeURIComponent(normalized)}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ saved: nextSaved }),
     });
-    state.merchantSessionView = nextSaved ? "saved" : "recent";
+    if (isCurrentSession && nextSaved) {
+      state.merchantSessionView = "saved";
+    }
     await loadMerchantSessions();
     merchantStatus.textContent = "Ready";
   } catch {
@@ -3053,12 +3565,24 @@ async function renameMerchantSession() {
   }
 }
 
-async function deleteMerchantSession() {
-  if (!state.merchantSessionId || state.merchantSending) {
+async function deleteMerchantSession(sessionId = state.merchantSessionId) {
+  const normalized = String(sessionId ?? "").trim();
+
+  if (!normalized || state.merchantSending) {
     return;
   }
 
-  const currentSession = activeMerchantSession();
+  const currentSession = findMerchantSessionById(normalized);
+  const isCurrentSession = normalized === state.merchantSessionId;
+  const canManageTarget = Number(currentSession?.message_count ?? 0) > 0
+    || (isCurrentSession && merchantLocalMessageCount() > 0);
+
+  if (!canManageTarget) {
+    merchantStatus.textContent = "Nothing to delete";
+    renderMerchantChat();
+    return;
+  }
+
   const confirmed = window.confirm(`Delete "${merchantSessionTitle(currentSession)}" from this demo?`);
 
   if (!confirmed) {
@@ -3067,11 +3591,16 @@ async function deleteMerchantSession() {
 
   try {
     merchantStatus.textContent = "Deleting";
-    const deletedSessionId = state.merchantSessionId;
-    await merchantFetch(`/api/agent/chat/sessions/${encodeURIComponent(deletedSessionId)}`, {
+    await merchantFetch(`/api/agent/chat/sessions/${encodeURIComponent(normalized)}`, {
       method: "DELETE",
     });
-    await createNewMerchantChat();
+    if (isCurrentSession) {
+      await createNewMerchantChat();
+    } else {
+      await loadMerchantSessions();
+      merchantStatus.textContent = "Ready";
+      renderMerchantChat();
+    }
   } catch {
     merchantStatus.textContent = "Offline";
     renderMerchantChat();
@@ -3347,6 +3876,9 @@ async function loadAnalyticsDataset({ silent = false } = {}) {
 }
 
 function formatDelta(value, suffix) {
+  if (!Number.isFinite(value)) {
+    return `No ${suffix} comparison`;
+  }
   const sign = value > 0 ? "+" : "";
   return `${sign}${formatPercent(value)} vs ${suffix}`;
 }
@@ -3431,44 +3963,9 @@ function getSortedSources(metrics) {
   });
 }
 
-function renderChartDetail(product, metrics) {
-  chartExpandButton.setAttribute("aria-expanded", String(state.chartExpanded));
-  chartExpandButton.classList.toggle("expanded", state.chartExpanded);
-  chartExpandButton.querySelector("span:last-child").textContent = state.chartExpanded
-    ? "Collapse"
-    : "Expand";
-  chartDetailPanel.hidden = !state.chartExpanded;
-
-  if (!state.chartExpanded) {
-    chartSourceBreakdown.innerHTML = "";
-    return;
-  }
-
-  const sortedSources = getSortedSources(metrics);
-  const maxViews = Math.max(...sortedSources.map((source) => source.views), 1);
-  chartSourceBreakdown.innerHTML = sortedSources
-    .map((source, index) => {
-      const width = Math.max(7, (source.views / maxViews) * 100);
-
-      return `
-        <article class="source-breakdown-row" style="--index: ${index}">
-          <div>
-            <strong>${escapeHtml(source.name)}</strong>
-            <span>${source.views.toLocaleString()} views · ${source.sales.toLocaleString()} sales · ${formatPercent(source.conversion)} conversion</span>
-          </div>
-          <strong>${formatCurrency(source.revenueCents, product.currency)}</strong>
-          ${renderMiniAgentButton("sources", {
-            sectionLabel: "Chart source breakdown",
-            subsectionLabel: source.name,
-            label: `${source.name}: ${source.views.toLocaleString()} views, ${source.sales.toLocaleString()} sales, ${formatPercent(source.conversion)} conversion, ${formatCurrency(source.revenueCents, product.currency)} revenue`,
-          })}
-          <div class="source-breakdown-track" aria-hidden="true">
-            <span style="width: ${width}%"></span>
-          </div>
-        </article>
-      `;
-    })
-    .join("");
+function renderChartDetail() {
+  chartDetailPanel.hidden = true;
+  chartSourceBreakdown.innerHTML = "";
 }
 
 function sortByDirection(items, getValue, direction) {
@@ -3526,8 +4023,8 @@ function normalizeMerchantMessageContent(content) {
   }
 
   return raw
-    .replace(/\s+(First prevention move:|Recommended action:|Audit note:|Copy packet:|Tracking URL:|Risk covered:|Guardrail:|Suggested action:|Blocked reason:|Sources:)/g, "\n\n$1")
-    .replace(/\. (The top case|Top Refund Ops cases|Start with|Week 1 move|Because this|This does not|No email|No admin action|These are natural-language|My first next move|Churn is also readable|The SQLite snapshot|I query it)/g, ".\n\n$1")
+    .replace(/\s+(First prevention move:|Recommended action:|Audit note:|Copy packet:|Tracking URL:|Risk covered:|Execution note:|Suggested action:|Blocked reason:|Sources:)/g, "\n\n$1")
+    .replace(/\. (The top case|Top Refund Ops cases|Start with|Week 1 move|Because this|This result|No email|No admin action|These are natural-language|My first next move|Churn is also readable|The SQLite snapshot|I query it)/g, ".\n\n$1")
     .replace(/; (?=[A-Z][A-Za-z0-9 /-]{2,48}:)/g, "\n- ");
 }
 
@@ -3607,6 +4104,29 @@ function setMerchantFullscreen(open) {
   }
 }
 
+function setMerchantRailCollapsed(collapsed, persist = true) {
+  state.merchantRailCollapsed = Boolean(collapsed);
+  merchantLanesGroup?.classList.toggle("is-merchant-rail-collapsed", state.merchantRailCollapsed);
+
+  if (merchantRailToggle) {
+    const actionLabel = state.merchantRailCollapsed ? "Expand merchant menu" : "Collapse merchant menu";
+    merchantRailToggle.setAttribute("aria-expanded", String(!state.merchantRailCollapsed));
+    merchantRailToggle.setAttribute("aria-label", actionLabel);
+    merchantRailToggle.title = actionLabel;
+    const toggleLabel = merchantRailToggle.querySelector(".merchant-rail-toggle-label");
+    if (toggleLabel) {
+      toggleLabel.textContent = state.merchantRailCollapsed ? "Expand menu" : "Collapse menu";
+    }
+  }
+
+  if (persist) {
+    window.localStorage.setItem(
+      MERCHANT_RAIL_COLLAPSED_STORAGE_KEY,
+      state.merchantRailCollapsed ? "true" : "false",
+    );
+  }
+}
+
 function resetRangeScopedState() {
   state.activeSuggestionId = null;
   state.expandedSuggestionIds.clear();
@@ -3652,6 +4172,19 @@ dateRangeSelect?.addEventListener("change", (event) => {
 
 chartRangeSelect?.addEventListener("change", (event) => {
   setDateRange(event.target.value);
+});
+
+chartMetricButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const metricKey = button.dataset.chartMetric;
+
+    if (!trendChartMetrics[metricKey]) {
+      return;
+    }
+
+    state.activeTrendMetric = metricKey;
+    render();
+  });
 });
 
 customStartDate?.addEventListener("input", (event) => {
@@ -3838,14 +4371,10 @@ themeToggle?.addEventListener("click", () => {
   applyTheme(nextTheme);
 });
 
-chartExpandButton.addEventListener("click", () => {
-  state.chartExpanded = !state.chartExpanded;
-  render();
-});
-
-churnSortButton.addEventListener("click", () => {
-  state.churnSortDirection = toggleDirection(state.churnSortDirection);
-  render();
+clickSignalClose?.addEventListener("click", () => {
+  if (clickSignalHeader) {
+    clickSignalHeader.hidden = true;
+  }
 });
 
 locationSortButton?.addEventListener("click", () => {
@@ -3957,6 +4486,10 @@ merchantFullscreenButton?.addEventListener("click", () => {
   setMerchantFullscreen(!state.merchantChatFullscreen);
 });
 
+merchantRailToggle?.addEventListener("click", () => {
+  setMerchantRailCollapsed(!state.merchantRailCollapsed);
+});
+
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") {
     return;
@@ -4012,9 +4545,13 @@ merchantResizeGrip.addEventListener("keydown", (event) => {
 });
 
 merchantNewChatButton.addEventListener("click", createNewMerchantChat);
-merchantSaveChatButton.addEventListener("click", toggleSaveMerchantSession);
+merchantSaveChatButton.addEventListener("click", () => {
+  void toggleSaveMerchantSession();
+});
 merchantRenameChatButton.addEventListener("click", renameMerchantSession);
-merchantDeleteChatButton.addEventListener("click", deleteMerchantSession);
+merchantDeleteChatButton.addEventListener("click", () => {
+  void deleteMerchantSession();
+});
 
 merchantSessionTabs.forEach((tab) => {
   tab.addEventListener("click", () => {
@@ -4023,25 +4560,35 @@ merchantSessionTabs.forEach((tab) => {
   });
 });
 
-merchantSessionList.addEventListener("click", (event) => {
+function handleMerchantSessionListClick(event) {
+  const deleteButton = event.target.closest("[data-merchant-session-delete-id]");
+
+  if (deleteButton) {
+    void deleteMerchantSession(deleteButton.dataset.merchantSessionDeleteId ?? "");
+    return;
+  }
+
+  const saveButton = event.target.closest("[data-merchant-session-save-id]");
+
+  if (saveButton) {
+    void toggleSaveMerchantSession(
+      saveButton.dataset.merchantSessionSaveId ?? "",
+      saveButton.dataset.merchantSessionSaveNext === "true",
+    );
+    return;
+  }
+
   const sessionButton = event.target.closest("[data-merchant-session-id]");
 
   if (!sessionButton) {
     return;
   }
 
-  loadMerchantSession(sessionButton.dataset.merchantSessionId ?? "");
-});
+  void loadMerchantSession(sessionButton.dataset.merchantSessionId ?? "");
+}
 
-merchantSavedSessionList.addEventListener("click", (event) => {
-  const sessionButton = event.target.closest("[data-merchant-session-id]");
-
-  if (!sessionButton) {
-    return;
-  }
-
-  loadMerchantSession(sessionButton.dataset.merchantSessionId ?? "");
-});
+merchantSessionList.addEventListener("click", handleMerchantSessionListClick);
+merchantSavedSessionList.addEventListener("click", handleMerchantSessionListClick);
 
 merchantSamples.addEventListener("click", (event) => {
   const sampleButton = event.target.closest("[data-merchant-question]");
@@ -4088,6 +4635,10 @@ function toCsv(columns, rows) {
 setupSignalAccordions();
 setupPanelGroups();
 applyTheme(storedTheme());
+setMerchantRailCollapsed(
+  window.localStorage.getItem(MERCHANT_RAIL_COLLAPSED_STORAGE_KEY) === "true",
+  false,
+);
 renderProductOptions();
 render();
 syncWorkspaceViewFromHash();
