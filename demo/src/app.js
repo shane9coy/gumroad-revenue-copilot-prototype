@@ -3301,12 +3301,17 @@ async function initMerchantChat() {
     state.merchantSessionId = session.session_id;
     window.localStorage.setItem(MERCHANT_SESSION_STORAGE_KEY, session.session_id);
     merchantStatus.textContent = "Ready";
-    await loadMerchantHistory();
-    await loadMerchantSessions();
+    try {
+      await loadMerchantHistory();
+    } catch {
+      state.merchantMessages = initialMerchantMessages();
+      state.merchantSamplesDismissed = false;
+    }
   } catch {
     merchantStatus.textContent = "Offline";
   }
 
+  await loadMerchantSessions();
   await initMerchantVoice();
   renderMerchantChat();
 }
@@ -3345,7 +3350,7 @@ async function loadMerchantSessions() {
   try {
     const sessions = await merchantFetch(
       `/api/agent/chat/sessions?${new URLSearchParams({
-        recent_limit: "2",
+        recent_limit: "10",
         saved_limit: "50",
       })}`
     );

@@ -204,7 +204,7 @@ html[data-theme="dark"] .sidebar {
   flex: 0 0 auto;
   border: 2px solid var(--line-strong);
   border-radius: var(--radius);
-  background: var(--accent-fill);
+  background: #F882E1;
   color: var(--ink);
   font-size: 29px;
   font-weight: 900;
@@ -2835,9 +2835,6 @@ html[data-theme="dark"] .mini-agent-button {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
-  margin-top: 10px;
-  border-top: 1px solid rgba(36, 27, 24, 0.14);
-  padding-top: 10px;
 }
 
 .merchant-session-toolbar .quiet-button {
@@ -2858,17 +2855,44 @@ html[data-theme="dark"] .mini-agent-button {
   box-shadow: none;
 }
 
+html[data-theme="dark"] .merchant-session-toolbar .quiet-button,
+html[data-theme="dark"] .merchant-session-tab {
+  border-color: rgba(255, 253, 248, 0.18);
+  background: #303030;
+  color: var(--hero-text);
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .merchant-session-toolbar .quiet-button:hover,
+html[data-theme="dark"] .merchant-session-toolbar .quiet-button:focus-visible,
+html[data-theme="dark"] .merchant-session-tab:hover,
+html[data-theme="dark"] .merchant-session-tab:focus-visible,
+html[data-theme="dark"] .merchant-session-tab.active {
+  border-color: rgba(248, 131, 225, 0.48);
+  background: #3a3a3a;
+  color: var(--hero-text);
+}
+
+html[data-theme="dark"] .merchant-session-controls {
+  border-top-color: rgba(255, 253, 248, 0.18);
+}
+
 .merchant-chat-shell {
   display: grid;
   grid-template-columns: 132px minmax(0, 1fr);
   gap: 10px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .merchant-session-sidebar {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 8px;
   min-width: 0;
-  max-height: 402px;
-  overflow: auto;
+  height: var(--merchant-chat-height, 420px);
+  min-height: 260px;
+  max-height: 760px;
+  overflow: hidden;
   padding: 8px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -2877,11 +2901,24 @@ html[data-theme="dark"] .mini-agent-button {
     rgba(255, 253, 248, 0.82);
 }
 
+.merchant-session-history {
+  min-height: 0;
+  overflow: auto;
+  padding-right: 2px;
+  scrollbar-gutter: stable;
+}
+
+.merchant-session-controls {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid rgba(36, 27, 24, 0.14);
+  padding-top: 8px;
+}
+
 .merchant-session-tabs {
   display: grid;
   grid-template-columns: 1fr;
   gap: 6px;
-  margin-bottom: 8px;
 }
 
 .merchant-session-tab {
@@ -5449,8 +5486,9 @@ html[data-theme="dark"] .evidence-value {
   }
 
   .merchant-panel.is-fullscreen .merchant-session-sidebar {
-    height: auto;
-    max-height: 156px;
+    height: min(320px, 42vh);
+    min-height: 240px;
+    max-height: 320px;
   }
 
   .workspace {
@@ -5659,7 +5697,9 @@ html[data-theme="dark"] .evidence-value {
   }
 
   .merchant-session-sidebar {
-    max-height: 220px;
+    height: 260px;
+    min-height: 220px;
+    max-height: 300px;
   }
 
   .source-row,
