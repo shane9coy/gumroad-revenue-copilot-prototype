@@ -2832,15 +2832,19 @@ html[data-theme="dark"] .mini-agent-button {
 }
 
 .merchant-session-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+  border-top: 1px solid rgba(36, 27, 24, 0.14);
+  padding-top: 10px;
 }
 
 .merchant-session-toolbar .quiet-button {
+  min-width: 0;
   min-height: 32px;
-  flex: 1 1 72px;
+  padding: 0 6px;
+  font-size: 10px;
 }
 
 .merchant-session-toolbar .danger {
@@ -2936,7 +2940,7 @@ html[data-theme="dark"] .mini-agent-button {
   display: grid;
   width: 100%;
   min-height: 54px;
-  gap: 7px;
+  gap: 4px;
   padding: 8px;
   border: 1px solid rgba(49, 91, 179, 0.42);
   border-radius: var(--radius);
@@ -3001,41 +3005,6 @@ html[data-theme="dark"] .mini-agent-button {
 
 .merchant-session-item.active .merchant-session-meta {
   color: rgba(33, 24, 23, 0.72);
-}
-
-.merchant-session-row-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px;
-}
-
-.merchant-session-row-button {
-  min-width: 0;
-  min-height: 27px;
-  border: 1px solid rgba(36, 27, 24, 0.16);
-  border-radius: 6px;
-  padding: 0 5px;
-  background: rgba(255, 253, 248, 0.72);
-  color: var(--gumroad-plum);
-  cursor: pointer;
-  font-size: 9px;
-  font-weight: 950;
-  text-transform: uppercase;
-  transition:
-    border-color 180ms var(--motion),
-    background 180ms var(--motion),
-    color 180ms var(--motion);
-}
-
-.merchant-session-row-button:hover,
-.merchant-session-row-button:focus-visible {
-  border-color: var(--line-strong);
-  background: var(--accent-fill);
-  color: var(--hero-text);
-}
-
-.merchant-session-row-button.danger {
-  color: var(--rose);
 }
 
 .merchant-session-empty {
@@ -5691,10 +5660,6 @@ html[data-theme="dark"] .evidence-value {
 
   .merchant-session-sidebar {
     max-height: 220px;
-  }
-
-  .merchant-session-toolbar .quiet-button {
-    flex-basis: calc(50% - 4px);
   }
 
   .source-row,
