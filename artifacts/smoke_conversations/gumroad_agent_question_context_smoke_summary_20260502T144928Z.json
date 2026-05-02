@@ -1,0 +1,66 @@
+{
+  "generated_at": "20260502T144928Z",
+  "api_base": "http://127.0.0.1:8001",
+  "health": {
+    "ok": true,
+    "profile": "test",
+    "products": 4,
+    "openai_key_present": true,
+    "redis": {
+      "enabled": true,
+      "available": true,
+      "error": null
+    },
+    "voice": {
+      "enabled": false,
+      "configured": false,
+      "reason": "XAI_VOICE_ENABLED is false"
+    }
+  },
+  "refresh": {
+    "ok": true,
+    "refreshed": false,
+    "source": "seeded local demo fixtures",
+    "source_hash": "96a5c1fa75954086a267534935d8cac6f4cfece7c016ccb36438e9211ab856b2",
+    "product_count": 4,
+    "traffic_source_rows": 30,
+    "customer_sale_rows": 15,
+    "refreshed_at": "2026-05-02T14:44:44.680557+00:00"
+  },
+  "product_count": 4,
+  "expected_model": "gpt-5.4-nano",
+  "live_probe": {
+    "model": "gpt-5.4-nano",
+    "fallback": false,
+    "passes_live": true,
+    "data_token_count": 9,
+    "citation_labels": [
+      "All products",
+      "Tighten the first-screen positioning",
+      "Lean into BeatStars"
+    ],
+    "elapsed_seconds": 5.6
+  },
+  "results": [
+    {
+      "label": "5-pass-question-context",
+      "session_id": "gm-f2dfdd6aea2d47aaa55256c7219e2e0d",
+      "turn_count": 5,
+      "elapsed_seconds": 36.0,
+      "unique_answer_count": 5,
+      "unique_data_token_count": 43,
+      "failed_turns": [],
+      "passes": true
+    },
+    {
+      "label": "10-pass-question-context",
+      "session_id": "gm-5fab9423d53f4f48ae856def9f15823a",
+      "turn_count": 10,
+      "elapsed_seconds": 78.36,
+      "unique_answer_count": 10,
+      "unique_data_token_count": 101,
+      "failed_turns": [],
+      "passes": true
+    }
+  ]
+}

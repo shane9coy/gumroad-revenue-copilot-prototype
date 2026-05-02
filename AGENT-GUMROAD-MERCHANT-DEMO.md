@@ -3,7 +3,7 @@
 This demo is a fast, standalone proof of the Revenue Copilot data flow. It is intentionally local-first and static: no Gumroad scraping, no production Gumroad data, and no network access to Gumroad is required.
 
 The primary no-web-UI path is now Gumroad Merchant MCP. Configure the stdio
-server from `MCP.md`, then ask Codex to call the Gumroad Merchant tools directly.
+server from `MCPGuide.md`, then ask Codex to call the Gumroad Merchant tools directly.
 The dashboard remains useful as a visual proof surface.
 
 ## Run Locally
@@ -77,7 +77,7 @@ Then open `http://localhost:8090/`.
 
 The demo uses seeded local demo data only. The sample products, views, sales,
 refunds, referrers, Refund Ops cases, Content Radar trend angles, Retention
-Saver estimates, Admin Preview action templates, Shortest QA scenarios, audit notes, and
+Saver estimates, Admin Actions templates, Shortest QA scenarios, audit notes, and
 recommendation evidence are synthetic fixtures created to prove the product
 experience and data flow.
 
@@ -149,7 +149,7 @@ Gumroad Rails models/database
   -> UI
 ```
 
-In the real product, Rails owns the source-of-truth facts from existing models and reporting tables. A metrics builder computes creator/product metrics deterministically. A signal detector finds high-confidence revenue opportunities from those facts. An AI suggestion service packages the approved signals into creator-facing recommendations with cited evidence. The UI renders those suggestions as reviewable next moves.
+In the real product, Rails owns the source-of-truth facts from existing models and reporting tables. A metrics builder computes creator/product metrics deterministically. A signal detector finds high-confidence revenue opportunities from those facts. An AI suggestion service packages the approved signals into creator-facing recommendations with cited evidence. The UI renders those suggestions as action-ready next moves.
 
 The AI layer should not calculate business metrics or invent evidence. It should only explain and prioritize precomputed facts.
 

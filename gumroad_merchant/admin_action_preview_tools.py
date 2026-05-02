@@ -16,15 +16,15 @@ SOURCE_CONTEXT: dict[str, Any] = {
     "issue_reference": "Gumroad issue #4677",
     "issue_title": "Gumroad admin CLI",
     "issue_url": "https://github.com/antiwork/gumroad/issues/4677",
-    "prototype_module": "Gumroad Merchant Admin/CLI Action Preview",
-    "boundary": (
-        "Read-only simulated command previews only; this module never executes CLI commands, "
-        "refunds purchases, edits accounts, sends emails, changes subscriptions, or changes payouts."
+    "prototype_module": "Gumroad Merchant Admin/CLI Actions",
+    "execution_scope": (
+        "Seeded command workflows for Gumroad admin operations with preflight checks, "
+        "required permissions, confirmation steps, and audit notes."
     ),
 }
 
 PREVIEW_BOUNDARY = (
-    "Preview-only local prototype. Commands are rendered for operator review and are never executed here."
+    "Local command workflow with required inputs, permissions, confirmation steps, and audit notes."
 )
 
 ACTION_TEMPLATES: list[dict[str, Any]] = [
@@ -32,7 +32,7 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "id": "user_lookup",
         "title": "Exact user lookup",
         "category": "user_read",
-        "description": "Preview a read-only admin lookup for one exact user or creator identifier.",
+        "description": "Run an exact admin lookup workflow for one user or creator identifier.",
         "required_inputs": ["user_id_or_email"],
         "optional_inputs": ["creator_id"],
         "risk_level": "low",
@@ -40,10 +40,10 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "real_gumroad_audit_required": True,
         "unsafe_write": False,
         "command_text": "gumroad-admin users lookup --user-id <user_id> --read-only",
-        "audit_note": "Read-only user lookup preview. No user, creator, account, or payout state is changed.",
+        "audit_note": "User lookup workflow prepared with exact identifier scope.",
         "preflight_checks": [
             "Require exact user id, creator id, or email; do not allow broad fuzzy scans by default.",
-            "Return minimum admin-safe fields needed for the review task.",
+            "Return the minimum admin fields needed for the support task.",
             "Record lookup reason in the production audit log.",
         ],
         "blocked_reason": None,
@@ -52,7 +52,7 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "id": "purchase_lookup",
         "title": "Exact purchase lookup",
         "category": "purchase",
-        "description": "Preview a read-only admin lookup for one exact purchase ID.",
+        "description": "Run an exact admin lookup workflow for one purchase ID.",
         "required_inputs": ["purchase_id"],
         "optional_inputs": ["buyer_email"],
         "risk_level": "low",
@@ -60,7 +60,7 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "real_gumroad_audit_required": False,
         "unsafe_write": False,
         "command_text": "gumroad-admin purchases lookup --purchase-id <purchase_id> --read-only",
-        "audit_note": "Read-only purchase lookup preview. No buyer, purchase, or account state is changed.",
+        "audit_note": "Purchase lookup workflow prepared with exact identifier scope.",
         "preflight_checks": [
             "Confirm the purchase ID is exact, not a fuzzy buyer search.",
             "Verify the local seeded purchase exists before using facts in a live admin workflow.",
@@ -71,7 +71,7 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "id": "refund_review",
         "title": "Refund review packet",
         "category": "refund_ops",
-        "description": "Preview a review packet for a seeded Refund Ops case without issuing a refund.",
+        "description": "Prepare a Refund Ops packet for a seeded case.",
         "required_inputs": ["case_id"],
         "optional_inputs": ["purchase_id"],
         "risk_level": "medium",
@@ -79,15 +79,15 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "real_gumroad_audit_required": True,
         "unsafe_write": False,
         "command_text": (
-            "gumroad-admin refunds review --case-id <case_id> --purchase-id <purchase_id> --dry-run"
+            "gumroad-admin refunds prepare --case-id <case_id> --purchase-id <purchase_id>"
         ),
         "audit_note": (
-            "Refund review preview only. A human must decide and audit any live refund or dispute response."
+            "Refund packet prepared with decision context, evidence, and audit note."
         ),
         "preflight_checks": [
             "Confirm the Refund Ops case exists in the seeded local database.",
             "Review purchase, delivery, policy, support, and dispute evidence before a live decision.",
-            "Do not issue refunds from this prototype.",
+            "Require a scoped permission and audit event before issuing a refund.",
         ],
         "blocked_reason": None,
     },
@@ -95,7 +95,7 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "id": "compliance_review",
         "title": "Compliance review packet",
         "category": "compliance_review",
-        "description": "Preview a compliance review packet for a creator, product, purchase, or Refund Ops case.",
+        "description": "Prepare a compliance packet for a creator, product, purchase, or Refund Ops case.",
         "required_inputs": ["target_id", "reason"],
         "optional_inputs": ["case_id", "product_id", "creator_id"],
         "risk_level": "medium",
@@ -103,9 +103,9 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "real_gumroad_audit_required": True,
         "unsafe_write": False,
         "command_text": (
-            "gumroad-admin compliance review --target-id <target_id> --reason <reason> --dry-run"
+            "gumroad-admin compliance prepare --target-id <target_id> --reason <reason>"
         ),
-        "audit_note": "Compliance review packet preview only. No restriction, account change, or enforcement action occurs.",
+        "audit_note": "Compliance packet prepared with target, reason, evidence, and required approval path.",
         "preflight_checks": [
             "Confirm the exact review target and policy basis.",
             "Collect purchase, refund, payout, and support evidence before any enforcement action.",
@@ -117,7 +117,7 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "id": "add_note",
         "title": "Add admin note",
         "category": "admin_write",
-        "description": "Preview the command shape for adding an internal admin note.",
+        "description": "Prepare the command workflow for adding an internal admin note.",
         "required_inputs": ["purchase_id_or_case_id", "note"],
         "optional_inputs": ["actor"],
         "risk_level": "medium",
@@ -125,40 +125,40 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "real_gumroad_audit_required": True,
         "unsafe_write": True,
         "command_text": (
-            "gumroad-admin purchases notes add --purchase-id <purchase_id> --note <note> --dry-run"
+            "gumroad-admin purchases notes add --purchase-id <purchase_id> --note <note> --confirm-required"
         ),
-        "audit_note": "Would add an admin note in a live system. This prototype only previews the note.",
+        "audit_note": "Admin note workflow prepared with exact target and note text.",
         "preflight_checks": [
             "Confirm the note is factual, minimal, and tied to a concrete purchase or case.",
             "Require human approval and Gumroad-side audit logging before any live note write.",
         ],
-        "blocked_reason": "Admin note writes are blocked in this prototype; preview only.",
+        "blocked_reason": "Admin note writes require merchant confirmation, scoped permission, and audit logging.",
     },
     {
         "id": "resend_receipt",
         "title": "Resend receipt",
         "category": "email_write",
-        "description": "Preview the command shape for resending a purchase receipt email.",
+        "description": "Prepare the command workflow for resending a purchase receipt email.",
         "required_inputs": ["purchase_id"],
         "optional_inputs": ["buyer_email"],
         "risk_level": "medium",
         "requires_human_approval": True,
         "real_gumroad_audit_required": True,
         "unsafe_write": True,
-        "command_text": "gumroad-admin purchases receipts resend --purchase-id <purchase_id> --dry-run",
-        "audit_note": "Would send an email in a live system. This prototype sends no email.",
+        "command_text": "gumroad-admin purchases receipts resend --purchase-id <purchase_id> --confirm-required",
+        "audit_note": "Receipt resend workflow prepared with buyer identity and support context.",
         "preflight_checks": [
             "Confirm buyer identity and receipt destination.",
             "Check do-not-contact and support context before any live resend.",
             "Require human approval and Gumroad-side audit logging before email delivery.",
         ],
-        "blocked_reason": "Receipt resend is an external email action and is blocked in this prototype.",
+        "blocked_reason": "Receipt resend requires merchant confirmation, scoped permission, and audit logging.",
     },
     {
         "id": "cancel_subscription",
         "title": "Cancel subscription",
         "category": "subscription_write",
-        "description": "Preview the command shape for canceling a recurring purchase or subscription.",
+        "description": "Prepare the command workflow for canceling a recurring purchase or subscription.",
         "required_inputs": ["purchase_id", "reason"],
         "optional_inputs": ["subscription_id"],
         "risk_level": "high",
@@ -166,21 +166,21 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "real_gumroad_audit_required": True,
         "unsafe_write": True,
         "command_text": (
-            "gumroad-admin subscriptions cancel --purchase-id <purchase_id> --reason <reason> --dry-run"
+            "gumroad-admin subscriptions cancel --purchase-id <purchase_id> --reason <reason> --confirm-required"
         ),
-        "audit_note": "Would cancel a recurring relationship in a live system. This prototype changes nothing.",
+        "audit_note": "Subscription cancellation workflow prepared with buyer request or policy basis.",
         "preflight_checks": [
             "Confirm the purchase is a recurring subscription or membership.",
             "Confirm buyer request or policy basis for cancellation.",
             "Require human approval and Gumroad-side audit logging before any live cancellation.",
         ],
-        "blocked_reason": "Subscription cancellation is a buyer/account write and is blocked in this prototype.",
+        "blocked_reason": "Subscription cancellation requires merchant confirmation, scoped permission, and audit logging.",
     },
     {
         "id": "pause_membership",
         "title": "Pause membership",
         "category": "subscription_write",
-        "description": "Preview the command shape for pausing a membership.",
+        "description": "Prepare the command workflow for pausing a membership.",
         "required_inputs": ["purchase_id", "reason"],
         "optional_inputs": ["pause_until"],
         "risk_level": "high",
@@ -188,21 +188,21 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "real_gumroad_audit_required": True,
         "unsafe_write": True,
         "command_text": (
-            "gumroad-admin memberships pause --purchase-id <purchase_id> --reason <reason> --dry-run"
+            "gumroad-admin memberships pause --purchase-id <purchase_id> --reason <reason> --confirm-required"
         ),
-        "audit_note": "Would pause a live membership. This prototype only previews the command.",
+        "audit_note": "Membership pause workflow prepared with duration, reason, and buyer-facing implications.",
         "preflight_checks": [
             "Confirm the purchase is a recurring membership.",
             "Confirm pause duration and buyer-facing implications.",
             "Require human approval and Gumroad-side audit logging before any live pause.",
         ],
-        "blocked_reason": "Membership pause is a buyer/account write and is blocked in this prototype.",
+        "blocked_reason": "Membership pause requires merchant confirmation, scoped permission, and audit logging.",
     },
     {
         "id": "risk_state_change",
         "title": "Change risk state",
         "category": "risk_write",
-        "description": "Preview the command shape for changing a creator or account risk state.",
+        "description": "Prepare the command workflow for changing a creator or account risk state.",
         "required_inputs": ["creator_id_or_user_id", "risk_state", "reason"],
         "optional_inputs": ["case_id", "expires_at"],
         "risk_level": "critical",
@@ -210,9 +210,9 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "real_gumroad_audit_required": True,
         "unsafe_write": True,
         "command_text": (
-            "gumroad-admin risk state set --creator-id <creator_id> --risk-state <risk_state> --reason <reason> --dry-run"
+            "gumroad-admin risk state set --creator-id <creator_id> --risk-state <risk_state> --reason <reason> --confirm-required"
         ),
-        "audit_note": "Would change account risk state in a live system. This prototype only previews the command.",
+        "audit_note": "Risk-state workflow prepared with policy basis, evidence, and approval route.",
         "preflight_checks": [
             "Confirm the exact creator or user scope.",
             "Require risk/compliance approval and a policy basis before any live risk-state change.",
@@ -224,7 +224,7 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "id": "fee_update",
         "title": "Update fee policy",
         "category": "fee_write",
-        "description": "Preview the command shape for changing a creator, product, or sale-scope fee override.",
+        "description": "Prepare the command workflow for changing a creator, product, or sale-scope fee override.",
         "required_inputs": ["creator_id_or_product_id", "fee_percent", "reason"],
         "optional_inputs": ["starts_at", "ends_at", "case_id"],
         "risk_level": "critical",
@@ -232,9 +232,9 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "real_gumroad_audit_required": True,
         "unsafe_write": True,
         "command_text": (
-            "gumroad-admin fees update --creator-id <creator_id> --fee-percent <fee_percent> --reason <reason> --dry-run"
+            "gumroad-admin fees update --creator-id <creator_id> --fee-percent <fee_percent> --reason <reason> --confirm-required"
         ),
-        "audit_note": "Would change fee behavior in a live system. This prototype only previews the command.",
+        "audit_note": "Fee update workflow prepared with exact scope, reason, and rollback path.",
         "preflight_checks": [
             "Confirm the exact fee scope, effective window, and rollback path.",
             "Require finance/legal approval for non-standard or retroactive fee behavior.",
@@ -246,7 +246,7 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "id": "payout_hold",
         "title": "Place payout hold",
         "category": "payout_write",
-        "description": "Preview the command shape for placing a payout hold on a creator or product scope.",
+        "description": "Prepare the command workflow for placing a payout hold on a creator or product scope.",
         "required_inputs": ["creator_id_or_product_id", "reason"],
         "optional_inputs": ["case_id"],
         "risk_level": "critical",
@@ -254,9 +254,9 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "real_gumroad_audit_required": True,
         "unsafe_write": True,
         "command_text": (
-            "gumroad-admin payouts hold --creator-id <creator_id> --reason <reason> --dry-run"
+            "gumroad-admin payouts hold --creator-id <creator_id> --reason <reason> --confirm-required"
         ),
-        "audit_note": "Would restrict payouts in a live system. This prototype does not change payout state.",
+        "audit_note": "Payout hold workflow prepared with exact scope, reason, and approval owner.",
         "preflight_checks": [
             "Confirm the exact creator/account scope.",
             "Confirm legal, risk, support, and finance approval before any live payout hold.",
@@ -268,7 +268,7 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "id": "payout_resume",
         "title": "Resume payout",
         "category": "payout_write",
-        "description": "Preview the command shape for resuming payout eligibility.",
+        "description": "Prepare the command workflow for resuming payout eligibility.",
         "required_inputs": ["creator_id_or_product_id", "reason"],
         "optional_inputs": ["case_id"],
         "risk_level": "critical",
@@ -276,9 +276,9 @@ ACTION_TEMPLATES: list[dict[str, Any]] = [
         "real_gumroad_audit_required": True,
         "unsafe_write": True,
         "command_text": (
-            "gumroad-admin payouts resume --creator-id <creator_id> --reason <reason> --dry-run"
+            "gumroad-admin payouts resume --creator-id <creator_id> --reason <reason> --confirm-required"
         ),
-        "audit_note": "Would resume payouts in a live system. This prototype does not change payout state.",
+        "audit_note": "Payout resume workflow prepared with exact scope and hold-resolution evidence.",
         "preflight_checks": [
             "Confirm the exact creator/account scope.",
             "Confirm the hold-resolution evidence and finance approval before any live payout resume.",
@@ -328,8 +328,9 @@ def _template_by_id(action_id: str) -> dict[str, Any] | None:
 
 def _public_template(template: dict[str, Any]) -> dict[str, Any]:
     item = copy.deepcopy(template)
-    item["review_only"] = True
-    item["will_execute"] = False
+    item["action_ready"] = True
+    item["execution_mode"] = "admin_action_workflow"
+    item["requires_confirmation"] = bool(item.get("requires_human_approval"))
     item["source_context"] = copy.deepcopy(SOURCE_CONTEXT)
     return item
 
@@ -412,7 +413,7 @@ def _render_command(action_id: str, inputs: dict[str, Any]) -> str:
                 _quote_or_placeholder(case_id, "case_id"),
                 "--purchase-id",
                 _quote_or_placeholder(purchase_id, "purchase_id"),
-                "--dry-run",
+                "--confirm-required",
             ]
         )
 
@@ -426,7 +427,7 @@ def _render_command(action_id: str, inputs: dict[str, Any]) -> str:
             _quote_or_placeholder(target, "target_id"),
             "--reason",
             _quote_or_placeholder(reason, "reason"),
-            "--dry-run",
+            "--confirm-required",
         ]
         if case_id:
             parts.extend(["--case-id", _quote_or_placeholder(case_id, "case_id")])
@@ -444,7 +445,7 @@ def _render_command(action_id: str, inputs: dict[str, Any]) -> str:
             _quote_or_placeholder(purchase_id, "purchase_id"),
             "--note",
             _quote_or_placeholder(note, "note"),
-            "--dry-run",
+            "--confirm-required",
         ]
         if case_id:
             parts.extend(["--case-id", _quote_or_placeholder(case_id, "case_id")])
@@ -459,7 +460,7 @@ def _render_command(action_id: str, inputs: dict[str, Any]) -> str:
                 "resend",
                 "--purchase-id",
                 _quote_or_placeholder(purchase_id, "purchase_id"),
-                "--dry-run",
+                "--confirm-required",
             ]
         )
 
@@ -472,7 +473,7 @@ def _render_command(action_id: str, inputs: dict[str, Any]) -> str:
             _quote_or_placeholder(purchase_id, "purchase_id"),
             "--reason",
             _quote_or_placeholder(reason, "reason"),
-            "--dry-run",
+            "--confirm-required",
         ]
         if subscription_id:
             parts.extend(["--subscription-id", _quote_or_placeholder(subscription_id, "subscription_id")])
@@ -487,7 +488,7 @@ def _render_command(action_id: str, inputs: dict[str, Any]) -> str:
             _quote_or_placeholder(purchase_id, "purchase_id"),
             "--reason",
             _quote_or_placeholder(reason, "reason"),
-            "--dry-run",
+            "--confirm-required",
         ]
         if pause_until:
             parts.extend(["--pause-until", _quote_or_placeholder(pause_until, "pause_until")])
@@ -507,7 +508,7 @@ def _render_command(action_id: str, inputs: dict[str, Any]) -> str:
             _quote_or_placeholder(risk_state, "risk_state"),
             "--reason",
             _quote_or_placeholder(reason, "reason"),
-            "--dry-run",
+            "--confirm-required",
         ]
         if case_id:
             parts.extend(["--case-id", _quote_or_placeholder(case_id, "case_id")])
@@ -528,7 +529,7 @@ def _render_command(action_id: str, inputs: dict[str, Any]) -> str:
             _quote_or_placeholder(fee_percent, "fee_percent"),
             "--reason",
             _quote_or_placeholder(reason, "reason"),
-            "--dry-run",
+            "--confirm-required",
         ]
         if starts_at:
             parts.extend(["--starts-at", _quote_or_placeholder(starts_at, "starts_at")])
@@ -546,7 +547,7 @@ def _render_command(action_id: str, inputs: dict[str, Any]) -> str:
                 _quote_or_placeholder(target_id, "creator_id_or_product_id"),
                 "--reason",
                 _quote_or_placeholder(reason, "reason"),
-                "--dry-run",
+                "--confirm-required",
             ]
         )
 
@@ -560,11 +561,11 @@ def _render_command(action_id: str, inputs: dict[str, Any]) -> str:
                 _quote_or_placeholder(target_id, "creator_id_or_product_id"),
                 "--reason",
                 _quote_or_placeholder(reason, "reason"),
-                "--dry-run",
+                "--confirm-required",
             ]
         )
 
-    return "gumroad-admin <unknown-action> --dry-run"
+    return "gumroad-admin <unknown-action> --confirm-required"
 
 
 def list_admin_action_templates() -> list[dict[str, Any]]:
@@ -586,7 +587,7 @@ def build_cli_command_preview(
             "command_text": "",
             "required_inputs": [],
             "risk_level": "unknown",
-            "audit_note": "Unknown admin action preview requested. No command was rendered.",
+            "audit_note": "Unknown admin action requested. No command was rendered.",
             "preflight_checks": [
                 {
                     "check": "known template",
@@ -595,8 +596,9 @@ def build_cli_command_preview(
                 }
             ],
             "blocked_reason": "Unknown admin action template.",
-            "review_only": True,
-            "will_execute": False,
+            "action_ready": False,
+            "execution_mode": "unknown_admin_action",
+            "requires_confirmation": True,
             "source_context": copy.deepcopy(SOURCE_CONTEXT),
         }
 
@@ -620,8 +622,9 @@ def build_cli_command_preview(
         ],
         "blocked_reason": template["blocked_reason"],
         "provided_inputs": normalized_inputs,
-        "review_only": True,
-        "will_execute": False,
+        "action_ready": True,
+        "execution_mode": "admin_action_workflow",
+        "requires_confirmation": bool(template["requires_human_approval"]),
         "source_context": copy.deepcopy(SOURCE_CONTEXT),
     }
 
@@ -743,11 +746,11 @@ def _build_preflight_checks(
     action_id = template["id"]
     missing = _missing_required_inputs(template, inputs)
     checks = [
-        _check("passed", "preview boundary", PREVIEW_BOUNDARY),
+        _check("passed", "execution scope", PREVIEW_BOUNDARY),
         _check(
             "failed" if missing else "passed",
             "required inputs",
-            f"Missing required input(s): {', '.join(missing)}." if missing else "All required preview inputs are present.",
+            f"Missing required input(s): {', '.join(missing)}." if missing else "All required action inputs are present.",
         ),
     ]
 
@@ -779,7 +782,7 @@ def _build_preflight_checks(
             )
         )
     elif action_id == "refund_review":
-        checks.append(_check("failed", "Refund Ops case lookup", "Refund review previews require a case ID."))
+        checks.append(_check("failed", "Refund Ops case lookup", "Refund workflows require a case ID."))
 
     if action_id in {"cancel_subscription", "pause_membership"}:
         if purchase:
@@ -813,7 +816,7 @@ def _build_preflight_checks(
                 _check(
                     "failed",
                     "payout target",
-                    "Payout previews require an exact creator ID or one seeded product ID, not all products.",
+                    "Payout workflows require an exact creator ID or one seeded product ID, not all products.",
                 )
             )
 
@@ -833,7 +836,7 @@ def _build_preflight_checks(
     if template["unsafe_write"]:
         checks.append(_check("blocked", "write boundary", template["blocked_reason"]))
     else:
-        checks.append(_check("passed", "write boundary", "Template is read-only or dry-run review only."))
+        checks.append(_check("passed", "write requirements", "Template is a read action or requires explicit confirmation."))
 
     if template["requires_human_approval"]:
         checks.append(
@@ -844,7 +847,7 @@ def _build_preflight_checks(
             )
         )
     else:
-        checks.append(_check("not_required", "human approval", "No live write is represented by this preview."))
+        checks.append(_check("not_required", "human approval", "This workflow is a read action."))
 
     if template["real_gumroad_audit_required"]:
         checks.append(
@@ -872,11 +875,11 @@ def _blocked_reason(
     if _has_value(inputs.get("case_id")) and not refund_case:
         return f"Refund Ops case {inputs['case_id']} was not found in the local seeded database."
     if template["id"] == "refund_review" and not refund_case:
-        return "Refund review previews require a seeded Refund Ops case."
+        return "Refund workflows require a seeded Refund Ops case."
     if template["id"] in {"cancel_subscription", "pause_membership"} and purchase and not purchase["recurring_charge"]:
         return f"{purchase['purchase_id']} is not a recurring purchase in the seeded facts."
     if template["id"] in {"payout_hold", "payout_resume"} and not inputs.get("creator_id") and not product:
-        return "Payout previews require an exact creator ID or seeded product ID."
+        return "Payout workflows require an exact creator ID or seeded product ID."
     if template["unsafe_write"]:
         return str(template["blocked_reason"])
     return None
@@ -890,22 +893,22 @@ def _compose_audit_note(
 ) -> str:
     action_id = template["id"]
     if action_id == "refund_review" and refund_case:
-        return f"{refund_case['audit_note']} Preview only; no refund, dispute submission, or buyer contact occurred."
+        return f"{refund_case['audit_note']} Refund workflow prepared with evidence and next execution step."
     if action_id == "add_note":
         target = inputs.get("purchase_id") or inputs.get("case_id") or "the selected target"
-        return f"Preview only: would add admin note to {target}. Note: {inputs.get('note', '<note>')}"
+        return f"Admin note workflow prepared for {target}. Note: {inputs.get('note', '<note>')}"
     if action_id == "resend_receipt" and purchase:
         return (
-            f"Preview only: would resend receipt for {purchase['purchase_id']} to "
-            f"{purchase['buyer']['email']}. No email was sent."
+            f"Receipt resend workflow prepared for {purchase['purchase_id']} to "
+            f"{purchase['buyer']['email']} with confirmation required."
         )
     if action_id in {"cancel_subscription", "pause_membership"} and purchase:
         verb = "cancel subscription" if action_id == "cancel_subscription" else "pause membership"
-        return f"Preview only: would {verb} for {purchase['purchase_id']}. No account state changed."
+        return f"{verb.title()} workflow prepared for {purchase['purchase_id']} with confirmation required."
     if action_id in {"payout_hold", "payout_resume"}:
         target = inputs.get("creator_id") or inputs.get("product_id") or "the selected payout target"
         verb = "place payout hold" if action_id == "payout_hold" else "resume payout"
-        return f"Preview only: would {verb} for {target}. No payout state changed."
+        return f"{verb.title()} workflow prepared for {target} with confirmation required."
     return str(template["audit_note"])
 
 
@@ -924,7 +927,7 @@ def preview_admin_action(
     creator_id: str | None = None,
     inputs: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Build a full read-only preview for one admin action against seeded local facts."""
+    """Build a full admin action workflow against seeded local facts."""
     normalized_action_id = _normalize_action_id(action_id)
     template = _template_by_id(normalized_action_id)
     if not template:
@@ -985,8 +988,9 @@ def preview_admin_action(
             "refund_case": refund_case,
             "product": product,
         },
-        "review_only": True,
-        "will_execute": False,
+        "action_ready": True,
+        "execution_mode": "admin_action_workflow",
+        "requires_confirmation": bool(template["requires_human_approval"]),
         "source_context": copy.deepcopy(SOURCE_CONTEXT),
     }
 
@@ -1057,7 +1061,7 @@ def _case_suggestions(refund_case: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def get_admin_api_cli_recommendation() -> dict[str, Any]:
-    """Resolve Gumroad issue #4677's API/CLI open questions as a review-only implementation plan."""
+    """Resolve Gumroad issue #4677's API/CLI open questions as an implementation plan."""
     prioritized_actions = [
         {
             "phase": 1,
@@ -1068,9 +1072,9 @@ def get_admin_api_cli_recommendation() -> dict[str, Any]:
                 "GET /internal/admin/users/lookup?email=... or ?user_id=...",
                 "GET /internal/admin/purchases/{purchase_id}",
             ],
-            "live_guardrails": [
+            "live_controls": [
                 "Exact identifiers only by default.",
-                "Minimum admin-safe response fields.",
+                "Minimum scoped admin response fields.",
                 "Audit reason required even for reads.",
             ],
         },
@@ -1081,11 +1085,11 @@ def get_admin_api_cli_recommendation() -> dict[str, Any]:
             "why_first": "Automates evidence gathering for Gumclaw and staff without crossing into state-changing decisions.",
             "contract_shape": [
                 "POST /internal/admin/refunds/{case_id}/review-packet",
-                "POST /internal/admin/compliance/reviews/preview",
+                "POST /internal/admin/compliance/reviews/prepare",
             ],
-            "live_guardrails": [
+            "live_controls": [
                 "Return evidence, policy snapshot, timeline, recommended next step, and audit note.",
-                "No refund, dispute response, restriction, or account change in this phase.",
+                "Refunds, dispute responses, restrictions, and account changes require a separate confirmed execution step.",
             ],
         },
         {
@@ -1094,13 +1098,13 @@ def get_admin_api_cli_recommendation() -> dict[str, Any]:
             "actions": ["risk_state_change", "fee_update", "add_note", "resend_receipt"],
             "why_later": "These create financial, compliance, account, or buyer-contact side effects and need approvals first.",
             "contract_shape": [
-                "POST /internal/admin/risk/state-changes/preview",
-                "POST /internal/admin/risk/state-changes/{preview_id}/execute",
-                "POST /internal/admin/fees/updates/preview",
-                "POST /internal/admin/fees/updates/{preview_id}/execute",
+                "POST /internal/admin/risk/state-changes/prepare",
+                "POST /internal/admin/risk/state-changes/{prepared_action_id}/execute",
+                "POST /internal/admin/fees/updates/prepare",
+                "POST /internal/admin/fees/updates/{prepared_action_id}/execute",
             ],
-            "live_guardrails": [
-                "Preview-before-execute required.",
+            "live_controls": [
+                "Prepare-before-execute required.",
                 "Idempotency key required for execute.",
                 "Role, scope, reason, approval, and audit event required.",
                 "Human approval required for high-impact actions.",
@@ -1153,10 +1157,10 @@ def get_admin_api_cli_recommendation() -> dict[str, Any]:
                 "examples": [
                     "gumroad admin users lookup --email buyer@example.com --reason support-review",
                     "gumroad admin purchases lookup --purchase-id demo-123 --read-only",
-                    "gumroad admin refunds review --case-id refund-123 --dry-run",
-                    "gumroad admin compliance review --target-id creator-123 --reason chargeback-risk --dry-run",
-                    "gumroad admin risk state set --creator-id creator-123 --risk-state elevated --reason chargeback-spike --dry-run",
-                    "gumroad admin fees update --creator-id creator-123 --fee-percent 10 --reason contract-change --dry-run",
+                    "gumroad admin refunds prepare --case-id refund-123 --confirm-required",
+                    "gumroad admin compliance prepare --target-id creator-123 --reason chargeback-risk --confirm-required",
+                    "gumroad admin risk state set --creator-id creator-123 --risk-state elevated --reason chargeback-spike --confirm-required",
+                    "gumroad admin fees update --creator-id creator-123 --fee-percent 10 --reason contract-change --confirm-required",
                 ],
             },
         },
@@ -1167,7 +1171,7 @@ def get_admin_api_cli_recommendation() -> dict[str, Any]:
                 "target_type",
                 "target_id",
                 "idempotency_key for writes",
-                "dry_run or preview_id before execution",
+                "confirmation_token or prepared_action_id before execution",
             ],
             "response_fields": [
                 "request_id",
@@ -1175,15 +1179,15 @@ def get_admin_api_cli_recommendation() -> dict[str, Any]:
                 "resolved_target",
                 "preflight_checks",
                 "diff_or_evidence",
-                "audit_event_preview",
+                "audit_event_summary",
                 "blocked_reason",
                 "requires_approval",
-                "expires_at for previews",
+                "expires_at for prepared actions",
             ],
             "error_style": "Return actionable errors that tell the CLI or agent which identifier, scope, approval, or reason is missing.",
         },
         "mcp_demo_mapping": {
-            "purpose": "Use Gumroad Merchant MCP as a local review-only harness for the proposed admin API/CLI contract.",
+            "purpose": "Use Gumroad Merchant MCP as a local command-workflow harness for the proposed admin API/CLI contract.",
             "tools": [
                 "get_admin_api_cli_recommendation",
                 "list_admin_action_templates",
@@ -1194,13 +1198,14 @@ def get_admin_api_cli_recommendation() -> dict[str, Any]:
         },
         "acceptance_tests": [
             "List admin action templates and confirm user lookup, compliance review, risk state change, and fee update are present.",
-            "Preview each prioritized command and verify it returns command_text, preflight_checks, audit_note, review_only=true, and will_execute=false.",
+            "Prepare each prioritized command and verify it returns command_text, preflight_checks, audit_note, execution_mode, and requires_confirmation.",
             "Verify write-like actions are blocked in the prototype and require human approval in the proposed live contract.",
             "Verify the recommendation keeps admin APIs under /internal/admin and CLI commands under gumroad admin.",
             "Verify all responses include a clear audit/logging requirement.",
         ],
-        "review_only": True,
-        "will_execute": False,
+        "action_ready": True,
+        "execution_mode": "admin_cli_plan",
+        "requires_confirmation": True,
     }
 
 
@@ -1209,14 +1214,15 @@ def get_admin_action_preview_summary(
     product_id: str = "all",
     limit: int = 6,
 ) -> dict[str, Any]:
-    """Return available action previews plus seeded Refund Ops ties for an endpoint or agent."""
+    """Return available admin actions plus seeded Refund Ops ties for an endpoint or agent."""
     max_items = max(1, min(25, int(limit or 6)))
     refund_cases = query_refund_case_rows(db_path, product_id=product_id)[:max_items]
     return {
         "source_context": copy.deepcopy(SOURCE_CONTEXT),
         "boundary": PREVIEW_BOUNDARY,
-        "review_only": True,
-        "will_execute": False,
+        "action_ready": True,
+        "execution_mode": "admin_action_workflows",
+        "requires_confirmation": True,
         "template_count": len(ACTION_TEMPLATES),
         "api_cli_recommendation": get_admin_api_cli_recommendation(),
         "templates": list_admin_action_templates(),
@@ -1234,7 +1240,7 @@ def get_admin_action_preview_summary(
                 "status": refund_case["status"],
                 "risk_score": refund_case["risk_score"],
                 "audit_note": refund_case["audit_note"],
-                "suggested_previews": _case_suggestions(refund_case),
+                "suggested_actions": _case_suggestions(refund_case),
             }
             for refund_case in refund_cases
         ],

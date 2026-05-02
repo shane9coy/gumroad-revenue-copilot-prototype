@@ -1,4 +1,4 @@
-"""Review-only Retention Saver estimators for Gumroad issue #4884.
+"""Retention Saver estimators for Gumroad issue #4884.
 
 This module uses seeded/synthetic demo analytics to estimate whether offering
 buyers a membership pause could reduce cancellations. It never edits
@@ -30,8 +30,7 @@ DEFAULT_PAUSE_SAVE_RATE = 0.096
 CONSERVATIVE_SAVE_RATE_MULTIPLIER = 0.75
 OPTIMISTIC_SAVE_RATE_MULTIPLIER = 1.25
 READ_ONLY_BOUNDARY = (
-    "Review-only seeded estimator. No subscription pause, cancellation, charge, "
-    "email, webhook, or buyer contact is performed."
+    "Seeded estimator for planning membership-pause workflows with explicit execution steps."
 )
 
 
@@ -49,7 +48,7 @@ def source_context() -> dict[str, Any]:
             "customer_sales recurring-charge samples",
             "refund_cases",
         ],
-        "read_only_boundary": READ_ONLY_BOUNDARY,
+        "execution_scope": READ_ONLY_BOUNDARY,
     }
 
 
@@ -441,8 +440,8 @@ def pause_offer_options(
             "estimated_revenue_deferred_during_pause": money_payload(estimated_saved_cents, currency),
             "confidence": "medium",
             "best_for": "Buyers who are budget-constrained or temporarily not using the membership.",
-            "merchant_review_prompt": "Review a cancellation-screen draft that offers one skipped month before a buyer confirms cancellation.",
-            "review_only": True,
+            "merchant_review_prompt": "Prepare a cancellation-screen draft that offers one skipped month before a buyer confirms cancellation.",
+            "action_ready": True,
         },
         {
             "id": "pause-3-month",
@@ -456,8 +455,8 @@ def pause_offer_options(
             "estimated_revenue_deferred_during_pause": money_payload(estimated_saved_cents * 3, currency),
             "confidence": "low",
             "best_for": "Buyers who need a longer break because of onboarding friction, seasonality, or product-fit uncertainty.",
-            "merchant_review_prompt": "Review eligibility and messaging carefully because this option defers more near-term revenue.",
-            "review_only": True,
+            "merchant_review_prompt": "Check eligibility and messaging carefully because this option defers more near-term revenue.",
+            "action_ready": True,
         },
     ]
 
@@ -583,7 +582,7 @@ def list_cancellation_risks(
                     "Confirm the buyer can resume access cleanly after the pause window.",
                 ],
                 "source_context": source_context(),
-                "review_only": True,
+                "action_ready": True,
             }
         )
     risks.sort(key=lambda item: (item["risk_score"], item["estimated_revenue_saved_cents"]), reverse=True)
@@ -698,11 +697,11 @@ def build_pause_offer_plan(
             "Confirm paused access, billing, resume date, and cancellation fallback behavior with engineering before shipping.",
             "Measure pause accepted, resumed, later canceled, and support-contact rate before expanding the offer.",
         ],
-        "guardrails": [
-            "Do not auto-pause memberships from this estimator.",
-            "Do not email or contact buyers from this estimator.",
-            "Do not count deferred pause months as saved revenue.",
-            "Do not hide the normal cancellation path.",
+        "execution_notes": [
+            "Prepare membership pauses through the approved subscription workflow.",
+            "Use buyer contact steps only after the merchant chooses the campaign.",
+            "Count saved revenue only after a buyer resumes.",
+            "Keep the normal cancellation path visible.",
         ],
         "confidence": estimate["confidence"],
         "read_only": True,

@@ -71,11 +71,11 @@ MODE_ENV = "GUMROAD_MERCHANT_MODE"
 SERVER_NAME = "Gumroad Merchant"
 SERVER_INSTRUCTIONS = (
     "Local seeded Gumroad Merchant tools for analytics, Refund Ops, Content Radar, "
-    "Retention Saver, Admin Preview, Shortest QA, and Gumroad help-doc search. "
+    "Retention Saver, Admin Actions, Shortest QA, and Gumroad help-doc search. "
     "The seeded demo does not call Gumroad production services or mutate real "
     "creator accounts. Explicit agent action tools may write local test-profile "
     "action rows, tracked campaigns, or generated artifacts only. The production "
-    "MCP direction is scoped read-write merchant automation: safe reads can run "
+    "MCP direction is scoped read-write merchant automation: low-risk reads can run "
     "directly, while refunds, disputes, emails, posts, product edits, pricing, "
     "subscription, payout, product catalog, and sales workflows require scoped auth, "
     "preflight checks, confirmation, idempotency, and audit logs."
@@ -98,16 +98,16 @@ def envelope(
     result: Any,
     ok: bool = True,
     error: dict[str, Any] | None = None,
-    review_only: bool = True,
-    will_execute: bool = False,
+    execution_mode: str = "seeded_analysis",
+    requires_confirmation: bool = False,
     mode: str = "seeded",
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "ok": bool(ok),
         "tool": tool,
         "data_source": DATA_SOURCE,
-        "review_only": review_only,
-        "will_execute": will_execute,
+        "execution_mode": execution_mode,
+        "requires_confirmation": requires_confirmation,
         "mode": mode,
     }
     if ok:
@@ -217,13 +217,13 @@ def gumroad_merchant_help_menu_payload(section: str = "all") -> dict[str, Any]:
         },
         {
             "id": "admin",
-            "title": "Admin API and CLI previews",
+            "title": "Admin API and CLI actions",
             "what_you_can_ask": [
                 "Answer Gumroad issue #4677's admin API/CLI open questions.",
                 "List admin action templates.",
-                "Preview a user lookup command.",
-                "Preview a risk state change, but do not execute it.",
-                "Preview a fee update command with audit requirements.",
+                "Prepare a user lookup command.",
+                "Prepare a risk state change with confirmation requirements.",
+                "Prepare a fee update command with audit requirements.",
             ],
             "mcp_tools": [
                 "get_admin_api_cli_recommendation",
@@ -276,7 +276,7 @@ def gumroad_merchant_help_menu_payload(section: str = "all") -> dict[str, Any]:
         "name": "Gumroad Merchant MCP help menu",
         "summary": (
             "Ask your MCP-capable terminal agent to use Gumroad Merchant for analytics, Refund Ops, "
-            "marketing, retention, admin API/CLI previews, QA generation, and seeded help-doc search."
+            "marketing, retention, admin API/CLI actions, QA generation, and seeded help-doc search."
         ),
         "capability_parity": {
             "status": "MCP exposes the chat agent's current business tool capabilities and adds MCP-specific discovery/admin helpers.",
@@ -296,7 +296,7 @@ def gumroad_merchant_help_menu_payload(section: str = "all") -> dict[str, Any]:
         "how_to_use_in_terminal": [
             "Ask the terminal agent in natural language; it should call the relevant MCP tools.",
             "Start with: Use Gumroad Merchant to show me what I can do.",
-            "Then ask for a specific workflow, such as a dispute packet, marketing plan, or admin command preview.",
+            "Then ask for a specific workflow, such as a dispute packet, marketing plan, or admin command.",
         ],
         "common_parameters": {
             "product_id": "Use 'all' by default, or a seeded product id such as prod-audio-pack, prod-creator-os, prod-design-kit, or prod-zine-guide.",
@@ -305,7 +305,7 @@ def gumroad_merchant_help_menu_payload(section: str = "all") -> dict[str, Any]:
         },
         "sections": selected_sections,
         "available_tool_names": tool_names,
-        "safety_boundary": SERVER_INSTRUCTIONS,
+        "execution_scope": SERVER_INSTRUCTIONS,
     }
 
 
@@ -318,8 +318,8 @@ def tool_envelope(name: str, local_write: bool = False) -> Callable[[F], F]:
                 return envelope(
                     name,
                     func(*args, **kwargs),
-                    review_only=not local_write,
-                    will_execute=local_write,
+                    execution_mode="local_test_write" if local_write else "seeded_analysis",
+                    requires_confirmation=False,
                     mode="local_test_write" if local_write else "seeded",
                 )
             except Exception as exc:  # MCP boundary: return agent-actionable errors, not stack traces.
@@ -327,8 +327,8 @@ def tool_envelope(name: str, local_write: bool = False) -> Callable[[F], F]:
                     name,
                     {},
                     ok=False,
-                    review_only=not local_write,
-                    will_execute=False,
+                    execution_mode="local_test_write" if local_write else "seeded_analysis",
+                    requires_confirmation=False,
                     mode="local_test_write" if local_write else "seeded",
                     error={
                         "message": f"{name} could not complete: {exc}",
@@ -374,7 +374,7 @@ def get_traffic_sources(product_id: str = "all", date_range: str = "30", limit: 
 @mcp.tool()
 @tool_envelope("get_detected_signals")
 def get_detected_signals(product_id: str = "all", date_range: str = "30") -> dict[str, Any]:
-    """Return evidence-backed seeded revenue signals for review-only merchant actions."""
+    """Return evidence-backed seeded revenue signals for merchant actions."""
     items = get_detected_signals_tool(db_path(), product_id=product_id, date_range=date_range)
     return items_result(items, product_id=product_id, date_range=date_range)
 
@@ -401,7 +401,7 @@ def build_strategy_plan(product_id: str = "all", date_range: str = "30", horizon
 @mcp.tool()
 @tool_envelope("get_action_review")
 def get_action_review(signal_id: str, product_id: str = "all", date_range: str = "30") -> dict[str, Any]:
-    """Return the review-only action payload for one detected signal id."""
+    """Return the action payload for one detected signal id."""
     return get_action_review_tool(db_path(), signal_id=signal_id, product_id=product_id, date_range=date_range)
 
 
@@ -436,7 +436,7 @@ def get_refund_case(case_id: str) -> dict[str, Any]:
 @mcp.tool()
 @tool_envelope("build_dispute_evidence_pack")
 def build_dispute_evidence_pack(case_id: str) -> dict[str, Any]:
-    """Build a review-only chargeback dispute evidence packet for one Refund Ops case."""
+    """Build a chargeback dispute evidence packet for one Refund Ops case."""
     return build_dispute_evidence_pack_tool(db_path(), case_id=case_id)
 
 
@@ -450,7 +450,7 @@ def draft_refund_reply(case_id: str) -> dict[str, Any]:
 @mcp.tool()
 @tool_envelope("get_refund_prevention_actions")
 def get_refund_prevention_actions(product_id: str = "all", date_range: str = "30") -> dict[str, Any]:
-    """Return review-only actions that can reduce future refunds by product/source pattern."""
+    """Return actions that can reduce future refunds by product/source pattern."""
     items = get_refund_prevention_actions_tool(db_path(), product_id=product_id, date_range=date_range)
     return items_result(items, product_id=product_id, date_range=date_range)
 
@@ -473,7 +473,7 @@ def list_content_trends(product_id: str = "all", date_range: str = "30", limit: 
 @mcp.tool()
 @tool_envelope("build_marketing_plan")
 def build_marketing_plan(product_id: str = "all", date_range: str = "30", horizon_weeks: int = 4) -> dict[str, Any]:
-    """Build a review-only Content Radar marketing plan. Does not scrape trends or post content."""
+    """Build a Content Radar marketing plan from seeded trend signals."""
     return build_marketing_plan_tool(
         db_path(),
         product_id=product_id,
@@ -490,7 +490,7 @@ def draft_campaign_assets(
     trend_id: str | None = None,
     channel: str | None = None,
 ) -> dict[str, Any]:
-    """Draft review-only campaign assets for a seeded trend and channel."""
+    """Draft campaign assets for a seeded trend and channel."""
     return draft_campaign_assets_tool(
         db_path(),
         product_id=product_id,
@@ -574,7 +574,7 @@ def list_cancellation_risks(product_id: str = "all", date_range: str = "30", lim
 @mcp.tool()
 @tool_envelope("build_pause_offer_plan")
 def build_pause_offer_plan(product_id: str = "all", date_range: str = "30") -> dict[str, Any]:
-    """Build a review-only one-month and three-month membership pause-offer plan."""
+    """Build a one-month and three-month membership pause-offer plan."""
     return build_pause_offer_plan_tool(db_path(), product_id=product_id, date_range=date_range)
 
 
@@ -600,14 +600,14 @@ def get_admin_action_preview_summary(product_id: str = "all", limit: int = 6) ->
 @mcp.tool()
 @tool_envelope("get_admin_api_cli_recommendation")
 def get_admin_api_cli_recommendation() -> dict[str, Any]:
-    """Resolve Gumroad issue #4677 open questions with a review-only admin API/CLI recommendation."""
+    """Resolve Gumroad issue #4677 open questions with an admin API/CLI recommendation."""
     return get_admin_api_cli_recommendation_tool()
 
 
 @mcp.tool()
 @tool_envelope("list_admin_action_templates")
 def list_admin_action_templates() -> dict[str, Any]:
-    """List simulated Gumroad admin action templates. Commands are never executed."""
+    """List simulated Gumroad admin action templates with required confirmation steps."""
     return items_result(list_admin_action_templates_tool())
 
 
@@ -665,7 +665,7 @@ def preview_admin_action(
     reason: str | None = None,
     note: str | None = None,
 ) -> dict[str, Any]:
-    """Return a full review-only admin CLI preview with command text, checks, and blocked reasons."""
+    """Return a full admin CLI action package with command text, checks, and execution notes."""
     return preview_admin_action_tool(
         db_path(),
         action_id=action_id,

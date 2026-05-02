@@ -28,6 +28,7 @@ from gumroad_merchant.chat_history import (
     connect as connect_chat_history,
     ensure_schema as ensure_chat_schema,
     ensure_session,
+    get_session as get_chat_session_record,
     history_for_agent,
     list_sessions as list_chat_sessions,
     load_messages as load_chat_messages,
@@ -574,6 +575,11 @@ def patch_chat_session(
     ensure_runtime_state()
     conn = connect_chat_history(settings.chat_db_path)
     try:
+        current = get_chat_session_record(conn, session_id)
+        if not current:
+            raise HTTPException(status_code=404, detail="Chat session was not found.")
+        if request.saved is True and int(current.get("message_count") or 0) <= 0:
+            raise HTTPException(status_code=409, detail="Send a message before saving this chat session.")
         session = update_chat_session(
             conn,
             session_id=session_id,
@@ -582,8 +588,6 @@ def patch_chat_session(
         )
     finally:
         conn.close()
-    if not session:
-        raise HTTPException(status_code=404, detail="Chat session was not found.")
     return ChatSessionMutationResponse(session=ChatSessionRecord(**session))
 
 

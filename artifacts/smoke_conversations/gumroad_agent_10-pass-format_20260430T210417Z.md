@@ -25,11 +25,11 @@ Key correlations and takeaways: Churn is 3.62% (up from 2.8%), and refunds are h
 
 Notes for review: These figures are seeded samples (synthetic export rows) and should be read against the product metrics totals for revenue, sales, conversion, and AOV. The derived conversion dropped notably; investigate onboarding, messaging, or offer framing in the top channels. Consider attribution cleanups for Direct traffic to better credit demand sources.
 
-Next review actions (review-only, not executed): 
-- Validate the conversion dip: compare onboarding steps and offer messaging across top sources (Discover, YouTube, Newsletter). 
-- Review refund drivers: examine recent refund cases and any common product or messaging issues contributing to the higher refund rate. 
-- Plan targeted tests: draft 1–2 lightweight, non-destructive tests (e.g., revised product descriptions or messaging for the top campaigns) for the next period. 
-- Verify attribution: perform attribution checks for Direct vs Discover to ensure accurate channel credit. 
+Next review actions (review-only, not executed):
+- Validate the conversion dip: compare onboarding steps and offer messaging across top sources (Discover, YouTube, Newsletter).
+- Review refund drivers: examine recent refund cases and any common product or messaging issues contributing to the higher refund rate.
+- Plan targeted tests: draft 1–2 lightweight, non-destructive tests (e.g., revised product descriptions or messaging for the top campaigns) for the next period.
+- Verify attribution: perform attribution checks for Direct vs Discover to ensure accurate channel credit.
 - Prepare a 3- to 6-month plan to stabilize AOV and improve overall conversion while monitoring churn and refunds.
 
 **Formatting:** words=409, blocks=8, bullet_lines=5, max_block_chars=700, passes=False
@@ -220,8 +220,8 @@ Here are data-backed, review-only changes to reduce future refunds. Seeded metri
 
 Evidence sources and policy/help context (for reference):
 - Refund metrics and top drivers (last 30 days): refund rate 7.8% (10 refunds, $260.00 total; $68.00 disputed, $126.00 under review); top reasons: compatibility mismatch (3), onboarding expectation mismatch (2), template scope mismatch (1). Preventable refunds estimated at $109.20. Source: seed data for All products, 30-day window.
-- High-refund channel guidance: Discover contributes the largest revenue but has a notable refund risk; action: add format/compatibility details above buy button for Discover traffic. See “High refund rate from Gumroad Discover” and related recommendations. 
-- Direct traffic risk: direct views/sales show need for clearer upfront refund expectations (Move them to the first screen). 
+- High-refund channel guidance: Discover contributes the largest revenue but has a notable refund risk; action: add format/compatibility details above buy button for Discover traffic. See “High refund rate from Gumroad Discover” and related recommendations.
+- Direct traffic risk: direct views/sales show need for clearer upfront refund expectations (Move them to the first screen).
 - Support/chargeback context: ensure replies within one business day; review-only practice for evidence packets. See Gumroad Help Center guidance on chargebacks and refunds.
 - Helpful policy/docs:
   - The payouts dashboard and refunds/chargebacks context: https://gumroad.com/help/article/269-balance-page.html

@@ -170,32 +170,11 @@
         flex-wrap: wrap;
       }
 
-      .prompt-mode-group,
       .prompt-action-group {
         display: inline-flex;
         align-items: center;
         gap: 8px;
         flex-wrap: wrap;
-      }
-
-      .prompt-mode-button {
-        min-height: 38px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--panel-warm);
-        color: var(--ink);
-        cursor: pointer;
-        padding: 8px 12px;
-        font-weight: 800;
-        transition: transform 180ms var(--motion), box-shadow 180ms var(--motion), background 180ms var(--motion);
-      }
-
-      .prompt-mode-button.active,
-      .prompt-mode-button:hover {
-        background: var(--accent);
-        color: var(--line-strong);
-        box-shadow: var(--lift-shadow);
-        transform: translate(-1px, -1px);
       }
 
       .copy-icon-button {
@@ -249,7 +228,7 @@
           <button class="mcp-menu-button active" type="button" data-mcp-panel="setup" aria-pressed="true">Set up</button>
           <button class="mcp-menu-button" type="button" data-mcp-panel="installer" aria-pressed="false">Installer Prompt</button>
           <button class="mcp-menu-button" type="button" data-mcp-panel="admin" aria-pressed="false">MCP Merchant automation</button>
-          <button class="mcp-menu-button" type="button" data-mcp-panel="commands" aria-pressed="false">Command List</button>
+          <button class="mcp-menu-button" type="button" data-mcp-panel="skill" aria-pressed="false">Agent Skill</button>
         </nav>
 
         <section id="mcp-panel-setup" class="brief-card mcp-panel">
@@ -273,16 +252,16 @@
           </p>
           <p class="muted-copy">
             In that setup, the local agent can inspect the tool contract,
-            preview the action shape, choose the right execution mode, and keep
-            sensitive writes gated. The browser dashboard stays focused on
-            creator-facing review workflows; this MCP tab carries the admin
+            choose the right execution mode, and run merchant workflows through
+            scoped permissions. The browser dashboard stays focused on
+            creator-facing action workflows; this MCP tab carries the admin
             API/CLI exploration.
           </p>
           <ul>
             <li>Prioritize exact user and purchase lookup before sensitive writes.</li>
             <li>Use short-lived scoped admin tokens from existing admin identity.</li>
             <li>Keep internal admin APIs separate from the public v2 API surface.</li>
-            <li>Expose reviewable commands through an internal CLI shape, not browser cookies or static API keys.</li>
+            <li>Expose executable command workflows through an internal CLI shape, not browser cookies or static API keys.</li>
             <li>Use Gumroad Merchant MCP as the local seeded harness for that contract.</li>
           </ul>
 
@@ -321,8 +300,8 @@
               <strong>4. Ask for the help menu</strong>
               <p class="muted-copy">
                 After reload, ask: "Use Gumroad Merchant to show me what I can
-                do." The server returns tools, prompts, parameters, and safety
-                boundaries.
+                do." The server returns tools, prompts, parameters, and execution
+                modes.
               </p>
             </div>
           </div>
@@ -342,12 +321,12 @@
           <pre class="code-block">[mcp_servers.gumroad_merchant]
 	command = "&lt;PROJECT_ROOT&gt;/scripts/gumroad-merchant-mcp.sh"</pre>
 
-          <h2>Safety Protocol</h2>
+          <h2>Execution Protocol</h2>
           <ul>
             <li>The local demo runs in <span class="path-pill">GUMROAD_MERCHANT_MODE=seeded</span>.</li>
             <li>It uses local seeded demo data and a local Gumroad help-doc corpus.</li>
-            <li>It does not call Gumroad production services or read creator records.</li>
-            <li>Seeded demo actions return <span class="path-pill">review_only: true</span> and <span class="path-pill">will_execute: false</span> when they would affect a real Gumroad account.</li>
+            <li>It uses seeded local data unless a production MCP server is connected.</li>
+            <li>Seeded demo actions describe the required permission scope, confirmation state, and execution mode.</li>
             <li>Local write tools can only write test-profile rows or generated artifacts inside this repo.</li>
             <li>The production MCP direction is scoped read-write automation, not a permanent read-only wall: low-risk reads can run directly, while sensitive writes need scoped auth, preflight checks, confirmation, and audit logs.</li>
           </ul>
@@ -362,12 +341,8 @@
           </p>
 
           <div class="panel-tools">
-            <div class="prompt-mode-group" role="tablist" aria-label="Installer prompt type">
-              <button class="prompt-mode-button active" type="button" data-installer-prompt="personal" role="tab" aria-selected="true">Personal</button>
-              <button class="prompt-mode-button" type="button" data-installer-prompt="prod" role="tab" aria-selected="false">Prod</button>
-            </div>
             <div class="prompt-action-group">
-              <span class="copy-status" id="installer-copy-status" aria-live="polite">Personal prompt loaded</span>
+              <span class="copy-status" id="installer-copy-status" aria-live="polite">Production prompt loaded</span>
               <button class="copy-icon-button" type="button" id="copy-installer-prompt" aria-label="Copy installer prompt">
                 <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="9" y="9" width="10" height="10" rx="2"></rect>
@@ -378,126 +353,14 @@
             </div>
           </div>
 
-          <textarea id="installer-prompt-text" class="installer-text" readonly spellcheck="false"># Gumroad Merchant MCP Agent Install
-
-You are helping me connect this local Gumroad Merchant prototype to an MCP-capable agent.
-
-The repo is here:
-
-```text
-/Users/sc/Project Files/gumroad
-```
-
-The MCP launcher is here:
-
-```text
-/Users/sc/Project Files/gumroad/scripts/gumroad-merchant-mcp.sh
-```
-
-Your job is to install or configure the local MCP server for the agent host you are running inside. Do not guess the host config format. Inspect the local environment first, preserve existing MCP servers, and only add a `gumroad_merchant` server entry.
-
-## What This Server Does
-
-Gumroad Merchant MCP exposes the same local demo capabilities as the browser prototype:
-
-- analytics and product metrics
-- Refund Ops and chargeback dispute packets
-- Content Radar and marketing plans
-- Retention Saver
-- Admin Preview
-- Shortest QA
-- Gumroad help-doc search
-- local agent action artifacts
-
-The point is to let a local agent call the same merchant workflow tools instead of trying to infer everything from a prompt. In this seeded prototype, production-impacting actions stay in review mode. In the product direction, the same MCP shape becomes a scoped read-write automation layer for a real Gumroad business.
-
-## Safety Protocol
-
-Before installing or using this seeded server, preserve these boundaries:
-
-- Run the server in seeded mode.
-- Do not add production Gumroad credentials.
-- Do not call Gumroad production services.
-- Do not read real creator records.
-- Treat generated production-impacting actions as review-only unless the tool explicitly says it is a local test write.
-- Admin Preview may return command text, preflight checks, blocked reasons, and audit-note copy, but this seeded server must not execute real admin commands.
-- Seeded MCP responses that would affect a real Gumroad account should return `review_only: true` and `will_execute: false`.
-- Local write tools may only write test-profile rows or generated artifacts inside this repo.
-
-Product direction:
-
-- Add scoped read-write tools for refunds, disputes, emails, posts, product edits, pricing changes, subscription changes, payout operations, product catalog updates, and monthly sales workflows.
-- Split write tools into `dry_run`, `confirm`, and `apply` modes so the agent can summarize the action before it executes.
-- Require scoped merchant/admin tokens, role checks, idempotency keys, preflight validation, and audit notes for real writes.
-- Let safe reads run directly; require explicit confirmation for refunds, payout changes, subscription edits, pricing changes, and other account-impacting actions.
-- Return the intended action, affected object, risk level, confirmation state, audit trail, and next safe action in every write response.
-
-## Install Steps
-
-1. Verify the repo and launcher exist:
-
-```bash
-cd "/Users/sc/Project Files/gumroad"
-test -x scripts/gumroad-merchant-mcp.sh
-```
-
-2. Install Python dependencies if needed:
-
-```bash
-cd "/Users/sc/Project Files/gumroad"
-python3 -m pip install -r requirements.txt
-```
-
-If this machine has the bundled Codex runtime, this is also valid:
-
-```bash
-cd "/Users/sc/Project Files/gumroad"
-/Users/sc/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 -m pip install -r requirements.txt
-```
-
-3. Configure the current MCP host to run this command:
-
-```text
-/Users/sc/Project Files/gumroad/scripts/gumroad-merchant-mcp.sh
-```
-
-For Codex, add this to `~/.codex/config.toml`:
-
-```toml
-[mcp_servers.gumroad_merchant]
-command = "/Users/sc/Project Files/gumroad/scripts/gumroad-merchant-mcp.sh"
-```
-
-For other MCP hosts, add a server named `gumroad_merchant` with the same command. If the host uses JSON, YAML, or TOML, preserve its existing config and add only this server entry.
-
-4. Restart or reload the MCP host.
-
-5. Confirm the server is available by asking:
-
-```text
-Use Gumroad Merchant to show me what I can do.
-```
-
-The first tool to call is:
-
-```text
-get_gumroad_merchant_help_menu
-```
-
-## Smoke Test
-
-From the repo, run:
-
-```bash
-python3 scripts/run_mcp_smoke.py
-```
-
-	The smoke test starts the MCP server over stdio, lists tools, and checks representative workflows for Refund Ops, dispute evidence, Content Radar, Retention Saver, Admin Preview, issue #4677 guidance, Shortest QA, and the MCP help menu.</textarea>
+          <textarea id="installer-prompt-text" class="installer-text" readonly spellcheck="false"></textarea>
           <script type="text/plain" id="prod-installer-prompt-template"># Gumroad Merchant MCP Production Install
 
 You are helping me connect my agent to Gumroad Merchant MCP.
 
-This is the production-style install path. Do not look for Shane's local repo and do not use `/Users/sc/Project Files/gumroad`. Configure the MCP host to point at the hosted Gumroad Merchant MCP server.
+This is the production-style install prompt for someone using a cloned GitHub
+checkout or, later, a hosted Gumroad Merchant MCP URL. Do not look for Shane's
+local repo and do not use `/Users/sc/Project Files/gumroad`.
 
 ## Server
 
@@ -507,26 +370,122 @@ Use this server name:
 gumroad_merchant
 ```
 
-Use the Gumroad Merchant MCP URL I provide:
+## Repo Routes
+
+If the user downloaded or cloned this project, first find the project root. The
+project root is the folder that contains:
 
 ```text
-<GUMROAD_MERCHANT_MCP_URL>
+README.md
+requirements.txt
+MCPGuide.md
+MCPConversationSample.md
+AgentConversationSample.md
+scripts/gumroad-merchant-mcp.sh
+gumroad_merchant/mcp_server.py
+demo/mcp/gumroad-merchant-agent-skill/SKILL.md
 ```
 
-If I have not provided the URL yet, ask me for the official Gumroad Merchant MCP URL. Do not invent credentials, package names, or private endpoints.
+Use these repo-relative paths:
+
+```text
+<PROJECT_ROOT>/scripts/gumroad-merchant-mcp.sh
+<PROJECT_ROOT>/gumroad_merchant/mcp_server.py
+<PROJECT_ROOT>/requirements.txt
+<PROJECT_ROOT>/MCPGuide.md
+<PROJECT_ROOT>/MCPConversationSample.md
+<PROJECT_ROOT>/AgentConversationSample.md
+<PROJECT_ROOT>/demo/mcp/gumroad-merchant-agent-skill/SKILL.md
+```
+
+The local GitHub checkout runs as a stdio MCP server. It does not expose an HTTP
+port. The MCP host starts the launcher script and talks to it over stdio.
 
 ## Your Job
 
 1. Detect the MCP-capable host you are running inside: Codex, Claude, Cursor, or another local agent app.
 2. Inspect the host's MCP config format before editing anything.
 3. Preserve existing MCP servers.
-4. Add a `gumroad_merchant` server entry that points to the hosted MCP server URL.
-5. Reload or restart the MCP host if required.
-6. Confirm the server is available by asking Gumroad Merchant for its help menu.
+4. Prefer the local cloned repo route if `<PROJECT_ROOT>/scripts/gumroad-merchant-mcp.sh` exists.
+5. If the user provides a hosted Gumroad Merchant MCP URL, configure the hosted URL instead.
+6. Reload or restart the MCP host if required.
+7. Confirm the server is available by asking Gumroad Merchant for its help menu.
+
+## Local GitHub Checkout Install
+
+From the cloned repo:
+
+```bash
+cd "<PROJECT_ROOT>"
+python3 -m pip install -r requirements.txt
+test -x scripts/gumroad-merchant-mcp.sh
+python3 scripts/run_mcp_smoke.py
+```
+
+If the launcher is not executable:
+
+```bash
+cd "<PROJECT_ROOT>"
+chmod +x scripts/gumroad-merchant-mcp.sh
+```
+
+Configure the MCP host to run:
+
+```text
+<PROJECT_ROOT>/scripts/gumroad-merchant-mcp.sh
+```
+
+For TOML-style MCP hosts:
+
+```toml
+[mcp_servers.gumroad_merchant]
+command = "<PROJECT_ROOT>/scripts/gumroad-merchant-mcp.sh"
+```
+
+For JSON-style MCP hosts:
+
+```json
+{
+  "mcpServers": {
+    "gumroad_merchant": {
+      "command": "<PROJECT_ROOT>/scripts/gumroad-merchant-mcp.sh"
+    }
+  }
+}
+```
+
+The repo-local server uses seeded local data. Do not add production Gumroad
+credentials to this local demo.
+
+## Hosted Production URL Install
+
+If the user provides a hosted Gumroad Merchant MCP URL, use it instead of the
+local stdio launcher:
+
+```text
+<GUMROAD_MERCHANT_MCP_URL>
+```
+
+If the user has not provided the URL yet and wants the hosted production server,
+ask for the official Gumroad Merchant MCP URL. Do not invent credentials,
+package names, or private endpoints.
+
+If the host supports remote MCP servers, use this shape:
+
+```json
+{
+  "mcpServers": {
+    "gumroad_merchant": {
+      "url": "<GUMROAD_MERCHANT_MCP_URL>"
+    }
+  }
+}
+```
 
 ## Future Auth Flow
 
-When the production auth layer is available, use browser-based login instead of static API keys:
+When the production auth layer is available, use browser-based login instead of
+static API keys:
 
 - Start a Gumroad MCP login flow from the CLI or agent host.
 - Open the Gumroad login and consent link in the user's web browser.
@@ -548,22 +507,6 @@ The production UI should let the Gumroad user control access by activity:
 - product edits and pricing: draft or apply after confirmation
 - subscriptions and payouts: read, draft, or execute with higher-risk confirmation
 
-## Config Shape
-
-If the host supports remote MCP servers, use the hosted URL directly:
-
-```json
-{
-  "mcpServers": {
-    "gumroad_merchant": {
-      "url": "<GUMROAD_MERCHANT_MCP_URL>"
-    }
-  }
-}
-```
-
-If the host only supports local stdio servers, ask for the official Gumroad CLI bridge command once it exists. Do not make up a package name.
-
 ## First Prompt After Install
 
 After reload, ask:
@@ -572,15 +515,15 @@ After reload, ask:
 Use Gumroad Merchant to show me what I can do.
 ```
 
-The server should return available tools, permission scopes, auth state, safe next actions, and any missing setup steps.</script>
+The server should return available tools, permission scopes, auth state, next
+actions, and any missing setup steps.</script>
         </section>
 
         <section id="mcp-panel-admin" class="brief-card mcp-panel" hidden>
           <h2>MCP Merchant automation</h2>
           <p class="muted-copy">
-            Review-only is the boundary for this seeded demo, not the ceiling
-            for the MCP server. MCP is where Gumroad Merchant should become a
-            real automation surface: the same calls and routing from the web UI,
+            MCP is where Gumroad Merchant becomes a real automation surface:
+            the same calls and routing from the web UI,
             exposed to Codex, Claude, Cursor, or another agent a creator already
             uses.
           </p>
@@ -607,7 +550,7 @@ The server should return available tools, permission scopes, auth state, safe ne
             </div>
             <div class="admin-action-card">
               <strong>Gate real writes</strong>
-              <p class="muted-copy">Use dry-run, confirm, and apply modes so the agent can explain the action before it touches money, access, pricing, payouts, or customer communication.</p>
+              <p class="muted-copy">Use prepare, confirm, and apply modes so the agent can explain the action before it touches money, access, pricing, payouts, or customer communication.</p>
             </div>
             <div class="admin-action-card">
               <strong>Keep an audit trail</strong>
@@ -620,27 +563,77 @@ The server should return available tools, permission scopes, auth state, safe ne
             <li>Monthly sales, product catalog, customer lookup, purchase lookup, refund history, dispute status, payout state, and subscription health.</li>
             <li>Refund drafts and refund execution with eligibility checks, amount validation, reason capture, and merchant confirmation.</li>
             <li>Dispute workflows that gather evidence, summarize the response, stage attachments, and submit only after confirmation.</li>
-            <li>Emails, receipts, posts, and product announcements with preview, recipient checks, and send confirmation.</li>
+            <li>Emails, receipts, posts, and product announcements with prepared copy, recipient checks, and send confirmation.</li>
             <li>Product listing edits, pricing changes, file or content updates, subscription changes, and payout holds/resumes behind role checks and audit logging.</li>
           </ul>
 
           <h2>Execution Model</h2>
           <ul>
             <li>Default reads are direct and high-signal, so the agent can summarize the business without asking the creator to navigate a dashboard.</li>
-            <li>Write tools expose `dry_run`, `confirm`, and `apply` modes instead of a single dangerous button.</li>
+            <li>Write tools expose `prepare`, `confirm`, and `apply` modes instead of a single dangerous button.</li>
             <li>Production writes require scoped tokens, role checks, preflight validation, idempotency keys, and durable audit notes.</li>
             <li>High-risk writes, like payouts, pricing, mass email, subscription access, and refunds, require explicit confirmation with the exact object and effect shown first.</li>
             <li>The current seeded MCP harness proves the contract locally; the production path connects the same contract to real Gumroad merchant APIs.</li>
           </ul>
         </section>
 
-        <section id="mcp-panel-commands" class="brief-card mcp-panel" hidden>
-          <h2>Command List</h2>
+        <section id="mcp-panel-skill" class="brief-card mcp-panel" hidden>
+          <h2>Agent Skill</h2>
+          <p class="muted-copy">
+            The MCP server is the source of truth for callable tools and live
+            schemas. This skill is the operating guide you can drop into an agent
+            so it knows the demo flow, safe defaults, common parameters, and the
+            full Gumroad Merchant command map before the first tool call.
+          </p>
+
+          <div class="panel-tools">
+            <div class="prompt-action-group">
+              <button
+                class="copy-icon-button"
+                type="button"
+                id="download-skill-md"
+                data-skill-path="./mcp/gumroad-merchant-agent-skill/SKILL.md"
+              >
+                Download SKILL.md
+              </button>
+            </div>
+            <span class="copy-status" id="skill-download-status" aria-live="polite">Path: demo/mcp/gumroad-merchant-agent-skill/SKILL.md</span>
+          </div>
+
+          <div class="setup-grid">
+            <div class="setup-tile">
+              <strong>What the skill adds</strong>
+              <p class="muted-copy">
+                Demo-ready prompts, parameter defaults, write rules, and a
+                complete tool map for analytics, refunds, growth, retention,
+                admin actions, QA, and help-doc search.
+              </p>
+            </div>
+            <div class="setup-tile">
+              <strong>What MCP still owns</strong>
+              <p class="muted-copy">
+                Live tool discovery, input schemas, actual database reads, local
+                write execution, generated artifacts, and current auth or
+                permission state.
+              </p>
+            </div>
+          </div>
+
+          <h2>Skill Coverage</h2>
+          <ul>
+            <li>43 demo commands mapped to the current 41 MCP tools.</li>
+            <li>Common variables: <span class="path-pill">product_id</span>, <span class="path-pill">date_range</span>, <span class="path-pill">limit</span>, <span class="path-pill">mode</span>, <span class="path-pill">case_id</span>, <span class="path-pill">trend_id</span>, <span class="path-pill">signal_id</span>, <span class="path-pill">action_id</span>, <span class="path-pill">suite_id</span>, and <span class="path-pill">test_id</span>.</li>
+            <li>Seeded product ids: <span class="path-pill">prod-audio-pack</span>, <span class="path-pill">prod-creator-os</span>, <span class="path-pill">prod-design-kit</span>, and <span class="path-pill">prod-zine-guide</span>.</li>
+            <li>Clear split between direct reads, local test writes, and production read-write direction.</li>
+          </ul>
+
+          <h2>First Demo Prompt</h2>
+          <pre class="code-block">Use Gumroad Merchant to show me what I can do. Then summarize monthly sales, refund risk, and the next action from the local repo data.</pre>
           <p class="muted-copy">
             After the MCP server is connected, these are the kinds of plain
             language commands a creator could ask their agent to run. The agent
             handles the tool calls and brings back the answer, draft, or next
-            safe action.
+            action.
           </p>
 
           <div class="command-list">
@@ -657,12 +650,12 @@ The server should return available tools, permission scopes, auth state, safe ne
             <article class="command-item">
               <strong>Check product listings</strong>
               <p class="muted-copy">Ask for product-page status, files, pricing, and metadata without clicking through every listing.</p>
-              <code>Use Gumroad Merchant to review my product catalog and flag any listing that needs an update.</code>
+              <code>Use Gumroad Merchant to analyze my product catalog and flag any listing that needs an update.</code>
             </article>
             <article class="command-item">
-              <strong>Review refunds</strong>
-              <p class="muted-copy">Have the agent find the highest-risk refund case and explain the safest next step.</p>
-              <code>Use Gumroad Merchant to review refund risk and draft the next action.</code>
+              <strong>Resolve refunds</strong>
+              <p class="muted-copy">Have the agent find the highest-risk refund case and explain the next step.</p>
+              <code>Use Gumroad Merchant to analyze refund risk and draft the next action.</code>
             </article>
             <article class="command-item">
               <strong>Build a dispute packet</strong>
@@ -680,9 +673,9 @@ The server should return available tools, permission scopes, auth state, safe ne
               <code>Use Gumroad Merchant to build a marketing plan for the product with the biggest opportunity.</code>
             </article>
             <article class="command-item">
-              <strong>Preview a write action</strong>
-              <p class="muted-copy">Show the exact object, risk, confirmation state, and audit note before any write is allowed.</p>
-              <code>Use Gumroad Merchant to dry-run a pricing update and show me what would change.</code>
+              <strong>Prepare a write action</strong>
+              <p class="muted-copy">Show the exact object, risk, confirmation state, and audit note before any write is applied.</p>
+              <code>Use Gumroad Merchant to prepare a pricing update and show me what would change.</code>
             </article>
           </div>
         </section>
@@ -695,31 +688,10 @@ The server should return available tools, permission scopes, auth state, safe ne
       const copyButton = document.querySelector("#copy-installer-prompt");
       const installerPrompt = document.querySelector("#installer-prompt-text");
       const prodInstallerPrompt = document.querySelector("#prod-installer-prompt-template");
-      const promptModeButtons = document.querySelectorAll("[data-installer-prompt]");
+      const skillDownloadButton = document.querySelector("#download-skill-md");
+      const skillDownloadStatus = document.querySelector("#skill-download-status");
       const copyStatus = document.querySelector("#installer-copy-status");
-      const installerPrompts = {
-        personal: installerPrompt.value,
-        prod: (prodInstallerPrompt?.textContent || "").trim(),
-      };
-      let activeInstallerPrompt = "personal";
-
-      function installerPromptLabel(promptType) {
-        return promptType === "prod" ? "Prod" : "Personal";
-      }
-
-      function showInstallerPrompt(promptType) {
-        const nextPromptType = installerPrompts[promptType] ? promptType : "personal";
-        activeInstallerPrompt = nextPromptType;
-        installerPrompt.value = installerPrompts[nextPromptType];
-
-        promptModeButtons.forEach((button) => {
-          const active = button.dataset.installerPrompt === nextPromptType;
-          button.classList.toggle("active", active);
-          button.setAttribute("aria-selected", String(active));
-        });
-
-        copyStatus.textContent = `${installerPromptLabel(nextPromptType)} prompt loaded`;
-      }
+      installerPrompt.value = (prodInstallerPrompt?.textContent || "").trim();
 
       function showPanel(panelName) {
         menuButtons.forEach((button) => {
@@ -739,10 +711,34 @@ The server should return available tools, permission scopes, auth state, safe ne
         });
       });
 
-      promptModeButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          showInstallerPrompt(button.dataset.installerPrompt || "personal");
-        });
+      skillDownloadButton?.addEventListener("click", async () => {
+        const skillPath = skillDownloadButton.dataset.skillPath || "./mcp/gumroad-merchant-agent-skill/SKILL.md";
+
+        try {
+          const response = await fetch(skillPath, { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`Unable to load ${skillPath}`);
+          }
+
+          const skillText = await response.text();
+          const blobUrl = URL.createObjectURL(new Blob([skillText], { type: "text/markdown" }));
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          link.download = "SKILL.md";
+          document.body.append(link);
+          link.click();
+          link.remove();
+          URL.revokeObjectURL(blobUrl);
+          if (skillDownloadStatus) skillDownloadStatus.textContent = "Downloaded SKILL.md";
+        } catch {
+          const link = document.createElement("a");
+          link.href = skillPath;
+          link.download = "SKILL.md";
+          document.body.append(link);
+          link.click();
+          link.remove();
+          if (skillDownloadStatus) skillDownloadStatus.textContent = "Opened SKILL.md";
+        }
       });
 
       copyButton.addEventListener("click", async () => {
@@ -755,11 +751,11 @@ The server should return available tools, permission scopes, auth state, safe ne
             installerPrompt.select();
             document.execCommand("copy");
           }
-          copyStatus.textContent = `Copied ${installerPromptLabel(activeInstallerPrompt)} prompt`;
+          copyStatus.textContent = "Copied production prompt";
         } catch {
           installerPrompt.select();
           document.execCommand("copy");
-          copyStatus.textContent = `Copied ${installerPromptLabel(activeInstallerPrompt)} prompt`;
+          copyStatus.textContent = "Copied production prompt";
         }
       });
     </script>

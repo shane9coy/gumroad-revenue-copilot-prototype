@@ -84,9 +84,9 @@ def get_settings() -> Settings:
     else:
         db_default = "data/gumroad_merchant.sqlite"
         chat_db_default = "data/gumroad_merchant_chat.sqlite"
-    agent_verbosity = os.environ.get("OPENAI_AGENT_VERBOSITY", "low").strip().lower() or "low"
+    agent_verbosity = os.environ.get("OPENAI_AGENT_VERBOSITY", "medium").strip().lower() or "medium"
     if agent_verbosity not in {"low", "medium", "high"}:
-        agent_verbosity = "low"
+        agent_verbosity = "medium"
     agent_model = os.environ.get("OPENAI_AGENT_MODEL", DEFAULT_OPENAI_AGENT_MODEL).strip() or DEFAULT_OPENAI_AGENT_MODEL
     return Settings(
         profile=profile,

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gumroad Revenue Copilot Demo</title>
     <link rel="icon" type="image/png" href="./assets/gumroad-merchant-icon.png" />
-    <link rel="stylesheet" href="./styles.css?v=merchant-subheader-20260501-1" />
+    <link rel="stylesheet" href="./styles.css?v=merchant-chat-session-controls-20260502" />
   </head>
   <body>
     <div class="app-shell">
@@ -60,12 +60,15 @@
         </section>
 
         <div id="dashboard-view" class="dashboard-view">
-          <header class="topbar">
-            <div>
-              <p class="eyebrow">Gumroad Merchant</p>
+          <header id="click-signal-header" class="topbar">
+            <div class="topbar-copy">
+              <p class="eyebrow">The merchant is here</p>
               <h1>Click any signal.</h1>
               <p class="hero-line">Every metric can become a conversation.</p>
             </div>
+            <img class="topbar-merchant-art topbar-merchant-art-light" src="./assets/generated/gum-merchant-icon-light.png" alt="" aria-hidden="true" />
+            <img class="topbar-merchant-art topbar-merchant-art-dark" src="./assets/gumroad-merchant-icon-hero.png" alt="" aria-hidden="true" />
+            <button id="click-signal-close" class="topbar-close" type="button" aria-label="Close Click any signal header">X</button>
           </header>
 
         <section id="analytics-controls" class="control-strip" aria-label="Product controls">
@@ -126,7 +129,7 @@
               <nav class="panel-tab-list" role="tablist" aria-label="Revenue command views">
                 <button class="panel-tab active" type="button" role="tab" data-panel-target="sales-panel" aria-selected="true">
                   <span>Overview</span>
-                  <small>Revenue, views, conversion</small>
+                  <small>Payout, sales, product trends</small>
                 </button>
                 <button class="panel-tab" type="button" role="tab" data-panel-target="product-portfolio-panel" aria-selected="false">
                   <span>Product portfolio</span>
@@ -140,18 +143,25 @@
                 <p class="eyebrow">Performance</p>
                 <h2>Recent signal</h2>
               </div>
-              <span id="confidence-summary" class="status-badge">Waiting</span>
             </div>
 
             <div class="metric-grid" id="metric-grid"></div>
 
-            <div class="chart-panel" aria-label="Conversion trend chart">
+            <div class="chart-panel" aria-label="Product performance trend chart">
               <div class="chart-header">
                 <div class="chart-title">
-                  <span>Views to sales</span>
+                  <span>Product performance trend</span>
                   <span id="chart-caption">Current period</span>
                 </div>
                 <div class="chart-actions">
+                  <div class="chart-metric-toggle" aria-label="Chart metric">
+                    <button class="chart-metric-button active" type="button" data-chart-metric="revenue" aria-pressed="true">Revenue</button>
+                    <button class="chart-metric-button" type="button" data-chart-metric="payout" aria-pressed="false">Payout</button>
+                    <button class="chart-metric-button" type="button" data-chart-metric="sales" aria-pressed="false">Sales</button>
+                    <button class="chart-metric-button" type="button" data-chart-metric="conversion" aria-pressed="false">Conversion</button>
+                    <button class="chart-metric-button" type="button" data-chart-metric="views" aria-pressed="false">Views</button>
+                    <button class="chart-metric-button" type="button" data-chart-metric="refundRate" aria-pressed="false">Refunds</button>
+                  </div>
                   <label class="inline-control" for="chart-range-select">
                     <span>Date</span>
                     <select id="chart-range-select">
@@ -162,19 +172,9 @@
                       <option value="custom">Custom range</option>
                     </select>
                   </label>
-                  <button
-                    id="chart-expand-button"
-                    class="icon-button"
-                    type="button"
-                    aria-expanded="false"
-                    aria-controls="chart-detail-panel"
-                  >
-                    <span class="arrow-icon" aria-hidden="true"></span>
-                    <span>Expand</span>
-                  </button>
                 </div>
               </div>
-              <div class="bar-chart" id="bar-chart"></div>
+              <div class="bar-chart trend-chart" id="bar-chart"></div>
               <div id="chart-detail-panel" class="chart-detail-panel" hidden>
                 <div class="detail-header">
                   <div>
@@ -224,11 +224,11 @@
                 </button>
                 <button class="panel-tab" type="button" role="tab" data-panel-target="suggested-next-moves-panel" aria-selected="false">
                   <span>Next moves</span>
-                  <small>Reviewable actions</small>
+                  <small>Action queue</small>
                 </button>
                 <button class="panel-tab" type="button" role="tab" data-panel-target="refund-ops-panel" aria-selected="false">
                   <span>Refund Ops</span>
-                  <small>Prevent, review, dispute</small>
+                  <small>Prevent, resolve, dispute</small>
                 </button>
                 <button class="panel-tab" type="button" role="tab" data-panel-target="content-radar-panel" aria-selected="false">
                   <span>Content Radar</span>
@@ -242,15 +242,26 @@
                   <span>QA</span>
                   <small>Natural-language tests</small>
                 </button>
+                <button
+                  id="merchant-rail-toggle"
+                  class="merchant-rail-toggle"
+                  type="button"
+                  aria-expanded="true"
+                  aria-label="Collapse merchant menu"
+                  title="Collapse merchant menu"
+                >
+                  <span class="merchant-rail-toggle-icon" aria-hidden="true"></span>
+                  <span class="merchant-rail-toggle-label">Collapse menu</span>
+                </button>
               </nav>
               <div class="panel-stack">
           <section id="refund-ops-panel" class="analytics-panel refund-ops-panel" aria-label="Refund Ops agent">
             <div class="panel-header">
               <div>
                 <p class="eyebrow">Refund Ops</p>
-                <h2>Review, prevent, dispute</h2>
+                <h2>Resolve, prevent, dispute</h2>
               </div>
-              <span id="refund-ops-status" class="status-badge">Review-only</span>
+              <span id="refund-ops-status" class="status-badge">Action-ready</span>
             </div>
 
             <div class="refund-mode-switch" aria-label="Refund Ops mode">
@@ -258,7 +269,7 @@
                 Prevent
               </button>
               <button class="refund-mode-button" type="button" data-refund-mode="review" aria-pressed="false">
-                Review
+                Resolve
               </button>
               <button class="refund-mode-button" type="button" data-refund-mode="dispute" aria-pressed="false">
                 Dispute
@@ -289,10 +300,6 @@
           </section>
 
           <aside id="merchant-panel" class="copilot-panel merchant-panel" aria-label="Gumroad Merchant chat">
-            <p class="muted-copy compact">
-              Click any <span class="term-hint" data-tip="A signal is a metric, case, source, or risk worth talking through.">signal</span>. Gumroad Merchant stages a prompt in the input first, so you can edit before sending. Every response stays <span class="term-hint" data-tip="Review-only means the demo drafts, previews, and explains actions without applying account changes.">review-only</span>.
-            </p>
-
             <div class="merchant-session-toolbar" aria-label="Conversation controls">
               <button id="merchant-new-chat" class="quiet-button" type="button">New</button>
               <button id="merchant-save-chat" class="quiet-button" type="button">Save</button>
@@ -310,7 +317,7 @@
                     aria-pressed="true"
                   >
                     <span>Recent</span>
-                    <small>10 max</small>
+                    <small>2 max</small>
                   </button>
                   <button
                     class="merchant-session-tab"
@@ -327,11 +334,6 @@
               </nav>
 
               <div class="merchant-conversation-pane">
-                <div class="merchant-active-session">
-                  <strong id="merchant-active-title">New conversation</strong>
-                  <span id="merchant-active-meta">Local demo</span>
-                </div>
-
                 <div class="merchant-message-frame">
                   <div id="merchant-messages" class="merchant-messages" aria-live="polite"></div>
                 </div>
@@ -358,8 +360,8 @@
                   <button type="button" class="merchant-sample-button" data-merchant-question="Estimate revenue saved from membership pause offers.">
                     Retention saver
                   </button>
-                  <button type="button" class="merchant-sample-button" data-merchant-question="Preview the safest review-only admin action for this refund case.">
-                    Admin preview
+                  <button type="button" class="merchant-sample-button" data-merchant-question="Prepare the strongest admin action for this refund case.">
+                    Admin action
                   </button>
                   <button type="button" class="merchant-sample-button" data-merchant-question="Generate natural-language QA tests for these agent lanes.">
                     QA tests
@@ -408,7 +410,7 @@
                 <p class="eyebrow">Next moves</p>
                 <h2>Suggested next moves</h2>
               </div>
-              <span class="status-badge">Review-only</span>
+              <span class="status-badge">Action-ready</span>
             </div>
 
             <div id="suggestions" class="suggestion-list">
@@ -420,12 +422,12 @@
             <section
               id="action-review"
               class="action-review"
-              aria-label="Selected suggestion action review"
+              aria-label="Selected suggestion action detail"
               hidden
             >
               <div class="action-review-header">
                 <div>
-                  <p class="eyebrow">Review action</p>
+                  <p class="eyebrow">Action detail</p>
                   <h3 id="action-review-title">Action</h3>
                   <p id="action-review-meta" class="action-review-meta"></p>
                 </div>
@@ -433,7 +435,7 @@
                   id="action-review-close"
                   class="quiet-button"
                   type="button"
-                  aria-label="Close action review"
+                  aria-label="Close action detail"
                 >
                   Close
                 </button>
@@ -457,7 +459,7 @@
                 <p class="eyebrow">Content Radar</p>
                 <h2>Trends into campaigns</h2>
               </div>
-              <span id="content-radar-status" class="status-badge">Review-only</span>
+              <span id="content-radar-status" class="status-badge">Action-ready</span>
             </div>
 
             <div id="content-radar-metrics" class="ops-metric-grid"></div>
@@ -489,7 +491,7 @@
               <div>
                 <div class="refund-section-heading">
                   <p class="eyebrow">Pause offers</p>
-                  <h3>Review-only save plan</h3>
+                  <h3>Retention save plan</h3>
                 </div>
                 <div id="pause-offer-list" class="ops-card-grid"></div>
               </div>
@@ -507,13 +509,13 @@
           </section>
 
           <!--
-          <section id="admin-preview-panel" class="analytics-panel growth-panel" aria-label="Admin action preview">
+          <section id="admin-preview-panel" class="analytics-panel growth-panel" aria-label="Admin action center">
             <div class="panel-header">
               <div>
-                <p class="eyebrow">Admin Preview</p>
-                <h2>Review-only admin actions</h2>
+                <p class="eyebrow">Admin Actions</p>
+                <h2>Merchant admin actions</h2>
               </div>
-              <span id="admin-preview-status" class="status-badge">Review-only</span>
+              <span id="admin-preview-status" class="status-badge">Action-ready</span>
             </div>
 
             <div id="admin-preview-metrics" class="ops-metric-grid"></div>
@@ -522,11 +524,11 @@
               <div>
                 <div class="refund-section-heading">
                   <p class="eyebrow">Action templates</p>
-                  <h3>Command previews</h3>
+                  <h3>Command actions</h3>
                 </div>
                 <div id="admin-action-list" class="ops-list"></div>
               </div>
-              <article id="admin-action-detail" class="ops-detail" aria-label="Admin action preview detail"></article>
+              <article id="admin-action-detail" class="ops-detail" aria-label="Admin action detail"></article>
             </div>
           </section>
           -->
@@ -562,7 +564,7 @@
             <div class="dashboard-group-header">
               <div>
                 <p class="eyebrow">Detail views</p>
-                <h2>Supporting evidence</h2>
+                <h2>Digital Logistics</h2>
                 <p class="group-description">Traffic, churn, location, UTM, and export views are related evidence panels, so they share one container.</p>
               </div>
               <span class="group-status">Drilldown</span>
@@ -625,15 +627,6 @@
                     <h3>Subscription health</h3>
                   </div>
                   <div class="detail-actions">
-                    <button
-                      id="churn-sort-button"
-                      class="sort-icon-button"
-                      type="button"
-                      aria-label="Sort churn metrics from highest to lowest"
-                      aria-pressed="true"
-                    >
-                      <span class="sort-arrow" aria-hidden="true"></span>
-                    </button>
                     <span id="churn-range-badge" class="detail-badge">Last 30 days</span>
                   </div>
                 </div>
@@ -689,6 +682,6 @@
       </main>
     </div>
 
-    <script type="module" src="./src/app.js?v=prompt-context-examples-20260501-1"></script>
+    <script type="module" src="./src/app.js?v=merchant-chat-session-controls-20260502"></script>
   </body>
 </html>

@@ -4,8 +4,10 @@ Build-ready handoff for a Gumroad open-source competition prototype.
 
 Start here:
 
-- [prototype.md](prototype.md)
-- [DEMO.md](DEMO.md)
+- [SUBMISSION_SUMMARY.md](SUBMISSION_SUMMARY.md)
+- [MCPGuide.md](MCPGuide.md)
+- [MCPConversationSample.md](MCPConversationSample.md)
+- [AgentConversationSample.md](AgentConversationSample.md)
 
 Run the local static demo:
 
@@ -32,8 +34,9 @@ Once configured in Codex, ask: `Use Gumroad Merchant to show me what I can do.`
 The MCP server exposes a `get_gumroad_merchant_help_menu` tool for terminal
 guidance.
 
-See [MCP.md](MCP.md) for the repo-relative MCP host config, supported tools,
-and smoke-test flow.
+See [MCPGuide.md](MCPGuide.md) for the repo-relative MCP host config, supported tools,
+and smoke-test flow. For a real five-pass MCP transcript, see
+[MCPConversationSample.md](MCPConversationSample.md).
 
 The chat UI reads `OPENAI_API_KEY` from local env or `.env.local`. If the key or
 OpenAI Agents SDK is unavailable, the backend falls back to deterministic
@@ -175,6 +178,6 @@ python3 scripts/run_gumroad_merchant_help_rag_smoke.py
 Core idea:
 
 Gumroad already shows creators what happened. Gumroad Merchant tells them what
-to do next by turning product analytics into evidence-backed, review-only
+to do next by turning product analytics into evidence-backed, action-ready
 revenue actions: realistic 3- or 6-month sales goals, Refund Ops packets,
 content campaigns, retention save plans, admin action previews, and QA journeys.

@@ -11,7 +11,7 @@
 
 **Assistant:**
 
-Past 30 days for all products: churn 3.62% (up from 2.80%), 41 new subs, 13 cancellations. Active start: 318. Revenue lost: $447.00. 
+Past 30 days for all products: churn 3.62% (up from 2.80%), 41 new subs, 13 cancellations. Active start: 318. Revenue lost: $447.00.
 
 Top locations by revenue: US–California $882.00 (18 sales); US–New York $406.00 (14); US–Georgia $361.00 (19); UK–England $294.00 (6); Canada–Ontario $245.00 (5).
 
@@ -171,19 +171,19 @@ If you want, I can summarize a concrete month-by-month action spark to pursue th
 
 Here are the best next questions to sharpen merchant strategy and cut refunds:
 
-- What does a 3- and 6-month revenue forecast look like for all products, broken by top traffic sources?  
+- What does a 3- and 6-month revenue forecast look like for all products, broken by top traffic sources?
   Rationale: aligns targets with source performance and budget decisions.
 
-- What are the current refund rates and top refund causes, and which cases are most urgent?  
+- What are the current refund rates and top refund causes, and which cases are most urgent?
   Rationale: targets root issues and triage workflow.
 
-- Which traffic sources have the best conversion-to-refund profile, and can we pull a source-quality report for the top 3?  
+- Which traffic sources have the best conversion-to-refund profile, and can we pull a source-quality report for the top 3?
   Rationale: optimize acquisition quality and ROI.
 
-- What would a revised 90-day plan include (clear deliverables, checkout messaging, support SLA) and the proposed experiments?  
+- What would a revised 90-day plan include (clear deliverables, checkout messaging, support SLA) and the proposed experiments?
   Rationale: nudges tangible gains and faster remediation.
 
-- Which Content Radar opportunities should we pursue next quarter, and can you draft a preview campaign set?  
+- Which Content Radar opportunities should we pursue next quarter, and can you draft a preview campaign set?
   Rationale: forward-looking marketing leverage.
 
 Want me to fetch any of these now (dashboard summary, refund ops, traffic sources, or content radar)?

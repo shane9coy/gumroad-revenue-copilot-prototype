@@ -123,14 +123,14 @@ def get_refund_prevention_actions_tool(
             {
                 "id": "discover-refund-fit",
                 "title": "High refund rate from Gumroad Discover",
-                "impact": "Reduce expectation-mismatch refunds before widening Discover reach.",
+                "impact": "Review Discover refund fit before scaling that channel.",
                 "evidence": [
                     f"{discover['views']:,} Discover views",
                     f"{discover['sales']:,} Discover sales",
                     f"{format_percent(derived['current_refund_rate'])} refund rate",
                 ],
                 "recommended_action": "Add format, compatibility, and included-file details above the buy button for Discover visitors.",
-                "review_only": True,
+                "action_ready": True,
             }
         )
 
@@ -142,7 +142,7 @@ def get_refund_prevention_actions_tool(
                 "impact": "Clarifies whether the product works for the buyer before checkout.",
                 "evidence": ["Compatibility appears in the seeded refund-case reasons"],
                 "recommended_action": "Add a supported-tools line, setup requirements, and one plain-language example of what is not included.",
-                "review_only": True,
+                "action_ready": True,
             }
         )
 
@@ -157,7 +157,7 @@ def get_refund_prevention_actions_tool(
                     "Evidence packet requires support-thread review",
                 ],
                 "recommended_action": "Reply with access help within one business day and copy the audit note before making a refund decision.",
-                "review_only": True,
+                "action_ready": True,
             }
         )
 
@@ -170,7 +170,7 @@ def get_refund_prevention_actions_tool(
                 "impact": "Direct traffic often mixes email, apps, bookmarks, and private shares, so the checkout copy has to do more work.",
                 "evidence": [f"{direct['views']:,} direct views", f"{direct['sales']:,} direct sales"],
                 "recommended_action": "Move refund expectations and delivery timing into the first screen instead of relying on support follow-up.",
-                "review_only": True,
+                "action_ready": True,
             }
         )
 
@@ -185,7 +185,7 @@ def get_refund_prevention_actions_tool(
                     f"{format_percent(derived['current_refund_rate'])} refund rate",
                 ],
                 "recommended_action": f"Keep {product['name']} stable and review new cases before changing price or policy copy.",
-                "review_only": True,
+                "action_ready": True,
             }
         )
 
@@ -280,14 +280,14 @@ def build_dispute_evidence_pack_tool(db_path: Path | str, case_id: str) -> dict[
         "case_id": case_id,
         "case_type": case["case_type"],
         "label": case["label"],
-        "ready_for_review": is_dispute and case["evidence_score"] >= 70,
+        "ready_for_action": is_dispute and case["evidence_score"] >= 70,
         "warning": "" if is_dispute else "This is a refund request, not a chargeback dispute. Use the buyer reply path.",
         "copy_text": copy_text,
         "audit_note": case["audit_note"],
         "evidence_checklist": case["evidence"],
         "timeline": case["timeline"],
         "policy_snapshot": case["policy_snapshot"],
-        "review_only": True,
+        "action_ready": True,
         "source_url": "https://gumroad.com/help/article/134-how-does-gumroad-handle-chargebacks.html",
     }
 
@@ -302,7 +302,7 @@ def draft_refund_reply_tool(db_path: Path | str, case_id: str) -> dict[str, Any]
         "copy_text": case["buyer_reply"],
         "recommended_action": case["recommended_action"],
         "audit_note": case["audit_note"],
-        "review_only": True,
+        "action_ready": True,
     }
 
 

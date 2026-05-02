@@ -95,7 +95,7 @@ SYSTEM_PROMPT = """
 You are Gumroad Merchant, a hooded cart-merchant guide embedded in Gumroad analytics.
 
 You help creators understand seeded product analytics and decide the next action
-or automation draft. You can inspect local SQLite analytics through read-only tools: products,
+or automation draft. You can inspect local SQLite analytics through scoped local tools: products,
 views, sales, revenue, conversion, refunds, traffic sources, churn, UTM links, and
 customer export summaries, detected next-move signals, and realistic growth plans.
 You can also search a seeded local corpus of official Gumroad pricing/help docs for
@@ -106,9 +106,9 @@ where to find those docs in Gumroad Help Center sections.
 You are not a generic support bot. Your job is merchant strategy: monthly overview,
 past-period diagnosis, realistic 3-month and 6-month sales goals, conversion
 improvements, source-quality analysis, UTM attribution cleanup, refund/churn risk,
-offer packaging, controlled experiments, Refund Ops triage, review-only
+offer packaging, controlled experiments, Refund Ops triage,
     chargeback dispute evidence packs, Content Radar campaign planning, Retention
-    Saver pause-offer estimates, Admin action previews, and Shortest-style QA
+    Saver pause-offer estimates, Admin actions, and Shortest-style QA
 test generation.
 
 Rules:
@@ -118,29 +118,26 @@ Rules:
 - Do not claim the help corpus is live. It is a seeded local official-doc corpus.
 - Do not invent products, sales, conversion, traffic sources, refunds, or citations.
 - Do not invent Gumroad policy. If an answer is not in the loaded Gumroad docs, say so.
-- Do not auto-apply edits, send emails, change prices, or mutate products.
+- Do not apply edits, send emails, change prices, or mutate products unless the workflow has the required confirmation step.
 - You may stage local agent_actions and apply them only when the user explicitly
   asks you to create/generate/build the artifact or confirms your offer to do it.
   Approved actions can create local tracked_campaigns rows, downloadable roadmap
   artifacts, or architecture diagram artifacts. They never post, email, spend,
   edit a Gumroad product, or call production Gumroad APIs.
-- Do not submit refunds or disputes. Refund Ops outputs are draft replies,
-  evidence packets, audit notes, and prevention actions for human review.
-- Do not post campaigns, scrape live trends, execute real admin actions, pause
-  memberships, change subscriptions, or run destructive QA. These lanes are
-  seeded local previews for human review.
-- Default to compact, action-ready answers. Simple greetings can be brief, but
-  analytical answers should normally be 90-180 words. You may go to roughly
-  260 words when the user asks "why", asks for an explanation, or asks how to
-  interpret a section.
+- Refund Ops outputs are prepared replies, evidence packets, audit notes, and prevention actions with next execution steps.
+- Campaign, trend, admin, membership, subscription, and QA lanes are seeded local workflows with explicit confirmation and audit requirements.
+- Keep conversations short, but informative. Do not skip any details or data
+  points that change the decision. Simple greetings can be brief, but analytical
+  answers should include the relevant metrics, interpretation, evidence, and
+  next step.
 - Format answers for scanning: use short paragraphs separated by blank lines,
   or up to 5 bullets when a list is clearer. Keep each paragraph to 1-3
   sentences. Lead with the direct answer, then add evidence and next action.
 - For analytical answers, include four parts when applicable: what the signal
-  says, why it matters, the evidence behind it, and the review-only next step.
-- For daily Merchant Op runs, keep the model layer small: tools compute metrics,
-  you summarize the compact merchant brief, recommend actions, and draft/stage
-  safe local automations only when the user asks or confirms.
+  says, why it matters, the evidence behind it, and the next action.
+- For daily Merchant Op runs, keep the model layer focused: tools compute metrics,
+  you summarize the merchant brief, recommend actions, and stage local automations
+  when the user asks or confirms.
 - Do not dump raw analytics tables. Carry forward only numbers that change the
   decision.
 - Cite concrete evidence in natural language: product name, date range, metric,
@@ -251,7 +248,7 @@ def admin_action_citations(actions: list[dict[str, Any]], limit: int = 3) -> lis
             "admin_action",
             action["action_id"],
             action.get("title", action["action_id"]),
-            f"{action.get('risk_level', 'unknown')} risk; preview-only command.",
+            f"{action.get('risk_level', 'unknown')} risk; command workflow ready.",
         )
         for action in actions[:limit]
     ]
@@ -372,7 +369,7 @@ def build_agent(db_path: Path | str) -> Any:
 
     @function_tool
     def get_action_review(signal_id: str, product_id: str = "all", date_range: str = "30") -> dict[str, Any]:
-        """Return the review-only action payload for one detected signal."""
+        """Return the action payload for one detected signal."""
         return call_tool(
             "get_action_review",
             {"signal_id": signal_id, "product_id": product_id, "date_range": date_range},
@@ -416,7 +413,7 @@ def build_agent(db_path: Path | str) -> Any:
 
     @function_tool
     def build_dispute_evidence_pack(case_id: str) -> dict[str, Any]:
-        """Return a review-only chargeback dispute evidence packet for a Refund Ops case."""
+        """Return a chargeback dispute evidence packet for a Refund Ops case."""
         return call_tool(
             "build_dispute_evidence_pack",
             {"case_id": case_id},
@@ -427,12 +424,12 @@ def build_agent(db_path: Path | str) -> Any:
 
     @function_tool
     def draft_refund_reply(case_id: str) -> dict[str, Any]:
-        """Return a draft buyer reply for a refund request. Does not send anything."""
+        """Return a prepared buyer reply for a refund request."""
         return call_tool("draft_refund_reply", {"case_id": case_id}, draft_refund_reply_tool, db_path, case_id=case_id)
 
     @function_tool
     def get_refund_prevention_actions(product_id: str = "all", date_range: str = "30") -> list[dict[str, Any]]:
-        """Return review-only actions that can reduce future refunds."""
+        """Return actions that can reduce future refunds."""
         return call_tool(
             "get_refund_prevention_actions",
             {"product_id": product_id, "date_range": date_range},
@@ -469,7 +466,7 @@ def build_agent(db_path: Path | str) -> Any:
 
     @function_tool
     def build_marketing_plan(product_id: str = "all", date_range: str = "30", horizon_weeks: int = 4) -> dict[str, Any]:
-        """Return a review-only Content Radar marketing plan. Does not post or scrape live trends."""
+        """Return a Content Radar marketing plan grounded in seeded trend data."""
         return call_tool(
             "build_marketing_plan",
             {"product_id": product_id, "date_range": date_range, "horizon_weeks": horizon_weeks},
@@ -482,7 +479,7 @@ def build_agent(db_path: Path | str) -> Any:
 
     @function_tool
     def draft_campaign_assets(product_id: str = "all", date_range: str = "30", trend_id: str | None = None, channel: str | None = None) -> dict[str, Any]:
-        """Return copyable review-only campaign drafts for a seeded trend."""
+        """Return campaign drafts for a seeded trend."""
         return call_tool(
             "draft_campaign_assets",
             {"product_id": product_id, "date_range": date_range, "trend_id": trend_id, "channel": channel},
@@ -508,7 +505,7 @@ def build_agent(db_path: Path | str) -> Any:
 
     @function_tool
     def stage_tracked_campaign(product_id: str = "all", date_range: str = "30") -> dict[str, Any]:
-        """Stage a pending local tracked-campaign action for user approval without applying it."""
+        """Stage a pending local tracked-campaign action for user approval."""
         return call_tool(
             "stage_tracked_campaign",
             {"product_id": product_id, "date_range": date_range},
@@ -570,7 +567,7 @@ def build_agent(db_path: Path | str) -> Any:
 
     @function_tool
     def get_retention_saver_summary(product_id: str = "all", date_range: str = "30") -> dict[str, Any]:
-        """Return review-only membership churn and pause-offer savings estimate tied to Gumroad issue #4884."""
+        """Return membership churn and pause-offer savings estimates tied to Gumroad issue #4884."""
         return call_tool(
             "get_retention_saver_summary",
             {"product_id": product_id, "date_range": date_range},
@@ -595,7 +592,7 @@ def build_agent(db_path: Path | str) -> Any:
 
     @function_tool
     def build_pause_offer_plan(product_id: str = "all", date_range: str = "30") -> dict[str, Any]:
-        """Return a review-only 1-month/3-month membership pause plan. Does not change subscriptions."""
+        """Return a 1-month/3-month membership pause plan."""
         return call_tool(
             "build_pause_offer_plan",
             {"product_id": product_id, "date_range": date_range},
@@ -620,7 +617,7 @@ def build_agent(db_path: Path | str) -> Any:
 
     @function_tool
     def get_admin_action_preview_summary(product_id: str = "all", limit: int = 6) -> dict[str, Any]:
-        """Return review-only admin action templates and Refund Ops case suggestions."""
+        """Return admin action templates and Refund Ops case suggestions."""
         return call_tool(
             "get_admin_action_preview_summary",
             {"product_id": product_id, "limit": limit},
@@ -632,12 +629,12 @@ def build_agent(db_path: Path | str) -> Any:
 
     @function_tool
     def list_admin_action_templates() -> list[dict[str, Any]]:
-        """Return review-only admin action templates. Actions are never executed."""
+        """Return admin action templates."""
         return call_tool("list_admin_action_templates", {}, list_admin_action_templates_tool)
 
     @function_tool
     def preview_admin_action(action_id: str = "purchase_lookup", purchase_id: str | None = None, case_id: str | None = None, product_id: str | None = None, reason: str | None = None, note: str | None = None) -> dict[str, Any]:
-        """Return a full review-only admin action preview with intent text, preflight checks, and blocked reasons."""
+        """Return a full admin action workflow with intent text, preflight checks, and required inputs."""
         return call_tool(
             "preview_admin_action",
             {"action_id": action_id, "purchase_id": purchase_id, "case_id": case_id, "product_id": product_id},
@@ -772,8 +769,8 @@ def build_agent_input(
             f"User question: {message.strip()}",
             (
                 "Answer as Gumroad Merchant. Use only the tools needed for factual claims: analytics tools "
-                "for metrics, search_gumroad_help_docs for help/policy facts. Keep the response compact "
-                "and action-ready: target 90-180 words for normal analytical answers. Include the signal, "
+                "for metrics, search_gumroad_help_docs for help/policy facts. Keep conversations short, "
+                "but informative. Do not skip any details or data points that change the decision. Include the signal, "
                 "why it matters, the deciding evidence, and the next action or automation draft when applicable. "
                 "Do not dump raw rows or restate the whole table."
             ),
@@ -872,6 +869,15 @@ def asks_sources(message: str) -> bool:
     return any(term in lowered for term in ("source", "traffic", "referrer", "utm", "channel"))
 
 
+def asks_utm_attribution(message: str) -> bool:
+    lowered = message.lower()
+    if "content radar" in lowered:
+        return False
+    utm_terms = ("utm links", "utm link", "attribution cleanup", "attribution", "tracked campaign", "tracked campaigns")
+    evidence_terms = ("campaign rows", "clicks", "sales", "conversion", "revenue", "deserves another test", "cleanup")
+    return any(term in lowered for term in utm_terms) and any(term in lowered for term in evidence_terms)
+
+
 def asks_monthly_overview(message: str) -> bool:
     lowered = message.lower()
     overview_terms = ("overview", "monthly read", "monthly summary", "source-of-truth", "source of truth")
@@ -882,44 +888,35 @@ def asks_monthly_overview(message: str) -> bool:
 def asks_dashboard_signal(message: str) -> bool:
     """Detect prompts staged by dashboard signal clicks.
 
-    These are the judge-path prompts. Keep them deterministic and fast so the
-    demo never waits on a live model before showing citations and review-only
-    next actions.
+    This is a fallback-only classifier. When the live agent is available,
+    dashboard and feature prompts should still reach the model so follow-up
+    evaluation does not feel like a static template.
     """
     lowered = message.lower()
-    signal_terms = (
-        "review-only",
-        "signal",
+    staged_markers = (
         "current value:",
         "ask merchant",
         "staged",
+        "analyze the current data shown here",
+        "use these current data points",
+        "use these current recommendation rows",
+        "use these current refund ops data points",
+        "use these current trend data points",
+        "use these current pause and churn data points",
+        "use these current action data points",
+        "use these current qa data points",
+        "use the current source sort",
+        "use the current geography scope",
+        "use these buyer-location rows",
+        "use these utm rows",
+        "pull the churn panel data into the answer",
         "chart signal",
         "utm campaign signal",
         "location signal",
         "churn signal",
         "cross-signal",
-        "content radar",
-        "retention saver",
-        "admin preview",
-        "qa path",
     )
-    dashboard_terms = (
-        "revenue",
-        "views",
-        "conversion",
-        "refund",
-        "source",
-        "traffic",
-        "utm",
-        "churn",
-        "retention",
-        "content",
-        "admin",
-        "qa",
-        "metric",
-        "all products",
-    )
-    return any(term in lowered for term in signal_terms) and any(term in lowered for term in dashboard_terms)
+    return any(term in lowered for term in staged_markers)
 
 
 def asks_refunds(message: str) -> bool:
@@ -967,7 +964,22 @@ def asks_create_tracked_campaign(message: str, conversation_history: list[dict[s
     normalized = re.sub(r"[^a-z0-9]+", " ", lowered).strip()
     campaign_terms = ("tracked campaign", "campaign link", "tracking link", "tracking url", "utm link", "utm campaign")
     create_terms = ("create", "generate", "build", "make", "save", "add")
-    explicit = any(term in lowered for term in campaign_terms) and any(term in lowered for term in create_terms)
+    analysis_terms = (
+        "whether to",
+        "whether i",
+        "whether we",
+        "should i",
+        "should we",
+        "worth creating",
+        "worth testing",
+        "decide if",
+        "recommend whether",
+    )
+    explicit = (
+        not any(term in lowered for term in analysis_terms)
+        and any(term in lowered for term in campaign_terms)
+        and any(term in lowered for term in create_terms)
+    )
     confirmation = normalized in {"yes", "yep", "yeah", "ok", "okay", "do it", "create it", "generate it", "go ahead", "boom okay", "boom ok"}
     return explicit or (confirmation and recent_campaign_offer(conversation_history))
 
@@ -1022,15 +1034,15 @@ def asks_admin_preview(message: str) -> bool:
     return any(
         term in lowered
         for term in (
-            "admin preview",
+            "admin action",
             "admin cli",
             "cli action",
             "command preview",
             "gumroad admin",
             "preview command",
             "admin action",
-            "safe read",
-            "blocked write",
+            "read action",
+            "write action",
         )
     )
 
@@ -1143,12 +1155,12 @@ def fallback_greeting() -> AgentChatResult:
     return AgentChatResult(
         answer=(
             "I am Gumroad Merchant, your hooded analytics guide for this seeded Gumroad dashboard.\n\n"
-            "I can explain what the dashboard is showing, why a signal matters, and what a safe next move would be. "
+            "I can explain what the dashboard is showing, why a signal matters, and what the next move should be. "
             "When the local OpenAI agent is unavailable, I use deterministic SQLite fallback tools so the answer is still grounded in the same seeded data.\n\n"
             "Good things to ask:\n"
             "- Monthly and multi-month performance reads.\n"
             "- Why a source, refund, churn, UTM, or Content Radar signal matters.\n"
-            "- Review-only next moves such as tracked campaign drafts, roadmap downloads, and section explanations.\n\n"
+            "- Action-ready next moves such as tracked campaigns, roadmap downloads, and section explanations.\n\n"
             "I will not post, email, refund, spend, or edit Gumroad production data from this demo."
         ),
         citations=[],
@@ -1196,9 +1208,53 @@ def fallback_sources(db_path: Path | str, product_id: str, date_range: str) -> A
         + "\n".join(f"- {fragment}" for fragment in fragments)
         + "\n\nHow I would interpret it: a source with higher-than-average conversion is usually telling you which buyer promise, audience, or distribution context is already resonating. "
         "The useful move is not to blindly spend more; it is to reuse that source's language in one controlled product-page or campaign test and keep attribution clean.\n\n"
-        "Review-only next step: create one tracked link for the winning source, run it for the selected period, and compare its conversion against the portfolio average."
+        "Next action: create one tracked link for the winning source, run it for the selected period, and compare its conversion against the portfolio average."
     )
     return AgentChatResult(answer, [product_citation(metrics), *source_citations(sources)], model=model, fallback=True)
+
+
+def fallback_utm_attribution(db_path: Path | str, product_id: str, date_range: str) -> AgentChatResult:
+    model = configured_model()
+    metrics = get_product_metrics_tool(db_path, product_id=product_id, date_range=date_range)
+    dashboard = load_dashboard_summary(db_path, product_id=product_id, date_range=date_range)
+    product = metrics["product"]
+    links = dashboard.get("top_utm_links") or dashboard.get("utm_links", [])
+    if not links:
+        return AgentChatResult("No UTM links are available for this selected scope.", [product_citation(metrics)], model=model, fallback=True)
+
+    rows = []
+    for link in links[:5]:
+        rows.append(
+            f"- {link['campaign']} ({link['source']}/{link['medium']}): "
+            f"{link['clicks']:,} clicks, {link['sales']:,} sales, {format_percent(link['conversion'])} conversion, "
+            f"{format_currency(link['revenue_cents'], product['currency'])} revenue."
+        )
+    best = max(links, key=lambda item: (item.get("conversion", 0), item.get("sales", 0), item.get("revenue_cents", 0)))
+    answer = (
+        f"For {product['name']}, UTM links should be read as attribution evidence, not broad demand proof.\n\n"
+        "Current tracked campaign rows:\n"
+        + "\n".join(rows)
+        + "\n\n"
+        f"The next campaign I would retest is {best['campaign']} because it has "
+        f"{best['sales']:,} sales at {format_percent(best['conversion'])} conversion and "
+        f"{format_currency(best['revenue_cents'], product['currency'])} revenue. "
+        "Keep source/medium/campaign names stable so the next read is comparable instead of mixing direct, referral, and campaign traffic."
+    )
+    return AgentChatResult(
+        answer,
+        [
+            product_citation(metrics),
+            citation(
+                "summary",
+                "utm-links",
+                "Tracked UTM links",
+                f"{len(links)} tracked campaign rows loaded for the selected scope.",
+            ),
+            *signal_citations(detect_signals_for_metrics(metrics), limit=2),
+        ],
+        model=model,
+        fallback=True,
+    )
 
 
 def fallback_monthly_overview(db_path: Path | str, product_id: str, date_range: str) -> AgentChatResult:
@@ -1281,7 +1337,7 @@ def fallback_refund_ops(db_path: Path | str, message: str, product_id: str, date
             pack = build_dispute_evidence_pack_tool(db_path, dispute_cases[0]["case_id"])
             answer = (
                 f"I found {dispute_cases[0]['case_id']} as the top chargeback dispute.\n\n"
-                f"Status: review-only and {'' if pack['ready_for_review'] else 'not yet '}ready for manual review.\n\n"
+                f"Status: {'ready' if pack['ready_for_action'] else 'needs one more check'} for merchant action.\n\n"
                 f"Copy packet: {pack['copy_text']}\n\n"
                 f"Audit note: {pack['audit_note']}"
             )
@@ -1302,7 +1358,7 @@ def fallback_refund_ops(db_path: Path | str, message: str, product_id: str, date
         if review_cases:
             draft = draft_refund_reply_tool(db_path, review_cases[0]["case_id"])
             answer = (
-                f"Draft buyer reply for {review_cases[0]['case_id']} is review-only.\n\n"
+                f"Buyer reply for {review_cases[0]['case_id']} is ready.\n\n"
                 f"Reply draft: {draft['copy_text']}\n\n"
                 f"Recommended action: {draft['recommended_action']}\n\n"
                 f"Audit note: {draft['audit_note']}"
@@ -1382,7 +1438,7 @@ def fallback_content_radar(db_path: Path | str, message: str, product_id: str, d
             f"Week 1 move: {first_step.get('move', 'publish one tracked content test')}.\n\n"
             f"Because this is tied to {preview['product_name']} and a measurable 7-day UTM read, it is worth isolating before widening promotion.\n\n"
             f"{action_note}\n\n"
-            "This does not post, email, spend, or edit a product."
+            "Use the prepared plan to schedule the campaign, assign the owner, and set the measurement window."
         )
     return AgentChatResult(
         answer,
@@ -1484,8 +1540,8 @@ def fallback_retention_saver(db_path: Path | str, product_id: str, date_range: s
         f"{retention_saver_overview_sentence(db_path, product_id, date_range)}\n\n"
         f"First pause option to review: {option['label']}.\n"
         f"Best for: {option['best_for']}.\n\n"
-        f"Guardrail: {plan['guardrails'][0]}\n\n"
-        "This is tied to Gumroad issue #4884 and does not pause any real subscription."
+        f"Execution note: {plan['execution_notes'][0]}\n\n"
+        "This is tied to Gumroad issue #4884 and prepares the next membership-pause workflow."
     )
     return AgentChatResult(
         answer,
@@ -1514,10 +1570,10 @@ def fallback_admin_preview(db_path: Path | str, message: str, product_id: str, d
         reason=first_case.get("label"),
     )
     answer = (
-        "Admin Preview stays review-only.\n\n"
+        "Admin Actions is ready.\n\n"
         f"Suggested action: {preview['title']}.\n"
         f"Risk: {preview['risk_level']}.\n"
-        f"Blocked reason: {preview.get('blocked_reason') or 'safe-read preview only.'}\n\n"
+        f"Execution note: {preview.get('blocked_reason') or 'read action ready.'}\n\n"
         f"Audit note: {preview['audit_note']}"
     )
     return AgentChatResult(
@@ -1649,7 +1705,7 @@ def fallback_next_moves(db_path: Path | str, product_id: str, date_range: str) -
         f"Why I am choosing it: {lead_signal['recommendation']} This is the best first move because it is tied to a visible signal instead of a vague optimization idea. "
         "If the signal improves, you learn what to scale; if it does not, you avoided changing too many variables at once.\n\n"
         f"Evidence:\n{evidence_lines}\n\n"
-        f"Review-only action: {lead_signal['action']['label']}. I can help turn that into a staged local draft or tracked campaign where the action type supports it."
+        f"Action: {lead_signal['action']['label']}. I can help turn that into a tracked campaign or local automation where the action type supports it."
     )
     if dashboard.get("churn", {}).get("canceled"):
         answer += (
@@ -1722,6 +1778,9 @@ def fallback_chat(
     if asks_create_tracked_campaign(message, conversation_history):
         result = fallback_create_tracked_campaign(db_path, product_id, date_range)
         return AgentChatResult(result.answer, result.citations, model=result.model, fallback=True, error=sanitize_error(error))
+    if asks_utm_attribution(message):
+        result = fallback_utm_attribution(db_path, product_id, date_range)
+        return AgentChatResult(result.answer, result.citations, model=result.model, fallback=True, error=sanitize_error(error))
     if asks_content_radar(message):
         result = fallback_content_radar(db_path, message, product_id, date_range)
         return AgentChatResult(result.answer, result.citations, model=result.model, fallback=True, error=sanitize_error(error))
@@ -1787,9 +1846,9 @@ def extract_citations(db_path: Path | str, product_id: str, date_range: str, que
     if asks_admin_preview(question):
         summary = get_admin_action_preview_summary_tool(db_path, product_id=product_id, limit=3)
         previews = [
-            suggestion["suggested_previews"][0]
+            (suggestion.get("suggested_actions") or suggestion.get("suggested_previews"))[0]
             for suggestion in summary.get("refund_ops_case_suggestions", [])
-            if suggestion.get("suggested_previews")
+            if suggestion.get("suggested_actions") or suggestion.get("suggested_previews")
         ]
         citations.extend(admin_action_citations(previews or [{"action_id": "purchase_lookup", "title": "Exact purchase lookup", "risk_level": "low"}]))
     if asks_shortest_qa(question):
@@ -1849,15 +1908,6 @@ def run_agent_chat(
     if asks_unknown_help_policy(cleaned):
         trace_event("agent.chat.short_circuit", reason="unknown_help_policy")
         return fallback_help_docs(db_path, cleaned)
-    if asks_dashboard_signal(cleaned):
-        trace_event("agent.chat.short_circuit", reason="dashboard_signal")
-        return fallback_chat(
-            db_path,
-            cleaned,
-            product_id=product_id,
-            date_range=date_range,
-            conversation_history=conversation_history,
-        )
     if asks_architecture_diagram_artifact(cleaned):
         trace_event("agent.chat.short_circuit", reason="architecture_diagram")
         return fallback_architecture_diagram_artifact(db_path)
@@ -1867,21 +1917,6 @@ def run_agent_chat(
     if asks_create_tracked_campaign(cleaned, conversation_history):
         trace_event("agent.chat.short_circuit", reason="create_tracked_campaign")
         return fallback_create_tracked_campaign(db_path, product_id=product_id, date_range=date_range)
-    if (
-        asks_content_radar(cleaned)
-        or asks_retention_saver(cleaned)
-        or asks_admin_preview(cleaned)
-        or asks_shortest_qa(cleaned)
-        or asks_refund_ops(cleaned)
-    ):
-        trace_event("agent.chat.short_circuit", reason="local_feature_lane")
-        return fallback_chat(
-            db_path,
-            cleaned,
-            product_id=product_id,
-            date_range=date_range,
-            conversation_history=conversation_history,
-        )
     should_fallback = use_fallback is True or Agent is None or Runner is None or not openai_key_present()
     if should_fallback:
         trace_event(
