@@ -73,6 +73,11 @@ const INITIAL_MERCHANT_MESSAGE = {
   content:
     "Gumroad Merchant is ready. Click any signal below and I will stage a prompt in the input first. Edit it, then send when it sounds right.",
   citations: [],
+  followups: [
+    "Break down my products and explain why some are selling better than others.",
+    "Compare my traffic sources and tell me which one deserves the next test.",
+    "Find the biggest conversion, refund, or churn issue in this date range.",
+  ],
 };
 
 function initialMerchantMessages() {
@@ -721,12 +726,16 @@ function renderMiniAgentButton(promptKey, detail = {}) {
 function buildMerchantFollowups(message) {
   const product = getSelectedProduct();
   const productName = product.name;
+  const portfolioPrompt =
+    state.selectedProductId === "all"
+      ? "Break down my products and explain why some are selling better than others."
+      : `Compare ${productName} against the rest of my products and explain why it is selling better or worse.`;
   const normalized = String(message ?? "").toLowerCase();
 
   const shared = [
-    `Show the exact evidence behind this for ${productName}.`,
-    `Turn this into one action I can apply or schedule.`,
-    `What signal should I click next for ${productName}?`,
+    portfolioPrompt,
+    `Compare the traffic sources for ${productName} and tell me which one deserves the next test.`,
+    `Find the biggest conversion, refund, or churn issue for ${productName} in this date range.`,
   ];
 
   if (normalized.includes("refund") || normalized.includes("chargeback")) {
@@ -740,7 +749,7 @@ function buildMerchantFollowups(message) {
   if (normalized.includes("content") || normalized.includes("campaign") || normalized.includes("utm")) {
     return [
       `Turn this into a one-week content test for ${productName}.`,
-      `Draft the UTM plan and success metric for this campaign.`,
+      `Draft the UTM plan and success metric for the strongest current campaign idea.`,
       shared[1],
     ];
   }
@@ -3135,7 +3144,6 @@ function renderMerchantSessionList(sessions, element, emptyText) {
       const isSaved = Boolean(session.saved_at);
       const title = merchantSessionTitle(session);
       const lastTouched = session.latest_message_at ?? session.updated_at ?? session.created_at;
-      const saveAction = isSaved ? "Unsave" : "Save";
 
       return `
         <article
@@ -3152,25 +3160,6 @@ function renderMerchantSessionList(sessions, element, emptyText) {
               ${escapeHtml(formatSessionDate(lastTouched))} · ${Number(session.message_count ?? 0).toLocaleString()} msgs${isSaved ? " · saved" : ""}
             </span>
           </button>
-          <span class="merchant-session-row-actions" aria-label="${escapeHtml(title)} controls">
-            <button
-              class="merchant-session-row-button"
-              type="button"
-              data-merchant-session-save-id="${escapeHtml(session.id)}"
-              data-merchant-session-save-next="${isSaved ? "false" : "true"}"
-              aria-label="${escapeHtml(`${saveAction} ${title}`)}"
-            >
-              ${escapeHtml(saveAction)}
-            </button>
-            <button
-              class="merchant-session-row-button danger"
-              type="button"
-              data-merchant-session-delete-id="${escapeHtml(session.id)}"
-              aria-label="${escapeHtml(`Delete ${title}`)}"
-            >
-              Delete
-            </button>
-          </span>
         </article>
       `;
     })
@@ -4561,23 +4550,6 @@ merchantSessionTabs.forEach((tab) => {
 });
 
 function handleMerchantSessionListClick(event) {
-  const deleteButton = event.target.closest("[data-merchant-session-delete-id]");
-
-  if (deleteButton) {
-    void deleteMerchantSession(deleteButton.dataset.merchantSessionDeleteId ?? "");
-    return;
-  }
-
-  const saveButton = event.target.closest("[data-merchant-session-save-id]");
-
-  if (saveButton) {
-    void toggleSaveMerchantSession(
-      saveButton.dataset.merchantSessionSaveId ?? "",
-      saveButton.dataset.merchantSessionSaveNext === "true",
-    );
-    return;
-  }
-
   const sessionButton = event.target.closest("[data-merchant-session-id]");
 
   if (!sessionButton) {

@@ -2,7 +2,7 @@
 
 I built Gumroad Merchant because the default shape of "AI for creators" still feels backwards to me.
 
-Most tools either give you a dashboard full of numbers or a blank chat box and then expect you to know what to ask. That works for a power user who already knows the business question. It does not work as well for a creator who is trying to understand a refund spike, a conversion drop, a customer issue, a content opportunity, or a Gumroad policy question while also running the rest of their business.
+Most tools either give you a dashboard full of numbers with no clear actionable signal or a blank chat box and then expect you to know what to ask. That works for a power user who already knows the business questions. It does not work as well for your average artist and creator who is trying to understand a refund spike, a customer issue, a content opportunity, or a Gumroad policy question while also running the rest of their business.
 
 That was the core product insight behind this prototype: the agent should help teach the interface. The UI should not make the creator start from a perfect prompt. It should give them obvious paths into the work, then let the agent explain what is happening, what evidence it used, and what the creator can do next.
 

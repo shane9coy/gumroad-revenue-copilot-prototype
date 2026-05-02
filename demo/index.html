@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gumroad Revenue Copilot Demo</title>
     <link rel="icon" type="image/png" href="./assets/gumroad-merchant-icon.png" />
-    <link rel="stylesheet" href="./styles.css?v=merchant-chat-session-controls-20260502" />
+    <link rel="stylesheet" href="./styles.css?v=merchant-session-actions-20260502" />
   </head>
   <body>
     <div class="app-shell">
@@ -300,13 +300,6 @@
           </section>
 
           <aside id="merchant-panel" class="copilot-panel merchant-panel" aria-label="Gumroad Merchant chat">
-            <div class="merchant-session-toolbar" aria-label="Conversation controls">
-              <button id="merchant-new-chat" class="quiet-button" type="button">New</button>
-              <button id="merchant-save-chat" class="quiet-button" type="button">Save</button>
-              <button id="merchant-rename-chat" class="quiet-button" type="button">Rename</button>
-              <button id="merchant-delete-chat" class="quiet-button danger" type="button">Delete</button>
-            </div>
-
             <div class="merchant-chat-shell">
               <nav class="merchant-session-sidebar" aria-label="Gumroad Merchant conversations">
                 <div class="merchant-session-tabs" role="tablist" aria-label="Conversation history">
@@ -331,6 +324,12 @@
                 </div>
                 <div id="merchant-session-list" class="merchant-session-list" data-merchant-session-panel="recent"></div>
                 <div id="merchant-saved-session-list" class="merchant-session-list" data-merchant-session-panel="saved" hidden></div>
+                <div class="merchant-session-toolbar" aria-label="Conversation controls">
+                  <button id="merchant-new-chat" class="quiet-button" type="button">New</button>
+                  <button id="merchant-save-chat" class="quiet-button" type="button">Save</button>
+                  <button id="merchant-rename-chat" class="quiet-button" type="button">Rename</button>
+                  <button id="merchant-delete-chat" class="quiet-button danger" type="button">Delete</button>
+                </div>
               </nav>
 
               <div class="merchant-conversation-pane">
@@ -682,6 +681,6 @@
       </main>
     </div>
 
-    <script type="module" src="./src/app.js?v=merchant-chat-session-controls-20260502"></script>
+    <script type="module" src="./src/app.js?v=merchant-session-actions-20260502"></script>
   </body>
 </html>

@@ -22,25 +22,33 @@ inside a local agent like Codex, Claude, Cursor, or another MCP-capable app.
 - [AGENT-GUMROAD-MERCHANT-DEMO.md](AGENT-GUMROAD-MERCHANT-DEMO.md) is the
   reviewer demo script for the browser UI.
 
-## Run the Browser Demo
+## Run Everything
 
-Start the static UI:
+From the repo root, run one command:
 
 ```bash
-npm run demo
+./scripts/start-gumroad-merchant.sh
 ```
 
-Open:
+That script installs Python/npm dependencies, starts the backend API, starts the
+browser UI, verifies the MCP server with the smoke test, prints the local URLs,
+and keeps the services running until you press `Ctrl-C`.
+
+For the live chatbot path, paste the temporary OpenAI key into `.env.local`:
 
 ```text
-http://localhost:8080/
+OPENAI_API_KEY=<TEMP_OPENAI_API_KEY_FROM_SUBMISSION_EMAIL>
 ```
 
-Start the API in a second terminal:
+```text
+Browser UI:  http://127.0.0.1:8080/
+Backend API: http://127.0.0.1:8001/api/health
+```
+
+For a one-time startup verification that exits after the checks:
 
 ```bash
-python3 -m pip install -r requirements.txt
-python3 -m uvicorn backend.api:app --host 127.0.0.1 --port 8001
+./scripts/start-gumroad-merchant.sh --once
 ```
 
 The chat UI reads `OPENAI_API_KEY` from local env or `.env.local`. If the key or
@@ -49,10 +57,12 @@ SQLite-backed answers from the seeded demo analytics.
 
 ## Run the MCP Server
 
-Run the local stdio MCP server:
+The MCP server is stdio-based, so an MCP-capable host normally launches it as a
+command instead of connecting to a long-running HTTP port. Use this command in
+Codex, Claude, Cursor, or another MCP-capable app:
 
 ```bash
-scripts/gumroad-merchant-mcp.sh
+./scripts/start-gumroad-merchant.sh --mcp-stdio
 ```
 
 Once it is configured in an MCP-capable agent, ask:
