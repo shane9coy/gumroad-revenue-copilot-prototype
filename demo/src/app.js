@@ -3217,6 +3217,7 @@ function renderMerchantSessions() {
     state.merchantSessionsLoading ? "Loading saved chats" : "No saved chats yet",
   );
 
+  merchantNewChatButton.disabled = state.merchantSending;
   merchantSaveChatButton.textContent = saved ? "Unsave" : "Save";
   const canManageCurrentSession = Boolean(state.merchantSessionId) && merchantSessionIsManageable(currentSession);
   merchantSaveChatButton.disabled = !canManageCurrentSession || state.merchantSending;
@@ -3317,21 +3318,30 @@ async function initMerchantChat() {
     await merchantFetch("/api/agent/data/refresh?force=true", {
       method: "POST",
     });
-    const session = await merchantFetch(
-      `/api/agent/chat/session?${new URLSearchParams({
-        session_id: existingSessionId,
-        product_id: state.selectedProductId,
-        date_range: getBackendDateRange(),
-      })}`
-    );
-    state.merchantSessionId = session.session_id;
-    window.localStorage.setItem(MERCHANT_SESSION_STORAGE_KEY, session.session_id);
-    merchantStatus.textContent = "Ready";
-    try {
-      await loadMerchantHistory();
-    } catch {
+    if (existingSessionId.trim()) {
+      const session = await merchantFetch(
+        `/api/agent/chat/session?${new URLSearchParams({
+          session_id: existingSessionId,
+          product_id: state.selectedProductId,
+          date_range: getBackendDateRange(),
+        })}`
+      );
+      state.merchantSessionId = session.session_id;
+      window.localStorage.setItem(MERCHANT_SESSION_STORAGE_KEY, session.session_id);
+    } else {
+      state.merchantSessionId = "";
+      window.localStorage.removeItem(MERCHANT_SESSION_STORAGE_KEY);
       state.merchantMessages = initialMerchantMessages();
       state.merchantSamplesDismissed = false;
+    }
+    merchantStatus.textContent = "Ready";
+    if (state.merchantSessionId) {
+      try {
+        await loadMerchantHistory();
+      } catch {
+        state.merchantMessages = initialMerchantMessages();
+        state.merchantSamplesDismissed = false;
+      }
     }
   } catch {
     merchantStatus.textContent = "Offline";
@@ -3412,6 +3422,7 @@ async function submitMerchantMessage(value) {
   });
   merchantChatInput.value = "";
   merchantStatus.textContent = "Thinking";
+  renderMerchantSessions();
   renderMerchantChat();
 
   try {
@@ -3453,6 +3464,7 @@ async function submitMerchantMessage(value) {
     merchantStatus.textContent = "Offline";
   } finally {
     state.merchantSending = false;
+    renderMerchantSessions();
     renderMerchantChat();
     merchantChatInput.focus();
   }
@@ -3463,28 +3475,15 @@ async function createNewMerchantChat() {
     return;
   }
 
-  try {
-    merchantStatus.textContent = "Syncing";
-    const session = await merchantFetch(
-      `/api/agent/chat/session?${new URLSearchParams({
-        product_id: state.selectedProductId,
-        date_range: getBackendDateRange(),
-      })}`
-    );
-    state.merchantSessionId = session.session_id;
-    window.localStorage.setItem(MERCHANT_SESSION_STORAGE_KEY, session.session_id);
-    state.merchantMessages = initialMerchantMessages();
-    state.merchantSamplesDismissed = false;
-    state.merchantSessionView = "recent";
-    merchantChatInput.value = "";
-    merchantStatus.textContent = "Ready";
-    await loadMerchantSessions();
-  } catch {
-    merchantStatus.textContent = "Offline";
-  } finally {
-    renderMerchantChat();
-    merchantChatInput.focus();
-  }
+  state.merchantSessionId = "";
+  window.localStorage.removeItem(MERCHANT_SESSION_STORAGE_KEY);
+  state.merchantMessages = initialMerchantMessages();
+  state.merchantSamplesDismissed = false;
+  merchantChatInput.value = "";
+  merchantStatus.textContent = "Ready";
+  renderMerchantSessions();
+  renderMerchantChat();
+  merchantChatInput.focus();
 }
 
 async function loadMerchantSession(sessionId) {
