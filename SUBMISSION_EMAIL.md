@@ -58,6 +58,14 @@ The key docs are:
 - `MCPConversationSample.md`
 - `AgentConversationSample.md`
 
+My future development roadmap would be to push this further in three directions.
+
+First, I would build out the agent intuition layer. The agent should get better at understanding what kind of creator is using Gumroad, what their product mix looks like, what signals usually matter for that business, and which next actions are actually worth interrupting them for.
+
+Second, I would add document and image creation abilities. A creator should be able to ask Gumroad Merchant to generate product images, launch assets, customer-facing documents, refund or dispute packets, product update drafts, campaign briefs, and other business materials directly from the same Gumroad context.
+
+Third, I would connect the agent to real product changes in the user UI. The current demo prepares, explains, and stages actions. The next version should let the creator approve the change and then have the agent update the product page, draft or publish a post, adjust pricing, prepare a refund, update a campaign, or make other scoped changes through Gumroad itself with confirmation and audit logs.
+
 My bigger vision is that this is the move for 2026. Creators are going to bring personal agents into their business workflows either way. If Gumroad does not own that agent layer, it will happen around Gumroad and Gumroad risks becoming just the data source. If Gumroad does own it, Gumroad becomes the operating layer for creator businesses: analytics, refunds, disputes, posts, pricing, subscriptions, payouts, growth actions, and support all routed through a trusted merchant agent.
 
 That is what this prototype is meant to make concrete.
