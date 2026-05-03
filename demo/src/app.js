@@ -1047,7 +1047,10 @@ function setupDashboardGroupToggle(group) {
     setDashboardGroupCollapsed(group, !group.classList.contains("is-group-collapsed"));
   });
 
-  setDashboardGroupCollapsed(group, group.classList.contains("is-group-collapsed"));
+  const defaultCollapsed =
+    group.classList.contains("is-group-collapsed") ||
+    group.dataset.groupDefaultCollapsed === "true";
+  setDashboardGroupCollapsed(group, defaultCollapsed);
 }
 
 function setupPanelGroups() {
